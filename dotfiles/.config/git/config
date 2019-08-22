@@ -1,0 +1,40 @@
+# general settings
+[core]
+  editor = vi
+[color]
+  ui = true
+  diff = auto
+[color "status"]
+  added = green
+  changed = yellow
+  untracked = red
+[color "diff"]
+  meta = cyan bold
+  frag = cyan
+  old = red
+  new = green
+[color "diff-highlight"]
+  oldNormal = "red"
+  oldHighlight = "red bold 52"
+  newNormal = "green"
+  newHighlight = "green bold 22"
+[alias]
+  s = status
+  c = commit
+  d = diff
+  dt = difftool
+  m = submodule
+[diff]
+  tool = vimdiff
+[merge]
+  tool = vimdiff
+[difftool]
+	prompt = false
+[mergetool]
+  prompt = false
+[help]
+  autocorrect = 1
+
+# personal settings
+[include]
+  path = config_personal

@@ -1,0 +1,118 @@
+#!/bin/bash
+# Copyright 2019 Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# shell prompt based on the Solarized Dark theme
+# screenshot see http://i.imgur.com/EkEtphC.png
+# heavily inspired by @necolas’s prompt https://github.com/necolas/dotfiles
+
+function get_git_status() {
+  if [[ ! "${PWD}" == ~/fuse* ]]; then # ignore anything that is mounted to the fuse root (convention for these dotfiles)
+    local s=''
+    local branchName=''
+
+    # check whether the current directory is inside a git repository
+    if [[ $(git rev-parse --is-inside-work-tree &> /dev/null; echo "$?") == '0' ]]; then
+      # check if the current directory is inside .git before running git checks
+      if [[ "$(git rev-parse --is-inside-git-dir 2> /dev/null)" == 'false' ]]; then
+        # ensure the index is up to date
+        git update-index --really-refresh -q &> /dev/null
+        # check for uncommitted changes in the index
+        if ! $(git diff --quiet --ignore-submodules --cached); then
+          s+='+'
+        fi
+        # check for unstaged changes
+        if ! $(git diff-files --quiet --ignore-submodules --); then
+          s+='!'
+        fi
+        # check for untracked files
+        if [[ -n "$(git ls-files --others --exclude-standard)" ]]; then
+          s+='?'
+        fi
+        # check for stashed files
+        if $(git rev-parse --verify refs/stash &> /dev/null); then
+          s+='$'
+        fi
+      fi
+
+      # get the short symbolic ref (if HEAD isn’t a symbolic ref,
+      # get the short SHA for the latest commit, otherwise, just give up)
+      branchName="$(git symbolic-ref --quiet --short HEAD 2> /dev/null || \
+        git symbolic-ref --quiet HEAD 2> /dev/null || \
+        git rev-parse --short HEAD 2> /dev/null || \
+        echo '(unknown)')"
+
+      # try to patch branch name as good as possible if we didn't get the short form
+      branchName="${branchName/refs\/heads\//}"
+
+      # wrap status nicely if we have any
+      [[ -n "${s}" ]] && s=" [${s}]"
+
+      # construct prompt segment from branch name and status
+      echo -e "${1}${COLOR_VIOLET}${branchName}${COLOR_BLUE}${s}"
+    fi
+  fi
+}
+
+function get_kube_ctx() {
+  if [[ -n "${LANDSCAPE_NAME}" ]]; then
+    echo -e "${1}${COLOR_CYAN}${LANDSCAPE_NAME}"
+  else
+    local kube_ctx="$(kubectl config current-context 2> /dev/null || true)"
+    if [[ -n "${kube_ctx}" ]]; then
+      local kube_server="$(kubectl config view --minify --output 'jsonpath={..server}' 2> /dev/null | sed -r 's/http(s)?:\/\/(api\.)?([^:]*)(:[0-9]+)?/\3/' || true)"
+      [[ -z $kube_server ]] && kube_server=$kube_ctx
+      local kube_namespace="$(kubectl config view --minify --output 'jsonpath={..namespace}' 2> /dev/null || true)"
+      [[ -z $kube_namespace ]] && kube_namespace="default"
+      echo -e "${1}${COLOR_CYAN}${kube_server}${COLOR_LIGHT_GRAY} ${COLOR_MAGENTA}[${kube_namespace}]"
+    fi
+  fi
+}
+
+# highlight (well-known) privileged users
+case "${USER}" in
+  "root"|"core"|"ubuntu"|"admin"|"vcap") userStyle="${COLOR_RED}";;
+  *)                                     userStyle="${COLOR_ORANGE}";;
+esac
+
+# show (preferred) host alias if available
+if [[ -f "${DOTFILES_HOME}/.host_alias" ]]; then
+  hostName="$(cat ${DOTFILES_HOME}/.host_alias)"
+else
+  hostName="${HOSTNAME}"
+fi
+
+# disable virtualenv prompt as we have our own and don't want any
+export VIRTUAL_ENV_DISABLE_PROMPT=1
+
+# unset current prompt command and set it instead in combination with prompt
+unset PROMPT_COMMAND
+escaped_home=${HOME//\//\\\/}
+# PS1="\[\033]0;Terminal \${USER}@\${hostName}:\${PWD/$escaped_home/~}\007\]" # full title
+PS1="\[\033]0;${hostName}\007\]" # short title
+PS1+="\n" # newline
+PS1+="\[${SGR_BOLD}\]\[${userStyle}\]\u" # username in user style
+PS1+="\[${SGR_RESET}\] at "
+PS1+="\[${SGR_BOLD}\]\[${COLOR_YELLOW}\]${hostName}" # host alias or name
+PS1+="\[${SGR_RESET}\] in "
+PS1+="\[${SGR_BOLD}\]\[${COLOR_GREEN}\]\w" # working directory
+# PS1+="\$(get_bosh_target \"${SGR_RESET} targeting BOSH ${SGR_BOLD}\")" # bosh target
+# PS1+="\$(get_bosh_user \"${SGR_RESET} as ${SGR_BOLD}\")" # bosh user
+# PS1+="\$(get_cf_target \"${SGR_RESET} targeting CF ${SGR_BOLD}\")" # cf target
+# PS1+="\$(get_cf_user \"${SGR_RESET} as ${SGR_BOLD}\")" # cf user
+PS1+="\$(get_kube_ctx \"${SGR_RESET} on ${SGR_BOLD}\")" # kube context
+PS1+="\$(get_git_status \"${SGR_RESET} on ${SGR_BOLD}\")" # git status
+PS1+="\n" # newline
+PS1+="\[${SGR_RESET}\]\[${SGR_BOLD}\]\$ \[${SGR_RESET}\]" # reset color and finally the prompt
+export PS1

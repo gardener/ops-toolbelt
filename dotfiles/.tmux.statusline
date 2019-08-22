@@ -1,0 +1,39 @@
+# Copyright 2019 Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -g status-bg "colour255"
+set -g message-command-fg "colour15"
+set -g status-justify "centre"
+set -g status-left-length "100"
+set -g status "on"
+set -g pane-active-border-fg "colour33"
+set -g message-bg "colour39"
+set -g status-right-length "100"
+set -g status-right-attr "none"
+set -g message-fg "colour15"
+set -g message-command-bg "colour39"
+set -g status-attr "none"
+set -g pane-border-fg "colour39"
+set -g status-left-attr "none"
+setw -g window-status-fg "colour16"
+setw -g window-status-attr "none"
+setw -g window-status-activity-bg "colour255"
+setw -g window-status-activity-attr "none"
+setw -g window-status-activity-fg "colour33"
+setw -g window-status-separator ""
+setw -g window-status-bg "colour255"
+set -g status-left "#[fg=colour15,bg=colour33] #(cat \"$DOTFILES_HOME/.host_alias\") #[fg=colour33,bg=colour39,nobold,nounderscore,noitalics]#[fg=colour15,bg=colour39] #S #[fg=colour39,bg=colour255,nobold,nounderscore,noitalics]"
+set -g status-right "#[fg=colour39,bg=colour255,nobold,nounderscore,noitalics]#[fg=colour15,bg=colour39] %H:%M #[fg=colour33,bg=colour39,nobold,nounderscore,noitalics]#[fg=colour15,bg=colour33] %Y-%m-%d "
+setw -g window-status-format "#[fg=colour255,bg=colour255,nobold,nounderscore,noitalics]#[default]    #W    #[fg=colour255,bg=colour255,nobold,nounderscore,noitalics]"
+setw -g window-status-current-format "#[fg=colour255,bg=colour39,nobold,nounderscore,noitalics]#[fg=colour15,bg=colour39]    #W    #[fg=colour39,bg=colour255,nobold,nounderscore,noitalics]"

@@ -1,0 +1,26 @@
+/* see https://www.digitalocean.com/community/tutorials/how-to-customize-the-postgresql-prompt-with-psqlrc-on-ubuntu-14-04 */
+
+/* switch output off for the stuff below */
+\set QUIET 1
+
+/* set prompt(s) for better readability */
+\set PROMPT1 '%n@%/%# '
+\set PROMPT2 '%n@%/- '
+
+/* set history */
+\set HISTSIZE 1000
+
+/* make auto-completion turn SQL keywords into uppercase */
+\set COMP_KEYWORD_CASE upper
+
+/* align table content only if screen width permits, otherwise show cells as key/value-pairs */
+\x auto
+
+/* show NULL value not as absence of anything (indifferent from an empty string), but special character */
+\pset null ¤
+
+/* switch output on again */
+\set QUIET 0
+
+/* welcome */
+\echo 'Welcome to PostgreSQL\n'

@@ -1,0 +1,154 @@
+#!/bin/bash -e
+# Copyright 2019 Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# open terminal into cluster node
+
+function print_usage() {
+  cat <<EOF
+ops-pod: Deploy privileged pod in a kubernetes cluster and open terminal into cluster node using the current kubectl context.
+         When specifying <pod-name> the node of the specified pod will be used.
+
+Usage:
+  ops-pod [OPTIONS] <node|pod-name>
+
+Options:
+  -n|--namespace   The namespace into which the pod will be deployed. The namespace of the current kubectl context is used by default.
+  -i|--image       Image to use for the privileged pod. The default value is: eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
+EOF
+}
+
+namespace=
+node=
+image=
+name="ops-pod-$(whoami)"
+
+default_image="eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest"
+function get_default_namespace() {
+  _namespace=$(kubectl config view -o jsonpath="{.contexts[?(@.name == \"$(kubectl config current-context)\")].context.namespace}")
+  echo "${_namespace:-default}"
+}
+
+positional=()
+while [[ $# -gt 0 ]]; do
+  key="${1}"
+  case ${key} in
+    -n|--namespace)
+      namespace="${2}"
+      shift
+      shift
+      ;;
+    -i|--image)
+      image="${2}"
+      shift
+      shift
+      ;;
+    -h|--help)
+      print_usage
+      exit 0
+      ;;
+    *)
+      positional+=("${1}")
+      shift
+      ;;
+  esac
+done
+
+if [[ ${#positional[@]} -ne 1 ]]; then
+  echo -e "Error: Required one positional argument: <node|pod-name> found ${#positional[@]}\n"
+  print_usage
+  exit 1
+fi
+
+node=${positional[0]}
+image=${image:-$default_image}
+namespace=${namespace:-$(get_default_namespace)}
+
+node_of_pod=$(kubectl -n ${namespace} get pod ${node} -o jsonpath={.spec.nodeName} 2> /dev/null || true)
+if [[ ! -z ${node_of_pod} ]]; then
+  echo -e "Pod name provided. Deploying ops pod on the node where ${node} is running: ${node_of_pod}\n"
+  node=$node_of_pod
+else
+  echo "Node name provided ..."
+  available_nodes=( $(kubectl get nodes | awk '{print $1}' | grep -v NAME) )
+  if [[ " ${available_nodes[*]} " =~ " ${node} " ]]; then
+    echo -e "Deploying ops pod on ${node}\n"
+  else
+    echo -e "Error: node ${node} does not exist in the cluster.\n"
+    print_usage
+  fi
+fi
+
+
+# check if the node name was a pod name and we should actually identify the node from the pod (node that runs the pod)
+
+# Kubify nodes have labels that differ from the names (need an additional suffix)
+node=$(echo "$node" | sed -r "s/^(garden-.*)/\1.openstack.local/")
+
+# get rid of former pod (if present; best effort)
+kubectl -n $namespace delete pod $name &> /dev/null || true
+while kubectl -n $namespace get pod $name &> /dev/null; do echo "Waiting for old pod to be deleted..."; sleep 1; done
+
+# launch pod
+kubectl -n $namespace create -f <(cat << EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: $name
+spec:
+  $([[ ! -z $node ]] && echo -e "nodeSelector:\n    kubernetes.io/hostname: $node")
+  tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+  containers:
+  - name: ops-pod
+    image: eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
+    imagePullPolicy: Always
+    command:
+    - sleep
+    - "43200"
+    resources:
+      limits:
+        cpu: 200m
+        memory: 100Mi
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    stdin: true
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: host-root-volume
+      mountPath: /host
+      readOnly: false
+  volumes:
+  - name: host-root-volume
+    hostPath:
+      path: /
+  hostNetwork: true
+  hostPID: true
+  restartPolicy: Never
+EOF)
+while [[ $(kubectl -n $namespace get pods | sed -n -r "s/^$name.*Running.*$/Running/p") != "Running" ]]; do echo "Waiting for pod to be running..."; sleep 1; done;
+
+# exec into pod (and chroot into node if a node was selected)
+if [[ ! -z $node ]]; then
+  kubectl -n $namespace exec -ti $name -- bash -c "rm -rf /host/root/dotfiles 1> /dev/null; cp -r /root/dotfiles /host/root 1> /dev/null; cp -r /guide /host 1> /dev/null; cp -r /hacks /host 1> /dev/null; rm -f /host/root/.bashrc; ln -s /root/dotfiles/.bashrc /host/root/.bashrc 1> /dev/null; export PATH=\"/hacks:$PATH\"; chroot /host /bin/bash"
+else
+  kubectl -n $namespace exec -ti $name -- bash
+fi
+
+# get rid of pod
+kubectl -n $namespace delete pod $name &> /dev/null || true
