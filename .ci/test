@@ -1,0 +1,17 @@
+#!/bin/bash -eu
+
+SOURCE_PATH=${SOURCE_PATH:-}
+GENERATED_DOCKERFILES_PATH=${GENERATED_DOCKERFILES_PATH:-}
+
+if [[ -z "${SOURCE_PATH}" ]]; then
+    SOURCE_PATH="$(readlink -f "$(dirname "${0}")"/..)"
+fi
+
+"${SOURCE_PATH}"/generator/validate-tools.py \
+    --dockerfile-config "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/aws-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/azure-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/os-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/gcp-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/aliyun-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/gardenctl-components.yaml

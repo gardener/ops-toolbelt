@@ -1,0 +1,45 @@
+ops-toolbelt:
+  template: 'default'
+  base_definition:
+    repo: ~
+    traits:
+      version:
+        preprocess:
+          'inject-commit-hash'
+        inject_effective_version: true
+      publish:
+        dockerimages:
+          ops-toolbelt-gardenctl:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl'
+            dockerfile: ops-toolbelt-gardenctl.dockerfile
+            tag_as_latest: True
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt'
+            dockerfile: ops-toolbelt.dockerfile
+            tag_as_latest: True
+            inputs:
+              steps:
+                build: ~
+    steps:
+      test: ~
+      build:
+        output_dir: 'generated_dockerfiles'
+  jobs:
+    head-update:
+      traits:
+        draft_release: ~
+    pull-request:
+      traits:
+        pull-request: ~
+    release:
+      traits:
+        component_descriptor: ~
+        version:
+          preprocess: 'finalize'
+        release:
+          nextversion: 'bump_minor'

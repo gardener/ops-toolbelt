@@ -1,0 +1,29 @@
+#!/bin/bash -eu
+
+SOURCE_PATH=${SOURCE_PATH:-}
+GENERATED_DOCKERFILES_PATH=${GENERATED_DOCKERFILES_PATH:-}
+
+if [[ -z ${SOURCE_PATH} ]]; then
+    SOURCE_PATH="$(readlink -f "$(dirname "${0}")"/..)"
+fi
+
+if [[ -z "${GENERATED_DOCKERFILES_PATH}" ]]; then
+    GENERATED_DOCKERFILES_PATH="$(readlink -f "${SOURCE_PATH}/generated_dockerfiles")"
+    mkdir -p "${GENERATED_DOCKERFILES_PATH}"
+fi
+
+"${SOURCE_PATH}"/generator/generate-dockerfile.py \
+    --dockerfile-config "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
+    --from-image ubuntu:18.04 \
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt.dockerfile
+
+"${SOURCE_PATH}"/generator/generate-dockerfile.py \
+    --dockerfile-config "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/aws-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/azure-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/os-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/gcp-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/aliyun-components.yaml \
+    --additional-configs "${SOURCE_PATH}"/dockerfile-configs/gardenctl-components.yaml \
+    --from-image ubuntu:18.04 \
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl.dockerfile
