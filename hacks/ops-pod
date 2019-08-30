@@ -114,7 +114,7 @@ spec:
     effect: NoSchedule
   containers:
   - name: ops-pod
-    image: eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
+    image: ${image}
     imagePullPolicy: Always
     command:
     - sleep
@@ -140,15 +140,21 @@ spec:
   hostNetwork: true
   hostPID: true
   restartPolicy: Never
-EOF)
+EOF
+)
 while [[ $(kubectl -n $namespace get pods | sed -n -r "s/^$name.*Running.*$/Running/p") != "Running" ]]; do echo "Waiting for pod to be running..."; sleep 1; done;
 
 # exec into pod (and chroot into node if a node was selected)
-if [[ ! -z $node ]]; then
-  kubectl -n $namespace exec -ti $name -- bash -c "rm -rf /host/root/dotfiles 1> /dev/null; cp -r /root/dotfiles /host/root 1> /dev/null; cp -r /guide /host 1> /dev/null; cp -r /hacks /host 1> /dev/null; rm -f /host/root/.bashrc; ln -s /root/dotfiles/.bashrc /host/root/.bashrc 1> /dev/null; export PATH=\"/hacks:$PATH\"; chroot /host /bin/bash"
+if [[ -n $node ]]; then
+  kubectl -n $namespace exec -ti $name -- bash -c "rm -rf /host/root/dotfiles 1> /dev/null; \
+                                                   echo 'cat /root/motd' >> /root/dotfiles/.bashrc; \
+                                                   cp -r /root/dotfiles /host/root 1> /dev/null; \
+                                                   cp -r /hacks /host 1> /dev/null; rm -f /host/root/.bashrc; \
+                                                   cp /etc/motd /host/root/motd; \
+                                                   ln -s /root/dotfiles/.bashrc /host/root/.bashrc 1> /dev/null; export PATH=\"/hacks:$PATH\"; chroot /host /bin/bash"
 else
   kubectl -n $namespace exec -ti $name -- bash
 fi
 
 # get rid of pod
-kubectl -n $namespace delete pod $name &> /dev/null || true
+kubectl -n $namespace delete pod $name &> /dev/null
