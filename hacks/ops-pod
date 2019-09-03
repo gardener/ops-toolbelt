@@ -26,12 +26,18 @@ Usage:
 Options:
   -n|--namespace   The namespace into which the pod will be deployed. The namespace of the current kubectl context is used by default.
   -i|--image       Image to use for the privileged pod. The default value is: eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
+  -c|--chroot      When this flag is set the host's root directory will also be used as root directory of the pod. By default the host's
+                   root directory is mounted under /host on the pod.
 EOF
 }
+
+NO_CHROOT=0
+YES_CHROOT=1
 
 namespace=
 node=
 image=
+node_chroot=${NO_CHROOT}
 name="ops-pod-$(whoami)"
 
 default_image="eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest"
@@ -52,6 +58,10 @@ while [[ $# -gt 0 ]]; do
     -i|--image)
       image="${2}"
       shift
+      shift
+      ;;
+    -c|--chroot)
+      node_chroot=${YES_CHROOT}
       shift
       ;;
     -h|--help)
@@ -76,7 +86,7 @@ image=${image:-$default_image}
 namespace=${namespace:-$(get_default_namespace)}
 
 node_of_pod=$(kubectl -n ${namespace} get pod ${node} -o jsonpath={.spec.nodeName} 2> /dev/null || true)
-if [[ ! -z ${node_of_pod} ]]; then
+if [[ -n ${node_of_pod} ]]; then
   echo -e "Pod name provided. Deploying ops pod on the node where ${node} is running: ${node_of_pod}\n"
   node=$node_of_pod
 else
@@ -145,16 +155,18 @@ EOF
 while [[ $(kubectl -n $namespace get pods | sed -n -r "s/^$name.*Running.*$/Running/p") != "Running" ]]; do echo "Waiting for pod to be running..."; sleep 1; done;
 
 # exec into pod (and chroot into node if a node was selected)
-if [[ -n $node ]]; then
+if [[ ${node_chroot} -eq ${YES_CHROOT} ]]; then
   kubectl -n $namespace exec -ti $name -- bash -c "rm -rf /host/root/dotfiles 1> /dev/null; \
                                                    echo 'cat /root/motd' >> /root/dotfiles/.bashrc; \
                                                    cp -r /root/dotfiles /host/root 1> /dev/null; \
                                                    cp -r /hacks /host 1> /dev/null; rm -f /host/root/.bashrc; \
                                                    cp /etc/motd /host/root/motd; \
-                                                   ln -s /root/dotfiles/.bashrc /host/root/.bashrc 1> /dev/null; export PATH=\"/hacks:$PATH\"; chroot /host /bin/bash"
+                                                   ln -s /root/dotfiles/.bashrc /host/root/.bashrc 1> /dev/null; export PATH=\"/hacks:$PATH\"; \
+                                                   echo -e '\nBE CAREFUL!!! Node root directory mounted under / \n'; \
+                                                   chroot /host /bin/bash"
 else
-  kubectl -n $namespace exec -ti $name -- bash
+  kubectl -n $namespace exec -ti $name -- bash -c "echo -e '\nNode root dir is mounted under /host' >> /etc/motd; /bin/bash"
 fi
 
 # get rid of pod
-kubectl -n $namespace delete pod $name &> /dev/null
+kubectl -n $namespace delete pod $name
