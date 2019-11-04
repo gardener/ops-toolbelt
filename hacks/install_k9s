@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-DEFAULT_K9S_VERSION=0.7.11
+DEFAULT_K9S_VERSION=0.9.3
 
 function show_help () {
   echo "Usage: ${0} [arguments]"
