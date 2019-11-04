@@ -13,7 +13,6 @@ ops-toolbelt:
             registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl'
             dockerfile: ops-toolbelt-gardenctl.dockerfile
-            tag_as_latest: True
             inputs:
               steps:
                 build: ~
@@ -21,7 +20,6 @@ ops-toolbelt:
             registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt'
             dockerfile: ops-toolbelt.dockerfile
-            tag_as_latest: True
             inputs:
               steps:
                 build: ~
@@ -43,3 +41,9 @@ ops-toolbelt:
           preprocess: 'finalize'
         release:
           nextversion: 'bump_minor'
+        publish:
+          dockerimages:
+            ops-toolbelt-gardenctl:
+              tag_as_latest: true
+            ops-toolbelt:
+              tag_as_latest: true
