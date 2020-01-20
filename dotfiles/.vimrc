@@ -9,6 +9,35 @@ set nocompatible
 " set runtime path dynamically based on user env home
 set runtimepath+=$DOTFILES_HOME/.vim
 
+set nocompatible              " be iMproved, required
+filetype off                  " required
+
+" set the runtime path to include Vundle and initialize
+set rtp+=$DOTFILES_HOME/.vim/bundle/Vundle.vim
+call vundle#begin("$DOTFILES_HOME/.vim/bundle")
+
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+
+Plugin 'scrooloose/nerdtree'
+Plugin 'vim-syntastic/syntastic'
+Plugin 'jistr/vim-nerdtree-tabs'
+Plugin 'tpope/vim-sensible'
+
+call vundle#end()            " required
+filetype plugin indent on    " required
+" To ignore plugin indent changes, instead use:
+"filetype plugin on
+"
+" Brief help
+" :PluginList       - lists configured plugins
+" :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
+" :PluginSearch foo - searches for foo; append `!` to refresh local cache
+" :PluginClean      - confirms removal of unused plugins; append `!` to auto-approve removal
+"
+" see :h vundle for more details or wiki for FAQ
+" Put your non-Plugin stuff after this line
+
 " ------------
 " |   HELP   |
 " ------------
@@ -63,8 +92,11 @@ set runtimepath+=$DOTFILES_HOME/.vim
 " ---------------
 
 " move backup/swap files to tmp
-set backupdir=/tmp
-set dir=/tmp
+set backupdir=$DOTFILES_HOME/.vim/backups
+set directory=$DOTFILES_HOME/.vim/swaps
+if exists("&undodir")
+	set undodir=$DORFILES_HOME/.vim/undo
+endif
 
 " fix shift + function keys; see http://unix.stackexchange.com/questions/58361/how-to-fix-the-shifted-function-keys-in-vim-in-xterm-in-gnome-terminal
 function! FixShiftFunctionKeys()
@@ -102,8 +134,6 @@ set background=light                " default light
 " colorscheme Tomorrow-Night        " best in dark
 " colorscheme Tomorrow              " best in light
 
-" color scheme for airline
-let g:airline_theme = 'airlineish'
 
 " color modification for diff mode
 " bash color names see: http://misc.flogisoft.com/_media/bash/colors_format/256-colors.sh.png
@@ -337,3 +367,193 @@ nnoremap <F7> :call GitDiffToggle()<CR>
 
 " let vim see bash aliases when executing commands
 let $BASH_ENV="$DOTFILES_HOME/.bash_aliases"
+
+" ---------------
+" |   PLUGINS   |
+" ---------------
+
+" nerd tree (and tabs)
+" ... open by default
+" autocmd VimEnter * NERDTree
+" ... open only if no file is specified
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+" close it if nerd is the last man standing
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
+" settings
+" key mappings
+let NERDTreeShowHidden=1
+let NERDTreeMinimalUI=1
+let NERDTreeDirArrows=1
+let NERDTreeWinSize=50
+let NERDTreeMapRefresh="<F5>"
+let NERDTreeMapUpdir="<BS>"
+let NERDTreeMapOpenRecursively="r"
+let NERDTreeMapActivateNode="<Right>"
+let NERDTreeMapCloseDir="<Left>"
+let NERDTreeMapOpenSplit="h"
+let NERDTreeMapOpenVSplit="v"
+nnoremap <F3> :NERDTreeTabsToggle<CR>
+nnoremap <S-F3> :NERDTreeTabsOpen<CR>:NERDTreeFocusToggle<CR>:NERDTreeTabsFind<CR>
+" file type highlighting
+function! NERDTreeHighlightFile(extension, fg, bg, guifg, guibg)
+exec 'autocmd FileType nerdtree highlight ' . a:extension .' ctermbg='. a:bg .' ctermfg='. a:fg .' guibg='. a:guibg .' guifg='. a:guifg
+exec 'autocmd FileType nerdtree syn match ' . a:extension .' #^\s\+.*'. a:extension .'$#'
+endfunction
+" ... for programming language files
+call NERDTreeHighlightFile('c',    'black', 'none', 'black', '#151515')
+call NERDTreeHighlightFile('cpp',  'black', 'none', 'black', '#151515')
+call NERDTreeHighlightFile('go',   'cyan', 'none', 'cyan', '#151515')
+call NERDTreeHighlightFile('h',    'black', 'none', 'black', '#151515')
+call NERDTreeHighlightFile('hpp',  'black', 'none', 'black', '#151515')
+call NERDTreeHighlightFile('java', 'red', 'none', '#ffa500', '#151515')
+call NERDTreeHighlightFile('js',   'Magenta', 'none', '#ff00ff', '#151515')
+call NERDTreeHighlightFile('php',  'Magenta', 'none', '#ff00ff', '#151515')
+call NERDTreeHighlightFile('py',   'blue', 'none', 'blue', '#151515')
+call NERDTreeHighlightFile('rb',   'red', 'none', '#ffa500', '#151515')
+call NERDTreeHighlightFile('spec', 'red', 'none', '#ffa500', '#151515')
+" ... for documentation files
+call NERDTreeHighlightFile('md',  'blue', 'none', '#3366FF', '#151515')
+call NERDTreeHighlightFile('txt', 'blue', 'none', '#3366FF', '#151515')
+" ... for web files
+call NERDTreeHighlightFile('css',  'Magenta', 'none', '#ff00ff', '#151515')
+call NERDTreeHighlightFile('htm',  'Magenta', 'none', '#ff00ff', '#151515')
+call NERDTreeHighlightFile('html', 'Magenta', 'none', '#ff00ff', '#151515')
+call NERDTreeHighlightFile('styl', 'Magenta', 'none', '#ff00ff', '#151515')
+" ... for media files
+call NERDTreeHighlightFile('bmp',  'yellow', 'none', 'yellow', '#151515')
+call NERDTreeHighlightFile('gif',  'yellow', 'none', 'yellow', '#151515')
+call NERDTreeHighlightFile('jpeg', 'yellow', 'none', 'yellow', '#151515')
+call NERDTreeHighlightFile('jpg',  'yellow', 'none', 'yellow', '#151515')
+call NERDTreeHighlightFile('png',  'yellow', 'none', 'yellow', '#151515')
+" ... for configuration files
+call NERDTreeHighlightFile('bashalias',   'green', 'none', 'green', '#151515')
+call NERDTreeHighlightFile('bashprofile', 'green', 'none', 'green', '#151515')
+call NERDTreeHighlightFile('bashprompt',  'green', 'none', 'green', '#151515')
+call NERDTreeHighlightFile('bashrc',      'green', 'none', 'green', '#151515')
+call NERDTreeHighlightFile('conf',        'green', 'none', 'green', '#151515')
+call NERDTreeHighlightFile('config',      'green', 'none', 'green', '#151515')
+call NERDTreeHighlightFile('ini',         'green', 'none', 'green', '#151515')
+call NERDTreeHighlightFile('json',        'green', 'none', 'green', '#151515')
+call NERDTreeHighlightFile('xml',         'green', 'none', 'green', '#151515')
+call NERDTreeHighlightFile('yaml',        'green', 'none', 'green', '#151515')
+call NERDTreeHighlightFile('yml',         'green', 'none', 'green', '#151515')
+" ... for shell files
+call NERDTreeHighlightFile('sh', 'black', 'none', 'black', '#151515')
+" ... for log files
+call NERDTreeHighlightFile('log', 'black', 'none', 'black', '#151515')
+" ... for git files
+call NERDTreeHighlightFile('gitconfig', 'Gray', 'none', '#686868', '#151515')
+call NERDTreeHighlightFile('gitignore', 'Gray', 'none', '#686868', '#151515')
+
+" tagbar
+nnoremap <F4> :TagbarToggle<CR>
+inoremap <F4> <ESC>:TagbarToggle<CR>i
+
+" fugitive
+set diffopt=filler,vertical
+
+" gitv
+nnoremap <F8> :Gitv<CR>
+cnoremap Gitk Gitv
+cnoremap gitk Gitv
+
+" syntastic
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+let g:syntastic_enable_perl_checker = 1
+let g:syntastic_perl_checkers = ['perl', 'yaml', 'yml']
+let g:syntastic_python_checkers = [] " disable syntastic Python checkers [ 'flake8', 'frosted', 'mypy', 'pep257', 'pep8', 'prospector', 'py3kwarn', 'pyflakes', 'pylama', 'pylint', 'python']
+let g:syntastic_yaml_checkers = ['yamlxs']
+let g:syntastic_yml_checkers = ['yamlxs']
+
+" python-mode
+let g:pymode = 1
+let g:pymode_trim_whitespaces = 1
+let g:pymode_options_max_line_length = 119
+let g:pymode_options_colorcolumn = 0
+let g:pymode_python = 'python'
+" disable python-mode Python checker: let g:pymode_lint = 0
+let g:pymode_lint_ignore = 'E111'
+let g:pymode_quickfix_minheight = 3
+let g:pymode_quickfix_maxheight = 6
+
+set encoding=utf8
+
+" tmuxline
+" to create a new tmux statusline run :TmuxlineSnapshot! ~/.tmux.statusline
+let g:tmuxline_preset = {
+      \'a'    : '#(cat \"$DOTFILES_HOME/.host_alias\")',
+      \'b'    : '#S',
+      \'win'  : '   #W   ',
+      \'cwin' : '   #W   ',
+      \'y'    : '%H:%M',
+      \'z'    : '%Y-%m-%d' }
+
+" custom tabline with tab index and full file name only
+" set guitablabel=%t\ %M " not working with other plugins
+" set tabline=%!MyTabLine()
+function! MyTabLine()
+  let s = '' " complete tabline goes here
+  " loop through each tab page
+  for t in range(tabpagenr('$'))
+    " select the highlighting for the buffer names
+    if t + 1 == tabpagenr()
+      let s .= '%#TabLineSel#'
+    else
+      let s .= '%#TabLine#'
+    endif
+    let s .= ' ['
+    " set the tab page number (for mouse clicks)
+    let s .= '%' . (t + 1) . 'T'
+    " set page number string
+    let s .=  t + 1 . ']'
+    " get buffer names and statuses
+    let n = ''  "temp string for buffer names while we loop and check buftype
+    let m = 0 " &modified counter
+    let bc = len(tabpagebuflist(t + 1))  "counter to avoid last ','
+    " loop through each buffer in a tab
+    for b in tabpagebuflist(t + 1)
+      " buffer types: quickfix gets a [Q], help gets [H]{base fname}
+      if getbufvar( b, "&buftype" ) == 'help'
+        let n .= '[H]' . fnamemodify( bufname(b), ':t:s/.txt$//' )
+      elseif getbufvar( b, "&buftype" ) == 'quickfix'
+        let n .= '[Q]'
+      elseif bufname(b) == ''
+        let n .= '[No Name]'
+      else
+        "let n .= pathshorten(bufname(b))
+        "let n .= bufname(b)
+        let n .= fnamemodify( bufname(b), ':t' )
+      endif
+      " check and ++ tab's &modified count
+      if getbufvar( b, "&modified" )
+        let m += 1
+      endif
+      " no final ' ' added...formatting looks better done later
+      if bc > 1
+        let n .= ','
+      endif
+      let bc -= 1
+    endfor
+    " add modified label [+] where n pages in tab are modified
+    if m > 0
+      "let s .= '[' . m . '+]'
+      let s.= '[+]'
+    endif
+    let s .= ' '
+    " add buffer names
+    let s .= n
+    " switch to no underlining and add final space to buffer list
+    "let s .= '%#TabLineSel#' . ' '
+    let s .= ' '
+  endfor
+  " after the last tab fill with TabLineFill and reset tab page nr
+  let s .= '%#TabLineFill#%T'
+  return s
+endfunction
