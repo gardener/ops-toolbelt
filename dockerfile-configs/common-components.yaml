@@ -12,61 +12,76 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- with: apt-get
-  tools:
+- apt-get:
   - curl
   - git
   - tree
-  - silversearcher-ag
   - htop
   - less
   - vim
   - tmux
   - bash-completion
-  - dnsutils
-  - netcat-openbsd
-  - iproute2
+  - python3-distutils
   - dstat
   - ngrep
+  - jq
+  - figlet
   - tcpdump
-  - python-minimal
+  - name: silversearcher-ag
+    provides: ag
+  - name: iproute2
+    provides: ip
+  - name: dnsutils
+    provides: ["delv", "dig", "mdig", "nslookup", "nsupdate"]
+  - name: netcat-openbsd
+    provides: netcat
+  - name: python3-minimal
+    provides: python3
 
-- with: curl
-  tools:
-  - name: jq
-    from: https://stedolan.github.io/jq/download/linux64/jq
+- curl:
   - name: yaml2json
     version: v1.3
     from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_amd64
+    info: transform yaml string to json string without the type infomation.
   - name: kubectl
-    version:
-      from-url: https://storage.googleapis.com/kubernetes-release/release/stable.txt
+    version: v1.17.1
     from: https://storage.googleapis.com/kubernetes-release/release/{version}/bin/linux/amd64/kubectl
+    to: /bin/kubectl
+    info: command line tool for controlling Kubernetes clusters
   - name: pip
     from: https://bootstrap.pypa.io/get-pip.py
     to: /get-pip.py
+    command: |
+      python3 /get-pip.py;\
+      rm /get-pip.py
+    info: ~
   - name: cat
     version: v1.1.0
     from: https://github.com/jingweno/ccat/releases/download/{version}/linux-amd64-1.1.0.tar.gz
     to: /ccat.tar.gz
-
-- with: bash
-  execute:
-  - name: pip
     command: |
-      python /get-pip.py;\
-      rm /get-pip.py
-    info: ~
-  - name: cat
-    command: tar -zxf ccat.tar.gz linux-amd64-1.1.0/ccat && mv linux-amd64-1.1.0/ccat /bin/cat && rm -rf linux-amd64-1.1.0 ccat.tar.gz && chmod 755 /bin/cat
+      tar -zxf ccat.tar.gz linux-amd64-1.1.0/ccat &&\
+      mv linux-amd64-1.1.0/ccat /bin/cat &&\
+      rm -rf linux-amd64-1.1.0 ccat.tar.gz &&\
+      chmod 755 /bin/cat
+    info: The colorizing cat. It works similar to cat but displays content with syntax highlighting.
+
+- bash:
+  - name: generate_locale
+    command: |
+      apt-get --yes update && apt-get install --yes locales ;\
+      locale-gen "en_US.UTF-8"
     info: ~
 
-- with: pip
-  tools:
+- env:
+  - LANG=en_US.UTF-8
+  - LANGUAGE=en_US.UTF-8
+
+- pip:
   - mdv
+  - tabulate
 
-- with: copy
-  tools:
+- copy:
   - name: dotfiles
     from: ./dotfiles
     to: /root/dotfiles
@@ -76,8 +91,7 @@
     to: /hacks
     info: ~
 
-- with: bash
-  execute:
+- bash:
   - name: bash-completion
     command: |
       echo "" >> /root/.bashrc;\
@@ -92,9 +106,13 @@
     info: |
       The sourced dotfiles are located under /root/dotfiles.\n\
       Additionally you can add your own personal git settings in /root/dotfiles/.config/git/config_personal\n\
+  - name: hacks
+    command: |
+      echo "export PATH=/hacks:\$PATH" >> /root/.bashrc
+    info: ~
 
-- with: env
-  export:
+
+- env:
   - DOTFILES_USER=root
   - DOTFILES_HOME=/root/dotfiles
 

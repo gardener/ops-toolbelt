@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+RUN = "run"
+COPY = "copy"
+ENV = "env"
+
 class Dockerfile:
     def __init__(self, from_image, commands):
         self.from_image = "FROM {}\n".format(from_image)
@@ -20,13 +24,13 @@ class Dockerfile:
 
     def create(self):
         for command in self.commands:
-            if command.required_instruction == "copy":
+            if command.dockerfile_instruction == COPY:
                 for line in command.get_lines():
-                    self.layers.append(DockerLayer(command.required_instruction))
+                    self.layers.append(DockerLayer(command.dockerfile_instruction))
                     self.layers[-1].append(line)
             else:
-                if len(self.layers) == 0 or not self.layers[-1].supports_command_instruction(command.required_instruction):
-                    self.layers.append(DockerLayer(command.required_instruction))
+                if len(self.layers) == 0 or not self.layers[-1].supports_command_instruction(command.dockerfile_instruction):
+                    self.layers.append(DockerLayer(command.dockerfile_instruction))
                 for line in command.get_lines():
                     self.layers[-1].append(line)
 
@@ -36,12 +40,18 @@ class Dockerfile:
             output += layer.get_layer_as_string()
         return output
 
-    def add_welcome_message(self, message):
-        header="This container comes with the following preinstalled tools:\\n\\"
-        self.layers.append(DockerLayer("run", False))
+    def add_welcome_message(self, title):
+        self.layers.append(DockerLayer(RUN, False))
+        self.layers[-1].append("""echo 'printf ${{COLOR_GREEN}}; figlet {}; printf ${{SGR_RESET}}' >> /root/.bashrc;\\
+    echo 'echo \\n' >> /root/.bashrc;\\
+    echo "echo Run \\$(color orange 'ghelp') to get information about installed tools and packages"  >> /root/.bashrc
+""".format(title))
+
+    def add_ghelp_info(self, ghelp_info):
+        self.layers.append(DockerLayer(RUN, False))
         self.layers[-1].append(
-            """echo '[ ! -z "$TERM" -a -r /etc/motd ] && cat /etc/issue && cat /etc/motd' >> /etc/bash.bashrc; echo "\\\n{}{}" > /etc/motd"""
-                .format(header, message))
+            """echo '{}' > /var/lib/ghelp_info""".format(ghelp_info)
+        )
 
 class DockerLayer:
     def __init__(self, instruction, reindent_string_output=True):
@@ -50,7 +60,7 @@ class DockerLayer:
         self.reindent_string_output = reindent_string_output
 
     def supports_command_instruction(self, instruction):
-        if instruction == "copy":
+        if instruction == COPY:
             return False
         else:
             return self.instruction == instruction

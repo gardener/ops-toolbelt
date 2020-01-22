@@ -17,25 +17,26 @@
 import argparse
 import os
 
-from lib import dockerfile, commands, utils
+from lib import commands, config_parser, dockerfile
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--dockerfile-config", dest="dockerfile_config", required=True, help="yaml file which lists the tools to be added to the toolbelt dockerfile.")
-parser.add_argument("--additional-configs", nargs='+', action="append", dest="additional_configs", default=[], required=False, help="Additional tools to add to the toolbelt dockerfile.")
+parser.add_argument("--dockerfile-configs", nargs='+', action="append", dest="dockerfile_configs", default=[], required=False, help="yaml files which lists the tools to be added to the toolbelt dockerfile.")
 parser.add_argument("--from-image", dest="from_image", required=True, default=None, help="Base image to use for the dockerfile.")
-parser.add_argument("--add-welcome-message", dest="add_welcome_message", required=False, default=True, help="Whether to generate a welcome message containing the installed tools")
+parser.add_argument("--title", dest="title", required=True, help="Welcome message title")
 parser.add_argument("--dockerfile", dest="dockerfile", required=True, help="File in which to save the generated dockerfile")
 args = parser.parse_args()
 
-dockerfile_config = utils.parse_dockerfile_configs(args.dockerfile_config, args.additional_configs)
-commands_list = [commands.create_command(command_config) for command_config in dockerfile_config]
+dockerfile_config = config_parser.parse_dockerfile_configs(args.dockerfile_configs)
+commands_list = config_parser.parse_commands(dockerfile_config)
+
+info_generator = commands.InfoGenerator(commands_list)
+ghelp_info = info_generator.generate_help_command_info()
 
 dockerfile = dockerfile.Dockerfile(args.from_image, commands_list)
 dockerfile.create()
 
-if args.add_welcome_message:
-    motd = commands.generate_welcome_message(commands_list)
-    dockerfile.add_welcome_message(motd)
+dockerfile.add_welcome_message(args.title)
+dockerfile.add_ghelp_info(ghelp_info)
 
 with open(os.path.abspath(args.dockerfile), "w") as f:
     f.write(dockerfile.to_string())

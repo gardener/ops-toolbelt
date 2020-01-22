@@ -14,45 +14,7 @@
 
 import subprocess
 import shlex
-from lib import utils
-
-class VersionConfig:
-    def __init__(self, config):
-        pass
-    def get(self):
-        pass
-
-    @staticmethod
-    def parse_version_config(config):
-        if isinstance(config, str):
-            return StringVersionConfig(config)
-        elif isinstance(config, dict):
-            return VersionFromUrl(config)
-        elif config is None or isinstance(config, type(None)):
-            return None
-
-class StringVersionConfig(VersionConfig):
-    def __init__(self, version):
-        utils.ConfigValidator.validate_str(__class__, version)
-        self.version = version
-
-    def get(self):
-        return self.version
-
-class VersionFromUrl(VersionConfig):
-    required_keys = [
-        {"key": "from-url", "types": str}
-    ]
-    def __init__(self, config):
-        utils.ConfigValidator.validate_dict(__class__, config)
-        self.url = config["from-url"]
-
-    def get(self):
-        try:
-            output = subprocess.run(["curl", "-sLf", shlex.quote(self.url)], text=True, check=True, capture_output=True)
-        except subprocess.CalledProcessError as e:
-            return "Error retrieving version: {}".format(e.stderr)
-        return output.stdout.strip()
+from lib import validation
 
 class BaseComponentConfig:
     def __init__(self, name, info):
@@ -62,9 +24,15 @@ class BaseComponentConfig:
     def get_info(self):
         return self.info
 
+    def get_name(self):
+        return self.name
+
+    def get_provided_apps(self):
+        return self.name
+
 class StringComponentConfig(BaseComponentConfig):
     def __init__(self, config):
-        utils.ConfigValidator.validate_str(__class__, config)
+        validation.ConfigValidator.validate_str(__class__, config)
         super().__init__(config, config)
 
 class DictComponentConfig(BaseComponentConfig):
@@ -72,20 +40,22 @@ class DictComponentConfig(BaseComponentConfig):
         {"key": "name", "types":(str)},
     ]
     optional_keys = [
-        {"key": "version", "types": (str, dict)},
-        {"key": "info", "types":(str, type(None))}
+        {"key": "info", "types":(str, type(None))},
+        {"key": "provides", "types":(str, list, type(None))}
     ]
 
     def __init__(self, config):
-        utils.ConfigValidator.validate_dict(__class__, config)
+        validation.ConfigValidator.validate_dict(__class__, config)
         name = config["name"]
         if "info" in config.keys():
             info = config.get("info")
         else:
             info = name
         super().__init__(name, info)
-        self.version = VersionConfig.parse_version_config(config.get("version"))
+        self.provides = config.get("provides")
 
+    def get_provided_apps(self):
+        return self.provides
 
 class ToolConfig(DictComponentConfig):
     required_keys = [
@@ -93,12 +63,35 @@ class ToolConfig(DictComponentConfig):
     ]
     optional_keys = [
         {"key": "to", "types": (str)},
+        {"key": "command", "types": (dict)},
+        {"key": "version", "types": (str)},
     ]
 
     def __init__(self, config):
         DictComponentConfig.__init__(self, config)
-        self.get_from = config["from"]
+        self._from = config["from"]
         self.to = config.get("to")
+        self.command = config.get("command")
+        self.version = config.get("version")
+
+    def get_to(self):
+        if self.to is None:
+            return None
+        if self.version is not None:
+            return self.to.format(version=self.get_version())
+        return self.to
+
+    def get_from(self):
+        _from = self._from
+        if self.version is not None:
+            _from = _from.format(version=self.get_version())
+        return _from
+
+    def get_command(self):
+        return self.command
+
+    def get_version(self):
+        return self.version
 
 class BashCommandConfig(DictComponentConfig):
     required_keys = [
@@ -107,6 +100,9 @@ class BashCommandConfig(DictComponentConfig):
     def __init__(self, config):
         DictComponentConfig.__init__(self, config)
         self.command = config["command"]
+
+    def get_command(self):
+        return self.command
 
 class AptRepoConfig(DictComponentConfig):
     required_keys = [
@@ -123,21 +119,38 @@ class AptRepoConfig(DictComponentConfig):
         self.url = config["url"]
         self.key_url = config["key-url"]
 
-tools_for_commands = {
-    "apt-get": StringComponentConfig,
-    "curl": ToolConfig,
-    "bash": BashCommandConfig,
-    "copy": ToolConfig,
-    "pip": StringComponentConfig,
-    "env": StringComponentConfig,
-    "add-apt-repo": AptRepoConfig,
-    "git": ToolConfig
-}
+    def get_release_prefix(self):
+        return self.release_prefix
 
-def get_component_class(command, config):
-    class_name = tools_for_commands.get(command)
-    if class_name is None:
-        print("No supported component configs for command {}.".format(command))
-        exit(1)
-    obj = class_name(config)
-    return obj
+    def get_repo_url(self):
+        return self.url
+
+    def get_key_url(self):
+        return self.key_url
+
+
+class ComponentConfigParser:
+    registered_classes = [StringComponentConfig, DictComponentConfig, BashCommandConfig, ToolConfig, AptRepoConfig]
+
+    def __init__(self, *argv):
+        for component_class in argv:
+            if component_class not in ComponentConfigParser.registered_classes:
+                raise TypeError("Unsupported class for components: {}.".format(component_class))
+        self.component_classes = argv
+
+    def parse_components(self, component_configs):
+        components = []
+        for config in component_configs:
+            lastErr = None
+            component = None
+            for clazz in self.component_classes:
+                try:
+                    component = clazz(config)
+                except TypeError as err:
+                    lastErr = err
+                    continue
+            if component is None and lastErr is not None:
+                raise lastErr
+            components.append(component)
+        return components
+
