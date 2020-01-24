@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+# Copyright 2019 Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from tabulate import tabulate
+import json
+import subprocess
+import os
+
+
+def parse_package_info(package_info, provided_binaries, name_key, version_key, info_key):
+    lines = package_info.split('\n')
+    name = ""
+    version = ""
+    info = ""
+    for line in lines:
+        if line.startswith(name_key):
+            name = line.split(":", 1)[1].strip()
+            binaries = provided_binaries[name]
+            if type(binaries) == list:
+                binaries = ' '.join(binaries)
+        if line.startswith(version_key):
+            version = line.split(":", 1)[1].strip()
+        if line.startswith(info_key):
+            info = line.split(":", 1)[1].strip()
+    return binaries, version, info
+
+def retrieve_packages_info(installed_tools_list, package_manager, show_command, delimiter, name_key, version_key, info_key):
+    tools = []
+    provided_binaries = {}
+    tool_names = []
+    for entry in installed_tools_list:
+        tool_names.append(entry[0])
+        provided_binaries[entry[0]] = entry[1]
+    command = [package_manager, show_command]
+    command.extend(tool_names)
+    output = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, universal_newlines=True)
+    tool_infos = output.stdout.rstrip("\n").split(delimiter)
+    for tool_info in tool_infos:
+        tool = parse_package_info(tool_info, provided_binaries, name_key, version_key, info_key)
+        tools.append(tool)
+    return tools
+
+def retrieve_downloaded_tools_info(downloaded_tools):
+    tools = []
+    for tool in downloaded_tools:
+        tools.append((tool[0], tool[1], tool[2]))
+
+    return tools
+
+def retrieve_hacks_info():
+    tools = [
+        ("install_k9s", "", "Install k9s: curses based terminal UI to interact with your Kubernetes clusters."),
+        ("ops-pod", "", "Start an ops-toolbelt container in a k8s cluster")
+    ]
+
+    return tools
+
+
+ghelp_info_path="/var/lib/ghelp_info"
+ghelp_info = None
+with open(ghelp_info_path, "r") as f:
+    ghelp_info = json.load(f)
+
+if ghelp_info is None:
+    print("Failed to load ghelp info")
+    exit(1)
+
+table_headers = ["TOOL/PACKAGE", "VERSION", "NOTES"]
+table = []
+
+apttools = retrieve_packages_info(ghelp_info["apt"], "apt", "show", "\n\n", "Package", "Version", "Description")
+table.extend(apttools)
+
+piptools = retrieve_packages_info(ghelp_info["pip"], "pip", "show", "---", "Name", "Version", "Summary")
+table.extend(piptools)
+
+downloaded_tools = retrieve_downloaded_tools_info(ghelp_info["downloaded"])
+table.extend(downloaded_tools)
+
+hack_tools = retrieve_hacks_info()
+table.extend(hack_tools)
+
+print(tabulate(table, table_headers, tablefmt="grid"))

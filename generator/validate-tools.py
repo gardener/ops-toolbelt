@@ -18,7 +18,7 @@ import argparse
 import subprocess
 import shlex
 
-from lib import dockerfile, commands, utils
+from lib import dockerfile, commands, config_parser
 
 def validate_tools(commands_list):
     errors = []
@@ -27,7 +27,7 @@ def validate_tools(commands_list):
             for tool in command.get_tools():
                 try:
                     subprocess.run(
-                        ["curl", "-sLf", shlex.quote(commands.Curl.get_download_location(tool))],
+                        ["curl", "-sLf", shlex.quote(tool.get_from())],
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL,
                         check=True)
@@ -36,12 +36,11 @@ def validate_tools(commands_list):
     return errors
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--dockerfile-config", dest="dockerfile_config", required=True, help="yaml file which lists the tools to be tested")
-parser.add_argument("--additional-configs", nargs='+', action="append", dest="additional_configs", default=[], required=False, help="Additional tools to test.")
+parser.add_argument("--dockerfile-configs", nargs='+', action="append", dest="dockerfile_configs", default=[], required=False, help="yaml file which lists the tools to be tested")
 args = parser.parse_args()
 
-dockerfile_config = utils.parse_dockerfile_configs(args.dockerfile_config, args.additional_configs)
-commands_list = [commands.create_command(command_config) for command_config in dockerfile_config]
+dockerfile_config = config_parser.parse_dockerfile_configs(args.dockerfile_configs)
+commands_list = config_parser.parse_commands(dockerfile_config)
 
 validation_errors = validate_tools(commands_list)
 if len(validation_errors) == 0:

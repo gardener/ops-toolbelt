@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml
-import os
 from functools import reduce
 
 class ConfigValidator:
@@ -28,11 +26,11 @@ class ConfigValidator:
             raise TypeError("Incorrect type for {} config. Required dict, got {}.".format(clazz, type(config)))
 
         if not ConfigValidator.__is_dict_config_valid(config, clazz.__dict__.get("required_keys"), clazz.__dict__.get("optional_keys")):
-            raise ValueError("Config for {} is not in the correct format.".format(clazz))
+            raise ValueError("Config for {} is not in the correct format: {}.".format(clazz, config))
 
         for base in clazz.__bases__:
             if not ConfigValidator.__is_dict_config_valid(config, base.__dict__.get("required_keys"), base.__dict__.get("optional_keys")):
-                raise ValueError("Config for {} is not in the correct format.".format(clazz))
+                raise ValueError("Config for {} is not in the correct format: {}.".format(clazz, config))
 
     @staticmethod
     def __is_dict_config_valid(config, required_keys, optional_keys=None):
@@ -42,21 +40,3 @@ class ConfigValidator:
 
         return (required_keys is None or len(required_keys) == 0 or reduce(reducer, map(validate_required_keys, required_keys))) \
             and (optional_keys is None or len(optional_keys) == 0 or reduce(reducer, map(validate_optional_keys, optional_keys)))
-
-def parse_dockerfile_config_yaml(dockerfile_config_path):
-    components = None
-    with open(dockerfile_config_path, "r") as tools_config_file:
-        components = yaml.load(tools_config_file, yaml.SafeLoader)
-    if components is None:
-        print("Couldnt read from file {}.".format(dockerfile_config_path))
-        exit(1)
-    return components
-
-def parse_dockerfile_configs(dockerfile_config_path, additional_config_paths):
-    dockerfile_config = parse_dockerfile_config_yaml(os.path.abspath(dockerfile_config_path))
-    for sub_array in additional_config_paths:
-        for additional_config_path in sub_array:
-            additional_dockerfile_config = parse_dockerfile_config_yaml(os.path.abspath(additional_config_path))
-            dockerfile_config.extend(additional_dockerfile_config)
-
-    return dockerfile_config

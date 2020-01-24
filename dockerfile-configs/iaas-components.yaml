@@ -12,13 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- with: add-apt-repo
-  repos:
+- add-apt-repo:
   - name: gcp-repo
     release-prefix: cloud-sdk-
     url: https://packages.cloud.google.com/apt
     key-url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+  - name: azure-cli
+    url: https://packages.microsoft.com/repos/azure-cli
+    key-url: https://packages.microsoft.com/keys/microsoft.asc
 
-- with: apt-get
-  tools:
-  - google-cloud-sdk
+- apt-get:
+  - name: azure-cli
+    provides: az
+  - name: google-cloud-sdk
+    provides: gcloud
+
+- pip:
+  - python-novaclient
+  - python-glanceclient
+  - python-cinderclient
+  - python-swiftclient
+  - name: python-openstackclient
+    provides: ["openstack", "openstack-inventory"]
+  - name: awscli
+    provides: aws
+
+- curl:
+  - name: aliyun
+    version: 3.0.16
+    from: https://github.com/aliyun/aliyun-cli/releases/download/v{version}/aliyun-cli-linux-{version}-amd64.tgz
+    to: /aliyun-cli-linux-amd64.tgz
+    command: |
+      tar -zxf /aliyun-cli-linux-amd64.tgz && \
+      mv /aliyun /bin/aliyun && \
+      rm -rf /aliyun-cli-linux-amd64.tgz && \
+      chmod 755 /bin/aliyun
+    info: The Alibaba Cloud CLI

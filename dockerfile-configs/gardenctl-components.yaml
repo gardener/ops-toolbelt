@@ -12,26 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- with: bash
-  execute:
+- bash:
   - name: make-gardenctl-dir
     command: mkdir -p /opt/gardenctl/bin
     info: ~
 
-- with: curl
-  tools:
+- curl:
   - name: gardenctl
-    version:
-      from-url: https://raw.githubusercontent.com/gardener/gardenctl/master/LATEST
+    version: v0.15.0
     from: https://github.com/gardener/gardenctl/releases/download/{version}/gardenctl-linux-amd64
     to: /opt/gardenctl/bin/gardenctl
-
-- with: bash
-  execute:
-  - name: gardenctl
     command: |
       chmod 755 /opt/gardenctl/bin/gardenctl && \
       ln -s /opt/gardenctl/bin/gardenctl /usr/local/bin/gardenctl && \
       mkdir $HOME/.garden && \
-      echo "source <(gardenctl completion bash)" >> /root/.bashrc
-    info: ~
+      echo "source <(gardenctl completion bash | grep -v 'Please provide a gardenctl configuration before usage')" >> /root/.bashrc
+    info: command-line client for administrative purposes for Gardener
