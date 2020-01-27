@@ -46,7 +46,6 @@
   - name: kubectl
     version: v1.17.1
     from: https://storage.googleapis.com/kubernetes-release/release/{version}/bin/linux/amd64/kubectl
-    to: /bin/kubectl
     info: command line tool for controlling Kubernetes clusters
   - name: pip
     from: https://bootstrap.pypa.io/get-pip.py

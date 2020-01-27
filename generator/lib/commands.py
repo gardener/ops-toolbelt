@@ -60,7 +60,7 @@ class Curl(Command):
             else:
                 line = "curl -sLf {} -o /bin/{} && chmod 755 /bin/{}".format(tool.get_from(), tool.get_name(), tool.get_name())
             if tool.get_command() is not None:
-                line = line + ";\\\n{}".format(tool.get_command().rstrip())
+                line = line + "; {}".format(tool.get_command().rstrip())
             yield line
 
 class Execute(Command):
