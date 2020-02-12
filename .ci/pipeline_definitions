@@ -41,6 +41,12 @@ ops-toolbelt:
           preprocess: 'finalize'
         release:
           nextversion: 'bump_minor'
+        slack:
+          default_channel: 'internal_scp_workspace'
+          channel_cfgs:
+            internal_scp_workspace:
+              channel_name: 'k8s-gardener'
+              slack_cfg_name: 'scp_workspace'
         publish:
           dockerimages:
             ops-toolbelt-gardenctl:
