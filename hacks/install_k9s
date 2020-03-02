@@ -13,19 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-DEFAULT_K9S_VERSION=0.9.3
-
 function show_help () {
   echo "Usage: ${0} [arguments]"
   echo "Possible arguments:"
-  echo "-h, --help       show this help message and exit"
-  echo "-v, --version    Optional: specify k9s version to use"
+  echo "-h, --help       Show this help message and exit"
+  echo "-v, --version    Optional: specify k9s version to use. Default: latest version will be installed"
 }
 
 function install () {
   local version=$1
-  echo "installing k9s version ${version}"
-  curl -sL https://github.com/derailed/k9s/releases/download/${version}/k9s_${version}_Linux_x86_64.tar.gz -o k9s.tar.gz && tar -zxvf k9s.tar.gz k9s && mv k9s /usr/local/bin/k9s && chmod 755 /usr/local/bin/k9s && rm k9s.tar.gz
+  local download_url
+
+  if [ -z "$version" ]
+  then # fetch latest
+    local latest_release=$(curl -sL https://api.github.com/repos/derailed/k9s/releases/latest)
+    version=$(echo "${latest_release}" | jq -r '.tag_name')
+    echo "installing latest version ${version}"
+    download_url=$(echo "${latest_release}" | jq -r '.assets[] | select(.name == "k9s_Linux_x86_64.tar.gz") | .browser_download_url')
+  else
+    if [[ ! $version == v* ]]
+    then
+      version="v${version}"
+    fi
+    echo "installing k9s version ${version}"
+    download_url="https://github.com/derailed/k9s/releases/download/${version}/k9s_Linux_x86_64.tar.gz"
+  fi
+
+  curl -sL ${download_url} -o k9s.tar.gz && tar -zxvf k9s.tar.gz k9s && mv k9s /usr/local/bin/k9s && chmod 755 /usr/local/bin/k9s && rm k9s.tar.gz
+
   echo "You can now start using k9s. Just execute \"k9s\" to use it or \"k9s -n mynamespace\" to target a namespace. See https://github.com/derailed/k9s for more details."
 }
 
@@ -39,7 +54,7 @@ case "$1" in
     exit
     ;;
   *)
-    install "$DEFAULT_K9S_VERSION"
+    install
     exit
     ;;
 esac
