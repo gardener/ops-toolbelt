@@ -45,7 +45,7 @@ ops-toolbelt:
           default_channel: 'internal_scp_workspace'
           channel_cfgs:
             internal_scp_workspace:
-              channel_name: 'k8s-gardener'
+              channel_name: 'C9CEBQPGE' #internal gardener channel
               slack_cfg_name: 'scp_workspace'
         publish:
           dockerimages:
