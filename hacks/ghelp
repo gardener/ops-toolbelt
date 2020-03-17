@@ -61,7 +61,7 @@ def retrieve_downloaded_tools_info(downloaded_tools):
 
 def retrieve_hacks_info():
     tools = [
-        ("install_k9s", "", "Install k9s: curses based terminal UI to interact with your Kubernetes clusters."),
+        ("install_k9s", "LATEST", "Install k9s: curses based terminal UI to interact with your Kubernetes clusters."),
         ("ops-pod", "", "Start an ops-toolbelt container in a k8s cluster")
     ]
 
