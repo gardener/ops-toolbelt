@@ -64,6 +64,9 @@
       rm -rf linux-amd64-1.1.0 ccat.tar.gz &&\
       chmod 755 /bin/cat
     info: The colorizing cat. It works similar to cat but displays content with syntax highlighting.
+  - name: kubetail
+    from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
+    info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
 
 - bash:
   - name: generate_locale
