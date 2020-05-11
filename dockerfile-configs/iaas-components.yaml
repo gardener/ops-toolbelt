@@ -27,6 +27,11 @@
   - name: google-cloud-sdk
     provides: gcloud
 
+- bash:
+  - name: clean_azure-cli_pycache
+    command: py3clean -p azure-cli
+    info: ~
+
 - pip:
   - python-novaclient
   - python-glanceclient
