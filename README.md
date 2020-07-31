@@ -72,3 +72,9 @@ To build all pre-configured images run:
 ```bash
 $ .ci/build
 ```
+
+### Known issues
+1. Currently there's a known issue when using `/bin/sh`. We implemented a color scheme and also added some helper function to display in `/bin/bash` terminal which doesn't work in `/bin/sh`. As workaround when you want to use some script which by default needs to utilize `/bin/sh` please use `/bin/bash` instead if possible: (take `chroot` for example)
+```bash
+$ chroot /some_dir /bin/bash
+```
