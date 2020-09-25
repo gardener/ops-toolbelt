@@ -1,0 +1,22 @@
+name: Remote Dispatch Action
+on: [repository_dispatch]
+jobs:
+  update-gardenctl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Event Information
+        run: |
+          echo "Event '${{ github.event.action }}' payload '${{ github.event.client_payload.tag }}'"
+      - uses: actions/checkout@v2.1.1
+      - name: Run update script
+        run:  ./.github/workflows/update-gardenctl.sh ${{ github.event.client_payload.tag }}
+      - name: Commit files
+        run: |
+          git config --local user.email "gardener.ci.user@gmail.com"
+          git config --local user.name "gardener-robot-ci-1"
+          git commit -m "Update gardenctl" -a
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.ACCESS_TOKEN }}
+          force: false
