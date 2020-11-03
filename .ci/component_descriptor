@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+set -e
+echo "enriching creating component descriptor from ${BASE_DEFINITION_PATH}"
+${ADD_DEPENDENCIES_CMD} --component-dependencies "{\"name\": \"github.com/gardener/gardenctl\", \"version\": \"$(cat GARDENCTL_VERSION)\" }"
+# cp after we are done patching
+cp "${BASE_DEFINITION_PATH}" "${COMPONENT_DESCRIPTOR_PATH}"

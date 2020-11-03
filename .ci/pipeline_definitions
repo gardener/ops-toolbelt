@@ -53,3 +53,15 @@ ops-toolbelt:
               tag_as_latest: true
             ops-toolbelt:
               tag_as_latest: true
+update-gardenctl-version:
+  jobs:
+    create_update_pull_requests:
+      repo:
+        disable_ci_skip: true
+      traits:
+        component_descriptor: ~
+        update_component_deps:
+          merge_policy: 'auto_merge'
+        cronjob:
+          interval: '5m'
+        version: ~
