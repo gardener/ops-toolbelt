@@ -1,6 +1,11 @@
 #!/usr/bin/env sh
 set -e
+
+if [ -z "$REPO_DIR" ]; then
+  REPO_DIR="$(readlink -f $(dirname ${0})/..)"
+fi
+
 echo "enriching creating component descriptor from ${BASE_DEFINITION_PATH}"
-${ADD_DEPENDENCIES_CMD} --component-dependencies "{\"name\": \"github.com/gardener/gardenctl\", \"version\": \"$(cat GARDENCTL_VERSION)\" }"
+${ADD_DEPENDENCIES_CMD} --component-dependencies "{\"name\": \"github.com/gardener/gardenctl\", \"version\": \"$(cat ${REPO_DIR}/GARDENCTL_VERSION)\" }"
 # cp after we are done patching
 cp "${BASE_DEFINITION_PATH}" "${COMPONENT_DESCRIPTOR_PATH}"
