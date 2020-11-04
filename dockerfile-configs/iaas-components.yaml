@@ -21,6 +21,11 @@
     url: https://packages.microsoft.com/repos/azure-cli
     key-url: https://packages.microsoft.com/keys/microsoft.asc
 
+- bash:
+  - name: clean_apt
+    command: apt-get autoremove -y
+    info: ~
+
 - apt-get:
   - name: azure-cli
     provides: az
