@@ -14,11 +14,10 @@
 
 - apt-get:
   - curl
-  - git
   - tree
+  - vim-tiny
   - htop
   - less
-  - vim
   - tmux
   - bash-completion
   - python3-distutils
@@ -127,7 +126,10 @@
       krew is plugin manager for kubectl, see https://github.com/kubernetes-sigs/krew
   - name: ketall
     command: |
-      kubectl krew install get-all
+      apt-get install git -y;\
+      kubectl krew install get-all;\
+      apt-get remove --purge git geoip-database -y;\
+      apt-get autoremove -y
     info: |
       ketall is to enable `kubectl get-all -n namespace_name`, for listing all resources in some namespace
 
