@@ -14,11 +14,10 @@
 
 - apt-get:
   - curl
-  - git
   - tree
+  - vim-tiny
   - htop
   - less
-  - vim
   - tmux
   - bash-completion
   - python3-distutils
@@ -113,24 +112,6 @@
     command: |
       echo "export PATH=/hacks:\$PATH" >> /root/.bashrc
     info: ~
-  - name: krew
-    command: |
-      set -x; cd "$(mktemp -d)";\
-      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.{tar.gz,yaml}";\
-      tar zxvf krew.tar.gz;\
-      KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64";\
-      "$KREW" install --manifest=krew.yaml --archive=krew.tar.gz;\
-      "$KREW" update;\
-      export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH";\
-      echo "export PATH=~/.krew/bin:\$PATH" >>/root/.bashrc
-    info: |
-      krew is plugin manager for kubectl, see https://github.com/kubernetes-sigs/krew
-  - name: ketall
-    command: |
-      kubectl krew install get-all
-    info: |
-      ketall is to enable `kubectl get-all -n namespace_name`, for listing all resources in some namespace
-
 
 - env:
   - DOTFILES_USER=root
