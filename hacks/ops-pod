@@ -25,6 +25,7 @@ Usage:
 
 Options:
   -n|--namespace   The namespace into which the pod will be deployed. The namespace of the current kubectl context is used by default.
+  -t|--toleration  Adding toleration to the pod ex.: key1=value1:key2=value2
   -i|--image       Image to use for the privileged pod. The default value is: eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
   -c|--chroot      When this flag is set the host's root directory will also be used as root directory of the pod. By default the host's
                    root directory is mounted under /host on the pod.
@@ -36,14 +37,38 @@ YES_CHROOT=1
 
 namespace=
 node=
+toleration_keys=()
+toleration_values=()
+toleration_commands=()
 image=
 node_chroot=${NO_CHROOT}
 name="ops-pod-$(whoami)"
+pod_definition_path=pod_definition.yaml
 
 default_image="eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest"
 function get_default_namespace() {
   _namespace=$(kubectl config view -o jsonpath="{.contexts[?(@.name == \"$(kubectl config current-context)\")].context.namespace}")
   echo "${_namespace:-default}"
+}
+
+function manageTolerationValues() {
+      #seperate all toleration by ":" symbole
+      IFS=':' read -r -a tmp_toleration <<< "${1}"
+
+      for index in "${!tmp_toleration[@]}"
+      do
+          #seperate all key value by "=" symbole
+          IFS='=' read -r -a key_val <<< "${tmp_toleration[${index}]}"
+          toleration_keys[index]="${key_val[0]}"
+          toleration_values[index]="${key_val[1]}"
+          toleration_commands[index]=$(cat <<-END
+  - key: ${toleration_keys[index]}
+    operator: Equal
+    value: ${toleration_values[index]}
+    effect: "NoSchedule" 
+END
+)   
+      done
 }
 
 positional=()
@@ -62,6 +87,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -c|--chroot)
       node_chroot=${YES_CHROOT}
+      shift
+      ;;
+    -t|--toleration)
+      manageTolerationValues "${2}"
+      shift
       shift
       ;;
     -h|--help)
@@ -122,6 +152,7 @@ spec:
   - key: node-role.kubernetes.io/master
     operator: Exists
     effect: NoSchedule
+$(for element in "${toleration_commands[@]}"; do echo -e "$element"; done)
   containers:
   - name: ops-pod
     image: ${image}
