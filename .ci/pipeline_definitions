@@ -16,6 +16,41 @@ ops-toolbelt:
             inputs:
               steps:
                 build: ~
+          ops-toolbelt-gardenctl-aws:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aws'
+            dockerfile: ops-toolbelt-gardenctl-aws.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-az:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-az'
+            dockerfile: ops-toolbelt-gardenctl-az.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-gcp:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-gcp'
+            dockerfile: ops-toolbelt-gardenctl-gcp.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-openstack:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-openstack'
+            dockerfile: ops-toolbelt-gardenctl-openstack.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-aliyun:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aliyun'
+            dockerfile: ops-toolbelt-gardenctl-aliyun.dockerfile
+            inputs:
+              steps:
+                build: ~
           ops-toolbelt:
             registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt'
