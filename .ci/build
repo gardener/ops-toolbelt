@@ -25,3 +25,43 @@ fi
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
     --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl.dockerfile
+
+"${SOURCE_PATH}"/generator/generate-dockerfile.py \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/aws-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gardenctl-components.yaml \
+    --from-image ubuntu:18.04 \
+    --title "gardener shell" \
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-aws.dockerfile
+
+"${SOURCE_PATH}"/generator/generate-dockerfile.py \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/az-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gardenctl-components.yaml \
+    --from-image ubuntu:18.04 \
+    --title "gardener shell" \
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-az.dockerfile
+
+"${SOURCE_PATH}"/generator/generate-dockerfile.py \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gcp-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gardenctl-components.yaml \
+    --from-image ubuntu:18.04 \
+    --title "gardener shell" \
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-gcp.dockerfile
+
+"${SOURCE_PATH}"/generator/generate-dockerfile.py \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/openstack-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gardenctl-components.yaml \
+    --from-image ubuntu:18.04 \
+    --title "gardener shell" \
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-openstack.dockerfile
+
+"${SOURCE_PATH}"/generator/generate-dockerfile.py \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/aliyun-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gardenctl-components.yaml \
+    --from-image ubuntu:18.04 \
+    --title "gardener shell" \
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-aliyun.dockerfile

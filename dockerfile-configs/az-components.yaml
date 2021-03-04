@@ -12,19 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- add-apt-repo:
+  - name: azure-cli
+    url: https://packages.microsoft.com/repos/azure-cli
+    key-url: https://packages.microsoft.com/keys/microsoft.asc
+
 - bash:
-  - name: make-gardenctl-dir
-    command: mkdir -p /opt/gardenctl/bin
+  - name: clean_apt
+    command: apt-get autoremove -y
     info: ~
 
-- curl:
-  - name: gardenctl
-    version: v0.24.1
-    from: https://github.com/gardener/gardenctl/releases/download/{version}/gardenctl-linux-amd64
-    to: /opt/gardenctl/bin/gardenctl
-    command: |
-      chmod 755 /opt/gardenctl/bin/gardenctl && \
-      ln -s /opt/gardenctl/bin/gardenctl /usr/local/bin/gardenctl && \
-      mkdir $HOME/.garden && \
-      echo "source <(gardenctl completion bash | grep -v 'Please provide a gardenctl configuration before usage')" >> /root/.bashrc
-    info: command-line client for administrative purposes for Gardener
+- apt-get:
+  - name: azure-cli
+    provides: az
+
+- bash:
+  - name: clean_azure-cli_pycache
+    command: py3clean -p azure-cli
+    info: ~

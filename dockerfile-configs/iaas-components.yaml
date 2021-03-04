@@ -49,7 +49,7 @@
 
 - curl:
   - name: aliyun
-    version: 3.0.16
+    version: 3.0.73
     from: https://github.com/aliyun/aliyun-cli/releases/download/v{version}/aliyun-cli-linux-{version}-amd64.tgz
     to: /aliyun-cli-linux-amd64.tgz
     command: |
