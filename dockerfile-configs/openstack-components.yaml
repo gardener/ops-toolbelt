@@ -18,9 +18,9 @@
     info: ~
 
 - pip:
-  - python-novaclient
-  - python-glanceclient
-  - python-cinderclient
-  - python-swiftclient
-  - name: python-openstackclient
+  - python-novaclient==17.2.0
+  - python-glanceclient==3.2.1
+  - python-cinderclient==7.1.0
+  - python-swiftclient==3.10.0
+  - name: python-openstackclient==5.3.1
     provides: ["openstack", "openstack-inventory"]
