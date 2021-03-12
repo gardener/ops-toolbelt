@@ -27,6 +27,8 @@
   - figlet
   - tcpdump
   - iputils-ping
+  - debconf-utils
+  - wireguard
   - name: silversearcher-ag
     provides: ag
   - name: iproute2
@@ -73,6 +75,12 @@
     command: |
       apt-get --yes update && apt-get install --yes locales ;\
       locale-gen "en_US.UTF-8"
+    info: ~
+  - name: iptables-persistent
+    command: |
+      echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections ;\
+      echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections ;\
+      sudo apt-get ---yes install iptables-persistent
     info: ~
 
 - env:

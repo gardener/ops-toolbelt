@@ -550,3 +550,12 @@ function k() {
 alias kd='kubectl --namespace=default'
 alias ks='kubectl --namespace=kube-system'
 alias ka='kubectl --all-namespaces=true'
+function table () {
+  iptables-save | while IFS= read -r line; do
+    if [ "${line#\**}" != "$line" ]; then
+      table="$line"
+    else
+      echo "$table: $line"
+    fi
+  done | grep "$@"
+}
