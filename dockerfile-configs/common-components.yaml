@@ -80,7 +80,7 @@
     command: |
       echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections ;\
       echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections ;\
-      sudo apt-get ---yes install iptables-persistent
+      sudo apt-get --yes install iptables-persistent
     info: ~
 
 - env:
@@ -124,6 +124,5 @@
 - env:
   - DOTFILES_USER=root
   - DOTFILES_HOME=/root/dotfiles
-
 
 
