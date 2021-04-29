@@ -43,10 +43,6 @@
     version: v1.3
     from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_amd64
     info: transform yaml string to json string without the type infomation.
-  - name: kubectl
-    version: v1.20.4
-    from: https://storage.googleapis.com/kubernetes-release/release/{version}/bin/linux/amd64/kubectl
-    info: command line tool for controlling Kubernetes clusters. "kubectl krew install plugin_name" to install plugin. "kubectl get-all -n namespace" to list all resources in namespaces.
   - name: pip
     from: https://bootstrap.pypa.io/get-pip.py
     to: /get-pip.py

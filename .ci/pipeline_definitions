@@ -16,38 +16,143 @@ ops-toolbelt:
             inputs:
               steps:
                 build: ~
-          ops-toolbelt-gardenctl-aws:
+          ops-toolbelt-gardenctl-aws-kv1-20:
             registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aws'
-            dockerfile: ops-toolbelt-gardenctl-aws.dockerfile
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aws-kv1-20'
+            dockerfile: ops-toolbelt-gardenctl-aws-kv1-20.dockerfile
             inputs:
               steps:
                 build: ~
-          ops-toolbelt-gardenctl-az:
+          ops-toolbelt-gardenctl-aws-kv1-19:
             registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-az'
-            dockerfile: ops-toolbelt-gardenctl-az.dockerfile
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aws-kv1-19'
+            dockerfile: ops-toolbelt-gardenctl-aws-kv1-19.dockerfile
             inputs:
               steps:
                 build: ~
-          ops-toolbelt-gardenctl-gcp:
+          ops-toolbelt-gardenctl-aws-kv1-18:
             registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-gcp'
-            dockerfile: ops-toolbelt-gardenctl-gcp.dockerfile
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aws-kv1-18'
+            dockerfile: ops-toolbelt-gardenctl-aws-kv1-18.dockerfile
             inputs:
               steps:
                 build: ~
-          ops-toolbelt-gardenctl-openstack:
+          ops-toolbelt-gardenctl-aws-kv1-17:
             registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-openstack'
-            dockerfile: ops-toolbelt-gardenctl-openstack.dockerfile
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aws-kv1-17'
+            dockerfile: ops-toolbelt-gardenctl-aws-kv1-17.dockerfile
             inputs:
               steps:
                 build: ~
-          ops-toolbelt-gardenctl-aliyun:
+          ops-toolbelt-gardenctl-az-kv1-20:
             registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aliyun'
-            dockerfile: ops-toolbelt-gardenctl-aliyun.dockerfile
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-az-kv1-20'
+            dockerfile: ops-toolbelt-gardenctl-az-kv1-20.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-az-kv1-19:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-az-kv1-19'
+            dockerfile: ops-toolbelt-gardenctl-az-kv1-19.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-az-kv1-18:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-az-kv1-18'
+            dockerfile: ops-toolbelt-gardenctl-az-kv1-18.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-az-kv1-17:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-az-kv1-17'
+            dockerfile: ops-toolbelt-gardenctl-az-kv1-17.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-gcp-kv1-20:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-gcp-kv1-20'
+            dockerfile: ops-toolbelt-gardenctl-gcp-kv1-20.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-gcp-kv1-19:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-gcp-kv1-19'
+            dockerfile: ops-toolbelt-gardenctl-gcp-kv1-19.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-gcp-kv1-18:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-gcp-kv1-18'
+            dockerfile: ops-toolbelt-gardenctl-gcp-kv1-18.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-gcp-kv1-17:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-gcp-kv1-17'
+            dockerfile: ops-toolbelt-gardenct-gcp-kv1-17.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-openstack-kv1-20:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-openstack-kv1-20'
+            dockerfile: ops-toolbelt-gardenctl-openstack-kv1-20.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-openstack-kv1-19:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-openstack-kv1-19'
+            dockerfile: ops-toolbelt-gardenctl-openstack-kv1-19.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-openstack-kv1-18:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-openstack-kv1-18'
+            dockerfile: ops-toolbelt-gardenctl-openstack-kv1-18.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-openstack-kv1-17:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-openstack-kv1-17'
+            dockerfile: ops-toolbelt-gardenctl-openstack-kv1-17.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-aliyun-kv1-20:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aliyun-kv1-20'
+            dockerfile: ops-toolbelt-gardenctl-aliyun-kv1-20.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-aliyun-kv1-19:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aliyun-kv1-19'
+            dockerfile: ops-toolbelt-gardenctl-aliyun-kv1-19.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-aliyun-kv1-18:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aliyun-kv1-18'
+            dockerfile: ops-toolbelt-gardenctl-aliyun-kv1-18.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt-gardenctl-aliyun-kv1-17:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl-aliyun-kv1-17'
+            dockerfile: ops-toolbelt-gardenctl-aliyun-kv1-17.dockerfile
             inputs:
               steps:
                 build: ~
