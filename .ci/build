@@ -35,7 +35,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.20-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-aws-kv1-20.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-aws-kv1-20.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -44,7 +44,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.19-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-aws-kv1-19.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-aws-kv1-19.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -53,7 +53,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.18-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-aws-kv1-18.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-aws-kv1-18.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -62,7 +62,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.17-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-aws-kv1-17.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-aws-kv1-17.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -71,7 +71,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.20-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-az-kv1-20.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-az-kv1-20.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -80,7 +80,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.19-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-az-kv1-19.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-az-kv1-19.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -89,7 +89,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.18-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-az-kv1-18.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-az-kv1-18.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -98,7 +98,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.17-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-az-kv1-17.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-az-kv1-17.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -107,7 +107,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.20-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-gcp-kv1-20.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gcp-kv1-20.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -116,7 +116,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.19-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-gcp-kv1-19.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gcp-kv1-19.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -125,7 +125,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.18-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-gcp-kv1-18.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gcp-kv1-18.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -134,7 +134,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.17-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-gcp-kv1-17.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gcp-kv1-17.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -143,7 +143,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.20-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-openstack-kv1-20.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-openstack-kv1-20.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -152,7 +152,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.19-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-openstack-kv1-19.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-openstack-kv1-19.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -161,7 +161,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.18-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-openstack-kv1-18.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-openstack-kv1-18.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -170,7 +170,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.17-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-openstack-kv1-17.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-openstack-kv1-17.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -179,7 +179,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.20-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-aliyun-kv1-20.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-aliyun-kv1-20.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -188,7 +188,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.19-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-aliyun-kv1-19.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-aliyun-kv1-19.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -197,7 +197,7 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.18-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-aliyun-kv1-18.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-aliyun-kv1-18.dockerfile
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
@@ -206,4 +206,4 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.17-components.yaml \
     --from-image ubuntu:18.04 \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl-aliyun-kv1-17.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-aliyun-kv1-17.dockerfile
