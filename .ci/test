@@ -15,4 +15,8 @@ fi
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/az-components.yaml \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gcp-components.yaml \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/openstack-components.yaml \
-    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/aliyun-components.yaml
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/aliyun-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.17-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.18-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.19-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectlv1.20-components.yaml
