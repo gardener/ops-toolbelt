@@ -37,9 +37,7 @@ YES_CHROOT=1
 
 namespace=
 node=
-toleration_keys=()
-toleration_values=()
-toleration_commands=()
+node_toleration_array=
 image=
 node_chroot=${NO_CHROOT}
 name="ops-pod-$(whoami)"
@@ -51,24 +49,43 @@ function get_default_namespace() {
   echo "${_namespace:-default}"
 }
 
-function manageTolerationValues() {
-      #seperate all toleration by ":" symbole
-      IFS=':' read -r -a tmp_toleration <<< "${1}"
+gerenatePodManifest(){
+echo -e "apiVersion: v1
+kind: Pod
+metadata:
+  name: $name
+spec:
+  $([[ ! -z $node ]] && echo -e "nodeSelector:\n    kubernetes.io/hostname: $node")
+  tolerations: $node_toleration_array" >> $pod_definition_path
 
-      for index in "${!tmp_toleration[@]}"
-      do
-          #seperate all key value by "=" symbole
-          IFS='=' read -r -a key_val <<< "${tmp_toleration[${index}]}"
-          toleration_keys[index]="${key_val[0]}"
-          toleration_values[index]="${key_val[1]}"
-          toleration_commands[index]=$(cat <<-END
-  - key: ${toleration_keys[index]}
-    operator: Equal
-    value: ${toleration_values[index]}
-    effect: "NoSchedule" 
-END
-)   
-      done
+echo -e "  containers:
+  - name: ops-pod
+    image: ${image}
+    imagePullPolicy: Always
+    command:
+    - sleep
+    - '43200'
+    resources:
+      limits:
+        cpu: 200m
+        memory: 100Mi
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    stdin: true
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: host-root-volume
+      mountPath: /host
+      readOnly: false
+  volumes:
+  - name: host-root-volume
+    hostPath:
+      path: /
+  hostNetwork: true
+  hostPID: true
+  restartPolicy: Never" >> $pod_definition_path
 }
 
 positional=()
@@ -90,8 +107,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -t|--toleration)
-      manageTolerationValues "${2}"
-      shift
+        node_toleration_array=$(kubectl get nodes "${2}" -o jsonpath='{.spec.taints}')
       shift
       ;;
     -h|--help)
@@ -104,6 +120,8 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+
 
 if [[ ${#positional[@]} -ne 1 ]]; then
   echo -e "Error: Required one positional argument: <node|pod-name> found ${#positional[@]}\n"
@@ -141,48 +159,10 @@ kubectl -n $namespace delete pod $name &> /dev/null || true
 while kubectl -n $namespace get pod $name &> /dev/null; do echo "Waiting for old pod to be deleted..."; sleep 1; done
 
 # launch pod
-kubectl -n $namespace create -f <(cat << EOF
-apiVersion: v1
-kind: Pod
-metadata:
-  name: $name
-spec:
-  $([[ ! -z $node ]] && echo -e "nodeSelector:\n    kubernetes.io/hostname: $node")
-  tolerations:
-  - key: node-role.kubernetes.io/master
-    operator: Exists
-    effect: NoSchedule
-$(for element in "${toleration_commands[@]}"; do echo -e "$element"; done)
-  containers:
-  - name: ops-pod
-    image: ${image}
-    imagePullPolicy: Always
-    command:
-    - sleep
-    - "43200"
-    resources:
-      limits:
-        cpu: 200m
-        memory: 100Mi
-      requests:
-        cpu: 100m
-        memory: 50Mi
-    stdin: true
-    securityContext:
-      privileged: true
-    volumeMounts:
-    - name: host-root-volume
-      mountPath: /host
-      readOnly: false
-  volumes:
-  - name: host-root-volume
-    hostPath:
-      path: /
-  hostNetwork: true
-  hostPID: true
-  restartPolicy: Never
-EOF
-)
+gerenatePodManifest;
+
+kubectl -n $namespace create -f pod_definition.yaml
+
 while [[ $(kubectl -n $namespace get pods | sed -n -r "s/^$name.*Running.*$/Running/p") != "Running" ]]; do echo "Waiting for pod to be running..."; sleep 1; done;
 
 # exec into pod (and chroot into node if a node was selected)
@@ -199,5 +179,6 @@ else
   kubectl -n $namespace exec -ti $name -- bash -c "echo -e '\nNode root dir is mounted under /host' >> /etc/motd; /bin/bash"
 fi
 
-# get rid of pod
+# get rid of pod and manifest
 kubectl -n $namespace delete pod $name
+rm -rf $pod_definition_path
