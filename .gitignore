@@ -2,3 +2,4 @@
 .idea
 .DS_Store
 generated_dockerfiles
+pod_definition.yaml
