@@ -95,15 +95,21 @@
       echo "" >> /root/.bashrc;\
       echo "source /etc/profile.d/bash_completion.sh" >> /root/.bashrc
     info: ~
+  - name: table
+    command: |
+      echo "source /root/dotfiles/.install_on_demand/.table" >> /root/dotfiles/.bashrc
+    info: Helpful tool that can be used to simplify the analysis of iptables entries. Pass a string argument to filter the output via grep.
+  - name: wg
+    command : |
+      echo "source /root/dotfiles/.install_on_demand/.wireguard" >> /root/dotfiles/.bashrc
+    info: Command line tool for the wireguard VPN.
   - name: dotfiles
     command: |
       echo "" >> /root/.bashrc;\
       echo "# source bashrc from dotfiles" >> /root/.bashrc;\
       echo "source /root/dotfiles/.bashrc" >> /root/.bashrc;\
       touch /root/dotfiles/.config/git/config_personal
-    info: |
-      The sourced dotfiles are located under /root/dotfiles.\n\
-      Additionally you can add your own personal git settings in /root/dotfiles/.config/git/config_personal\n\
+    info: Directory containing the currently active (sourced) dotfiles.
   - name: hacks
     command: |
       echo "export PATH=/hacks:\$PATH" >> /root/.bashrc
@@ -112,6 +118,3 @@
 - env:
   - DOTFILES_USER=root
   - DOTFILES_HOME=/root/dotfiles
-
-
-

@@ -145,7 +145,7 @@ class InfoGenerator:
                 apt_get_commands.extend(InfoGenerator._get_package_name_and_bins(command))
             if isinstance(command, Pip):
                 pip_commands.extend(InfoGenerator._get_package_name_and_bins(command))
-            if isinstance(command, (Curl, Git)):
+            if isinstance(command, (Curl, Git, Execute)):
                 command_tools = command.get_tools()
                 for tool in command_tools:
                     if tool.get_info() is not None:
