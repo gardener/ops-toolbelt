@@ -29,14 +29,14 @@ function install () {
     local latest_release=$(curl -sL https://api.github.com/repos/derailed/k9s/releases/latest)
     version=$(echo "${latest_release}" | jq -r '.tag_name')
     echo "installing latest version ${version}"
-    download_url=$(echo "${latest_release}" | jq -r '.assets[] | select(.name == "k9s_'"${version}"'_Linux_x86_64.tar.gz") | .browser_download_url')
+    download_url=$(echo "${latest_release}" | jq -r '.assets[] | select(.name == "k9s_Linux_x86_64.tar.gz") | .browser_download_url')
   else
     if [[ ! $version == v* ]]
     then
       version="v${version}"
     fi
     echo "installing k9s version ${version}"
-    download_url="https://github.com/derailed/k9s/releases/download/${version}/k9s_${version}_Linux_x86_64.tar.gz"
+    download_url="https://github.com/derailed/k9s/releases/download/${version}/k9s_Linux_x86_64.tar.gz"
   fi
 
   curl -sL ${download_url} -o k9s.tar.gz && tar -zxvf k9s.tar.gz k9s && mv k9s /usr/local/bin/k9s && chmod 755 /usr/local/bin/k9s && rm k9s.tar.gz
