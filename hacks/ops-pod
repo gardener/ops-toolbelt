@@ -24,20 +24,39 @@ Usage:
   ops-pod [OPTIONS] <node|pod-name>
 
 Options:
-  -n|--namespace   The namespace into which the pod will be deployed. The namespace of the current kubectl context is used by default.
-  -i|--image       Image to use for the privileged pod. The default value is: eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
-  -c|--chroot      When this flag is set the host's root directory will also be used as root directory of the pod. By default the host's
-                   root directory is mounted under /host on the pod.
+  -n|--namespace    The namespace into which the pod will be deployed. The namespace of the current kubectl context is used by default.
+  -t|--tolerations  When this flag is set the taints of the selected node will be used as tolerations for the ops pod. By default
+                    the ops pod is started with the following tolerations:
+                     - key: node-role.kubernetes.io/master
+                       operator: Exists
+                       effect: NoSchedule
+                     - operator: Exists
+                       effect: NoExecute
+                     - key: CriticalAddonsOnly
+                       operator: Exists
+  -i|--image        Image to use for the privileged pod. The default value is: eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
+  -c|--chroot       When this flag is set the host's root directory will also be used as root directory of the pod. By default the host's
+                    root directory is mounted under /host on the pod.
 EOF
 }
 
-NO_CHROOT=0
-YES_CHROOT=1
+FALSE=0
+TRUE=1
 
 namespace=
 node=
 image=
-node_chroot=${NO_CHROOT}
+tolerations_array="
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+  - operator: Exists
+    effect: NoExecute
+  - key: CriticalAddonsOnly
+    operator: Exists
+"
+copy_tolerations=${FALSE}
+node_chroot=${FALSE}
 name="ops-pod-$(whoami)"
 
 default_image="eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest"
@@ -61,7 +80,11 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -c|--chroot)
-      node_chroot=${YES_CHROOT}
+      node_chroot=${TRUE}
+      shift
+      ;;
+    -t|--toleration)
+      copy_tolerations=${TRUE}
       shift
       ;;
     -h|--help)
@@ -106,9 +129,16 @@ fi
 # Kubify nodes have labels that differ from the names (need an additional suffix)
 node=$(echo "$node" | sed -r "s/^(garden-.*)/\1.openstack.local/")
 
+if [[ $copy_tolerations -eq $TRUE ]]; then
+  tolerations_array=$(kubectl get nodes ${node} -o jsonpath='{range .spec.taints[*]}  - effect: "{@.effect}"{"\n"}    key: "{@.key}"{"\n"}    value: "{@.value}"{"\n"}    operator: "{@.operator}"{"\n"}{end}')
+fi
+
 # get rid of former pod (if present; best effort)
 kubectl -n $namespace delete pod $name &> /dev/null || true
 while kubectl -n $namespace get pod $name &> /dev/null; do echo "Waiting for old pod to be deleted..."; sleep 1; done
+
+# get rid of pod
+trap "EC=\$?; kubectl -n $namespace delete pod $name --wait=false  >&2 || true; exit \$EC" EXIT INT TERM
 
 # launch pod
 kubectl -n $namespace create -f <(cat << EOF
@@ -119,9 +149,7 @@ metadata:
 spec:
   $([[ ! -z $node ]] && echo -e "nodeSelector:\n    kubernetes.io/hostname: $node")
   tolerations:
-  - key: node-role.kubernetes.io/master
-    operator: Exists
-    effect: NoSchedule
+$tolerations_array
   containers:
   - name: ops-pod
     image: ${image}
@@ -152,21 +180,17 @@ spec:
   restartPolicy: Never
 EOF
 )
+
 while [[ $(kubectl -n $namespace get pods | sed -n -r "s/^$name.*Running.*$/Running/p") != "Running" ]]; do echo "Waiting for pod to be running..."; sleep 1; done;
 
 # exec into pod (and chroot into node if a node was selected)
-if [[ ${node_chroot} -eq ${YES_CHROOT} ]]; then
+if [[ ${node_chroot} -eq ${TRUE} ]]; then
   kubectl -n $namespace exec -ti $name -- bash -c "rm -rf /host/root/dotfiles 1> /dev/null; \
-                                                   echo 'cat /root/motd' >> /root/dotfiles/.bashrc; \
                                                    cp -r /root/dotfiles /host/root 1> /dev/null; \
                                                    cp -r /hacks /host 1> /dev/null; rm -f /host/root/.bashrc; \
-                                                   cp /etc/motd /host/root/motd; \
                                                    ln -s /root/dotfiles/.bashrc /host/root/.bashrc 1> /dev/null; export PATH=\"/hacks:$PATH\"; \
                                                    echo -e '\nBE CAREFUL!!! Node root directory mounted under / \n'; \
                                                    chroot /host /bin/bash"
 else
   kubectl -n $namespace exec -ti $name -- bash -c "echo -e '\nNode root dir is mounted under /host' >> /etc/motd; /bin/bash"
 fi
-
-# get rid of pod
-kubectl -n $namespace delete pod $name
