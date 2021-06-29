@@ -72,3 +72,22 @@ To build all pre-configured images run:
 ```bash
 $ .ci/build
 ```
+
+To update pre-configured images supported k8s versions run the following commands and then commit the resulting changes:
+```bash
+gardenctl target garden <landscape>
+gardenctl kubectl get cloudprofile -o json | jq -r '.items[].spec.kubernetes.versions[] | select(.classification=="supported") | .version' |sort -r |uniq > .ci/k8s_versions
+.ci/build_pipeline_definitions
+```
+
+To update pre-configured images supported iaas providers run the following commands and then commit the resulting changes:
+```bash
+<editor> .ci/iaas-providers # to update the list
+.ci/build_pipeline_definitions
+```
+
+### Known issues
+1. Currently there's a known issue when using `/bin/sh`. We implemented a color scheme and also added some helper function to display in `/bin/bash` terminal which doesn't work in `/bin/sh`. As workaround when you want to use some script which by default needs to utilize `/bin/sh` please use `/bin/bash` instead if possible: (take `chroot` for example)
+```bash
+$ chroot /some_dir /bin/bash
+```

@@ -369,7 +369,7 @@ function clone() {
   else
     owner="$1"
     repo="$2"
-    git clone -c http.sslVerify=false --recursive https://github.wdf.sap.corp/$owner/$repo.git
+    git clone -c http.sslVerify=false --recursive https://github.com/$owner/$repo.git
   fi
 }
 function commit() {

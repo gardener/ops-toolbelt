@@ -1,0 +1,98 @@
+#!/bin/bash -eu
+
+SOURCE_PATH=${SOURCE_PATH:-}
+
+if [[ -z ${SOURCE_PATH} ]]; then
+    SOURCE_PATH="$(readlink -f "$(dirname "${0}")"/..)"
+fi
+
+cat > "${SOURCE_PATH}"/.ci/pipeline_definitions << EOF
+ops-toolbelt:
+  template: 'default'
+  base_definition:
+    repo: ~
+    traits:
+      version:
+        preprocess:
+          'inject-commit-hash'
+        inject_effective_version: true
+      publish:
+        dockerimages:
+          ops-toolbelt-gardenctl:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl'
+            dockerfile: ops-toolbelt-gardenctl.dockerfile
+            inputs:
+              steps:
+                build: ~
+          ops-toolbelt:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt'
+            dockerfile: ops-toolbelt.dockerfile
+            inputs:
+              steps:
+                build: ~
+EOF
+
+for kv_short in `cat "${SOURCE_PATH}"/.ci/k8s_versions |cut -d '.' -f 1,2`
+do
+    for iaas_provider in `cat "${SOURCE_PATH}"/.ci/iaas_providers`
+    do
+
+      cat >> "${SOURCE_PATH}"/.ci/pipeline_definitions << EOF
+          ops-toolbelt-$iaas_provider-k$kv_short:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-$iaas_provider-k$kv_short'
+            dockerfile: ops-toolbelt-$iaas_provider-k$kv_short.dockerfile
+            inputs:
+              steps:
+                build: ~
+EOF
+    done
+done
+
+cat >> "${SOURCE_PATH}"/.ci/pipeline_definitions << EOF
+    steps:
+      test: ~
+      build:
+        output_dir: 'generated_dockerfiles'
+  jobs:
+    head-update:
+      traits:
+        component_descriptor: ~
+        draft_release: ~
+    pull-request:
+      traits:
+        pull-request: ~
+    release:
+      traits:
+        component_descriptor: ~
+        version:
+          preprocess: 'finalize'
+        release:
+          nextversion: 'bump_minor'
+        slack:
+          default_channel: 'internal_scp_workspace'
+          channel_cfgs:
+            internal_scp_workspace:
+              channel_name: 'C9CEBQPGE' #internal gardener channel
+              slack_cfg_name: 'scp_workspace'
+        publish:
+          dockerimages:
+            ops-toolbelt-gardenctl:
+              tag_as_latest: true
+            ops-toolbelt:
+              tag_as_latest: true
+update-gardenctl-version:
+  jobs:
+    create_update_pull_requests:
+      repo:
+        disable_ci_skip: true
+      traits:
+        component_descriptor: ~
+        update_component_deps:
+          merge_policy: 'auto_merge'
+        cronjob:
+          interval: '5m'
+        version: ~
+EOF

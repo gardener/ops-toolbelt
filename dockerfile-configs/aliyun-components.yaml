@@ -12,40 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- add-apt-repo:
-  - name: gcp-repo
-    release-prefix: cloud-sdk-
-    url: https://packages.cloud.google.com/apt
-    key-url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-  - name: azure-cli
-    url: https://packages.microsoft.com/repos/azure-cli
-    key-url: https://packages.microsoft.com/keys/microsoft.asc
-
 - bash:
   - name: clean_apt
     command: apt-get autoremove -y
     info: ~
-
-- apt-get:
-  - name: azure-cli=2.11.1-1~bionic
-    provides: az
-  - name: google-cloud-sdk=329.0.0-0
-    provides: gcloud
-
-- bash:
-  - name: clean_azure-cli_pycache
-    command: py3clean -p azure-cli
-    info: ~
-
-- pip:
-  - python-novaclient==17.2.0
-  - python-glanceclient==3.2.1
-  - python-cinderclient==7.1.0
-  - python-swiftclient==3.10.0
-  - name: python-openstackclient==5.3.1
-    provides: ["openstack", "openstack-inventory"]
-  - name: awscli==1.18.133
-    provides: aws
 
 - curl:
   - name: aliyun

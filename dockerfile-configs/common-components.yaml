@@ -14,11 +14,10 @@
 
 - apt-get:
   - curl
-  - git
   - tree
+  - vim-tiny
   - htop
   - less
-  - vim
   - tmux
   - bash-completion
   - python3-distutils
@@ -27,6 +26,7 @@
   - jq
   - figlet
   - tcpdump
+  - iputils-ping
   - name: silversearcher-ag
     provides: ag
   - name: iproute2
@@ -43,10 +43,6 @@
     version: v1.3
     from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_amd64
     info: transform yaml string to json string without the type infomation.
-  - name: kubectl
-    version: v1.17.1
-    from: https://storage.googleapis.com/kubernetes-release/release/{version}/bin/linux/amd64/kubectl
-    info: command line tool for controlling Kubernetes clusters. "kubectl krew install plunin_name" to install plugin. "kubectl get-all -n namespace" to list all resources in namespaces.
   - name: pip
     from: https://bootstrap.pypa.io/get-pip.py
     to: /get-pip.py
@@ -64,6 +60,9 @@
       rm -rf linux-amd64-1.1.0 ccat.tar.gz &&\
       chmod 755 /bin/cat
     info: The colorizing cat. It works similar to cat but displays content with syntax highlighting.
+  - name: kubetail
+    from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
+    info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
 
 - bash:
   - name: generate_locale
@@ -126,7 +125,7 @@
       kubectl krew install get-all
     info: |
       ketall is to enable `kubectl get-all -n namespace_name`, for listing all resources in some namespace
-curl:
+- curl:
   - name:  crictl
     version: v1.17.0
     from: https://github.com/kubernetes-sigs/cri-tools/releases/download/{version}/crictl-{version}-linux-amd64.tar.gz
@@ -138,7 +137,6 @@ curl:
       echo "image-endpoint: unix:///run/containerd/containerd.sock" >> /etc/crictl.yaml;\
       echo "timeout: 10" >> /etc/crictl.yaml
     info: "crictl is a cli tool for Kubelet Container Runtime Interface (CRI). The current configuration is: image-endpoint: unix:///hostroot/run/containerd/containerd.sock and runtime-endpoint: unix:///hostroot/run/containerd/containerd.sock. You can find all .sock files under /hostroot where the root directory of the host is mounted by default.
-
 
 - env:
   - DOTFILES_USER=root
