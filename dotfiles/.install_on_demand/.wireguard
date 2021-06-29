@@ -1,0 +1,19 @@
+alias wg='wireguard'
+function wireguard() {
+  yes="Yy"
+  no="Nn"
+
+  if ! hash wg &> /dev/null; then
+    local _confirmation=""
+    while [[ ! $_confirmation =~ ^[$yes$no]$ ]]; do
+          read -p "Wireguard not found. Do you want to install it now? (Y/n) " -r _confirmation
+          if [[ $_confirmation =~ ^[$no]$ ]]; then
+            echo -e "Error: wireguard not installed."
+            return 1
+          fi
+    done
+    read -p "Version [latest]: " -r version
+    apt install wireguard"${version:+=$version}" --yes
+  fi
+  command wg "$@"
+}

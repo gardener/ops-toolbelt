@@ -97,12 +97,21 @@ class BashCommandConfig(DictComponentConfig):
     required_keys = [
         {"key": "command", "types": (str)}
     ]
+
+    optional_keys = [
+        {"key": "version", "types": (str)},
+    ]
+
     def __init__(self, config):
         DictComponentConfig.__init__(self, config)
         self.command = config["command"]
+        self.version = config.get("version")
 
     def get_command(self):
         return self.command
+
+    def get_version(self):
+        return self.version
 
 class AptRepoConfig(DictComponentConfig):
     required_keys = [
