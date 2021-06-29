@@ -15,9 +15,9 @@
 
 from tabulate import tabulate
 import json
+import textwrap
 import subprocess
 import os
-
 
 def parse_package_info(package_info, provided_binaries, name_key, version_key, info_key):
     lines = package_info.split('\n')
@@ -34,7 +34,7 @@ def parse_package_info(package_info, provided_binaries, name_key, version_key, i
             version = line.split(":", 1)[1].strip()
         if line.startswith(info_key):
             info = line.split(":", 1)[1].strip()
-    return binaries, version, info
+    return [binaries, version, info]
 
 def retrieve_packages_info(installed_tools_list, package_manager, show_command, delimiter, name_key, version_key, info_key):
     tools = []
@@ -55,14 +55,14 @@ def retrieve_packages_info(installed_tools_list, package_manager, show_command, 
 def retrieve_downloaded_tools_info(downloaded_tools):
     tools = []
     for tool in downloaded_tools:
-        tools.append((tool[0], tool[1], tool[2]))
+        tools.append([tool[0], tool[1], tool[2]])
 
     return tools
 
 def retrieve_hacks_info():
     tools = [
-        ("install_k9s", "LATEST", "Install k9s: curses based terminal UI to interact with your Kubernetes clusters."),
-        ("ops-pod", "", "Start an ops-toolbelt container in a k8s cluster")
+        ["install_k9s", "LATEST", "Install k9s: curses based terminal UI to interact with your Kubernetes clusters."],
+        ["ops-pod", "", "Start an ops-toolbelt container in a k8s cluster"],
     ]
 
     return tools
@@ -77,19 +77,30 @@ if ghelp_info is None:
     print("Failed to load ghelp info")
     exit(1)
 
-table_headers = ["TOOL/PACKAGE", "VERSION", "NOTES"]
-table = []
-
 apttools = retrieve_packages_info(ghelp_info["apt"], "apt", "show", "\n\n", "Package", "Version", "Description")
-table.extend(apttools)
-
 piptools = retrieve_packages_info(ghelp_info["pip"], "pip", "show", "---", "Name", "Version", "Summary")
-table.extend(piptools)
-
 downloaded_tools = retrieve_downloaded_tools_info(ghelp_info["downloaded"])
-table.extend(downloaded_tools)
-
 hack_tools = retrieve_hacks_info()
+
+table = []
+table.extend(apttools)
+table.extend(piptools)
+table.extend(downloaded_tools)
 table.extend(hack_tools)
+
+terminal_width = os.get_terminal_size().columns
+max_name_width = (terminal_width-10)//4
+max_info_width = (terminal_width-10)//2
+
+for i in range(len(table)):
+    table[i][0] = textwrap.fill(table[i][0], width=max_name_width)
+    if table[i][1] is not None:
+         table[i] [1] = textwrap.fill(table[i][1], width=max_name_width)
+    table[i][2] = textwrap.fill(table[i][2], width=max_info_width)
+
+table_headers = ["TOOL/PACKAGE", "VERSION", "NOTES"]
+table_headers[0] = textwrap.fill(table_headers[0], width=max_name_width)
+table_headers[1] = textwrap.fill(table_headers[1], width=max_name_width)
+table_headers[2] = textwrap.fill(table_headers[2], width=max_name_width)
 
 print(tabulate(table, table_headers, tablefmt="grid"))
