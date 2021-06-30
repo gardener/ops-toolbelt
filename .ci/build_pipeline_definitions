@@ -36,11 +36,11 @@ EOF
 
 for kv_short in `cat "${SOURCE_PATH}"/.ci/k8s_versions |cut -d '.' -f 1,2`
 do
+    kv_underscore=$(echo "${kv_short}" | tr '.' '_')
     for iaas_provider in `cat "${SOURCE_PATH}"/.ci/iaas_providers`
     do
-
       cat >> "${SOURCE_PATH}"/.ci/pipeline_definitions << EOF
-          ops-toolbelt-$iaas_provider-k$kv_short:
+          ops-toolbelt-$iaas_provider-k$kv_underscore:
             registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-$iaas_provider-k$kv_short'
             dockerfile: ops-toolbelt-$iaas_provider-k$kv_short.dockerfile
