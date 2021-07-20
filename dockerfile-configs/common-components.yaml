@@ -63,6 +63,14 @@
   - name: kubetail
     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
     info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
+  - name: nerdctl
+    version: 0.10.0
+    from: https://github.com/containerd/nerdctl/releases/download/v{version}/nerdctl-{version}-linux-amd64.tar.gz
+    to: /nerdctl.tar.gz
+    command: |
+      tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
+      rm -f nerdctl.tar.gz
+    info: nerdctl is a Docker-compatible CLI for containerd. If the root directory of the host is mounted you can use the files under /hostroot/run/ to connect to the container runtime of the host e.g. 'nerdctl --address unix:///hostroot/run/containerd/contaierd.sock ps'
 
 - bash:
   - name: generate_locale
