@@ -57,7 +57,12 @@ tolerations_array="
 "
 copy_tolerations=${FALSE}
 node_chroot=${FALSE}
-name="ops-pod-$(whoami)"
+sanitize_hostname() {
+    # K8s rejects pod names that violate this RE '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
+    # due to RFC1123 (Only allow lower-case and alphanumerical values for hostnames)
+    echo "$@" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g'
+}
+name="$(sanitize_hostname "ops-pod-$(whoami)")"
 
 default_image="eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest"
 function get_default_namespace() {
