@@ -19,7 +19,7 @@
 
 - curl:
   - name: gardenctl
-    version: v0.24.1
+    version: v0.24.3
     from: https://github.com/gardener/gardenctl/releases/download/{version}/gardenctl-linux-amd64
     to: /opt/gardenctl/bin/gardenctl
     command: |
