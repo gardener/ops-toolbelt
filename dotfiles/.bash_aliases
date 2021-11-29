@@ -354,7 +354,7 @@ alias shrink='sips -Z 1024'
 #########
 
 # vi
-alias vi='vim'
+alias vi='vim.tiny'
 
 # grep
 alias grep='grep --color'
