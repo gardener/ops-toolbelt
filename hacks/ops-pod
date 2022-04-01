@@ -176,6 +176,7 @@ $tolerations_array
     - name: host-root-volume
       mountPath: /host
       readOnly: false
+      mountPropagation: HostToContainer
   volumes:
   - name: host-root-volume
     hostPath:
@@ -183,6 +184,7 @@ $tolerations_array
   hostNetwork: true
   hostPID: true
   restartPolicy: Never
+  enableServiceLinks: false
 EOF
 )
 
