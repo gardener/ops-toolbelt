@@ -550,3 +550,4 @@ function k() {
 alias kd='kubectl --namespace=default'
 alias ks='kubectl --namespace=kube-system'
 alias ka='kubectl --all-namespaces=true'
+complete -F __start_kubectl k
