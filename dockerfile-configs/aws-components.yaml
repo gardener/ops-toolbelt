@@ -18,5 +18,5 @@
     info: ~
 
 - pip:
-  - name: awscli==1.18.133
+  - name: awscli==1.23.6
     provides: aws
