@@ -29,15 +29,6 @@ EOF
     --title "gardener shell" \
     --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt.dockerfile
 
-"${SOURCE_PATH}"/generator/generate-dockerfile.py \
-    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
-    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/iaas-components.yaml \
-    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gardenctl-components.yaml \
-    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectl-components.yaml \
-    --from-image "ubuntu:${UBUNTU_VERSION}" \
-    --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl.dockerfile
-
 for kv in $(cat "${SOURCE_PATH}"/.ci/k8s_versions)
 do
     kv_short=$(echo $kv |cut -d '.' -f 1,2)
@@ -53,7 +44,6 @@ EOF
         "${SOURCE_PATH}"/generator/generate-dockerfile.py \
             --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
             --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/$iaas_provider-components.yaml \
-            --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gardenctl-components.yaml \
             --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectl-components.yaml \
             --from-image "ubuntu:${UBUNTU_VERSION}" \
             --title "gardener shell" \

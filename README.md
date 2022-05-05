@@ -13,12 +13,12 @@ Starting a pod with the ops-toolbel timage requires a running Kubelet and health
 #### Running a container locally
 The simplest way of using the `ops-toolbelt` is to just run the following command:
 ```bash
-$ docker run -it eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl:latest
+$ docker run -it eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
 
 Ubuntu 18.04.2 LTS \n \l
 
 This container comes with the following preinstalled tools:
-curl git tree silversearcher-ag htop less vim tmux bash-completion dnsutils netcat-openbsd iproute2 dstat ngrep tcpdump python-minimal jq yaml2json kubectl pip cat mdv awscli azure-cli python-novaclient python-glanceclient python-cinderclient python-swiftclient google-cloud-sdk aliyun-cli gardenctl
+curl git tree silversearcher-ag htop less vim tmux bash-completion dnsutils netcat-openbsd iproute2 dstat ngrep tcpdump python-minimal jq yaml2json kubectl pip cat mdv awscli azure-cli python-novaclient python-glanceclient python-cinderclient python-swiftclient google-cloud-sdk aliyun-cli
 
 The sourced dotfiles are located under /root/dotfiles.
 Additionally you can add your own personal git settings in /root/dotfiles/.config/git/config_personal
@@ -31,7 +31,7 @@ The following variables have been exported:
 DOTFILES_USER=root DOTFILES_HOME=/root/dotfiles
 ```
 
-You can then add personal configurations to your `ops-toolbelt` container for tools like `kubectl`, `gardenctl`, `gcloud` and so on ...
+You can then add personal configurations to your `ops-toolbelt` container for tools like `kubectl`, `gcloud` and so on ...
 
 #### Running the ops-toolblet as privileged pod on a node
 Get the names of the nodes on your cluster and then run `hacks/ops-pod` with the node you want to start the pod on:
@@ -76,7 +76,7 @@ $ .ci/build
 To update pre-configured images supported k8s versions run the following commands and then commit the resulting changes:
 ```bash
 gardenctl target garden <landscape>
-gardenctl kubectl get cloudprofile -o json | jq -r '.items[].spec.kubernetes.versions[] | select(.classification=="supported") | .version' |sort -r |uniq > .ci/k8s_versions
+kubectl get cloudprofile -o json | jq -r '.items[].spec.kubernetes.versions[] | select(.classification=="supported") | .version' |sort -r |uniq > .ci/k8s_versions
 .ci/build_pipeline_definitions
 ```
 

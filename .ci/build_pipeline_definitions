@@ -18,13 +18,6 @@ ops-toolbelt:
         inject_effective_version: true
       publish:
         dockerimages:
-          ops-toolbelt-gardenctl:
-            registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt-gardenctl'
-            dockerfile: ops-toolbelt-gardenctl.dockerfile
-            inputs:
-              steps:
-                build: ~
           ops-toolbelt:
             registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt'
@@ -79,20 +72,6 @@ cat >> "${SOURCE_PATH}"/.ci/pipeline_definitions << EOF
               slack_cfg_name: 'scp_workspace'
         publish:
           dockerimages:
-            ops-toolbelt-gardenctl:
-              tag_as_latest: true
             ops-toolbelt:
               tag_as_latest: true
-update-gardenctl-version:
-  jobs:
-    create_update_pull_requests:
-      repo:
-        disable_ci_skip: true
-      traits:
-        component_descriptor: ~
-        update_component_deps:
-          merge_policy: 'auto_merge'
-        cronjob:
-          interval: '5m'
-        version: ~
 EOF
