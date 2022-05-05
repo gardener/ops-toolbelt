@@ -14,9 +14,10 @@
 
 - add-apt-repo:
   - name: gcp-repo
-    release-prefix: cloud-sdk-
-    url: https://packages.cloud.google.com/apt
+    repo: cloud-sdk
+    url: "[signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt"
     key-url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    keyring: /usr/share/keyrings/cloud.google.gpg
   - name: azure-cli
     url: https://packages.microsoft.com/repos/azure-cli
     key-url: https://packages.microsoft.com/keys/microsoft.asc
@@ -27,9 +28,9 @@
     info: ~
 
 - apt-get:
-  - name: azure-cli=2.36.0-1~bionic
+  - name: azure-cli=2.36.0-1~focal
     provides: az
-  - name: google-cloud-sdk=384.0.0-0
+  - name: google-cloud-sdk=384.0.1-0
     provides: gcloud
 
 - bash:

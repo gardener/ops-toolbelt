@@ -44,7 +44,7 @@
     from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_amd64
     info: transform yaml string to json string without the type infomation.
   - name: pip
-    from: https://bootstrap.pypa.io/pip/3.6/get-pip.py
+    from: https://bootstrap.pypa.io/pip/get-pip.py
     to: /get-pip.py
     command: |
       python3 /get-pip.py;\
@@ -64,7 +64,7 @@
     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
     info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
   - name: nerdctl
-    version: 0.10.0
+    version: 0.19.0
     from: https://github.com/containerd/nerdctl/releases/download/v{version}/nerdctl-{version}-linux-amd64.tar.gz
     to: /nerdctl.tar.gz
     command: |
