@@ -23,7 +23,7 @@
     info: ~
 
 - apt-get:
-  - name: azure-cli=2.11.1-1~bionic
+  - name: azure-cli=2.36.0-1~bionic
     provides: az
 
 - bash:

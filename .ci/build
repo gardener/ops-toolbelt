@@ -1,5 +1,6 @@
 #!/bin/bash -eu
 
+UBUNTU_VERSION=20.04
 SOURCE_PATH=${SOURCE_PATH:-}
 GENERATED_DOCKERFILES_PATH=${GENERATED_DOCKERFILES_PATH:-}
 
@@ -12,7 +13,7 @@ if [[ -z "${GENERATED_DOCKERFILES_PATH}" ]]; then
     mkdir -p "${GENERATED_DOCKERFILES_PATH}"
 fi
 
-latest_kv=`cat "${SOURCE_PATH}"/.ci/k8s_versions |head -1`
+latest_kv=$(cat "${SOURCE_PATH}"/.ci/k8s_versions |head -1)
 cat > "${SOURCE_PATH}"/dockerfile-configs/kubectl-components.yaml << EOF
     - curl:
       - name: kubectl
@@ -24,7 +25,7 @@ EOF
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-config "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectl-components.yaml \
-    --from-image ubuntu:18.04 \
+    --from-image "ubuntu:${UBUNTU_VERSION}" \
     --title "gardener shell" \
     --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt.dockerfile
 
@@ -33,13 +34,13 @@ EOF
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/iaas-components.yaml \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gardenctl-components.yaml \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectl-components.yaml \
-    --from-image ubuntu:18.04 \
+    --from-image "ubuntu:${UBUNTU_VERSION}" \
     --title "gardener shell" \
     --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-gardenctl.dockerfile
 
-for kv in `cat "${SOURCE_PATH}"/.ci/k8s_versions`
+for kv in $(cat "${SOURCE_PATH}"/.ci/k8s_versions)
 do
-    kv_short=`echo $kv |cut -d '.' -f 1,2`
+    kv_short=$(echo $kv |cut -d '.' -f 1,2)
     cat > "${SOURCE_PATH}"/dockerfile-configs/kubectl-components.yaml << EOF
             - curl:
               - name: kubectl
@@ -47,14 +48,14 @@ do
                 from: https://storage.googleapis.com/kubernetes-release/release/v$kv/bin/linux/amd64/kubectl
                 info: command line tool for controlling Kubernetes clusters.
 EOF
-    for iaas_provider in `cat "${SOURCE_PATH}"/.ci/iaas_providers`
+    for iaas_provider in $(cat "${SOURCE_PATH}"/.ci/iaas_providers)
     do
         "${SOURCE_PATH}"/generator/generate-dockerfile.py \
             --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
             --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/$iaas_provider-components.yaml \
             --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gardenctl-components.yaml \
             --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/kubectl-components.yaml \
-            --from-image ubuntu:18.04 \
+            --from-image "ubuntu:${UBUNTU_VERSION}" \
             --title "gardener shell" \
             --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt-$iaas_provider-k$kv_short.dockerfile
 
