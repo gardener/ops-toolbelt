@@ -14,9 +14,10 @@
 
 - add-apt-repo:
   - name: gcp-repo
-    release-prefix: cloud-sdk-
-    url: https://packages.cloud.google.com/apt
+    repo: cloud-sdk
+    url: "[signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt"
     key-url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    keyring: /usr/share/keyrings/cloud.google.gpg
 
 - bash:
   - name: clean_apt

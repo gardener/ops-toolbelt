@@ -120,16 +120,26 @@ class AptRepoConfig(DictComponentConfig):
     ]
 
     optional_keys = [
-        {"key": "release-prefix", "types": (str)}
+        {"key": "release-prefix", "types": (str)},
+        {"key": "repo", "types": (str)},
+        {"key": "keyring", "types": (str)}
     ]
     def __init__(self, config):
         DictComponentConfig.__init__(self, config)
         self.release_prefix = config.get("release-prefix", "")
+        self.repo = config.get("repo", "")
+        self.keyring = config.get("keyring", "")
         self.url = config["url"]
         self.key_url = config["key-url"]
 
     def get_release_prefix(self):
         return self.release_prefix
+
+    def get_repo(self):
+        return self.repo
+
+    def get_keyring(self):
+        return self.keyring
 
     def get_repo_url(self):
         return self.url

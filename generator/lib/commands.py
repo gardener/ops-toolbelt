@@ -102,14 +102,21 @@ class AddAptGetRepo(Command):
         ]
         for component in self.components:
             release_prefix = component.get_release_prefix()
+            repo = component.get_repo()
             repo_name = component.get_name()
             repo_url = component.get_repo_url()
             key_url = component.get_key_url()
+            keyring = component.get_keyring()
+            if repo == "":
+                repo = '"{}$(lsb_release -cs)"'.format(release_prefix)
             download_command = [
-                'REPO="{}$(lsb_release -cs)"'.format(release_prefix),
+                'REPO="{}"'.format(repo),
                 'echo "deb {} $REPO main" | tee /etc/apt/sources.list.d/{}.list'.format(repo_url, repo_name),
-                'curl -sL {} | apt-key add -'.format(key_url),
             ]
+            if keyring == "":
+                download_command.append('curl -sL {} | apt-key add -'.format(key_url))
+            else:
+                download_command.append('curl -sL {} | apt-key --keyring {} add -'.format(key_url, keyring))
             command.extend(download_command)
 
         command.extend([
