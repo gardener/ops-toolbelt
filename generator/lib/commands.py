@@ -27,7 +27,7 @@ class Command:
         return [component for component in self.components]
 
     def get_tool_names(self):
-        return [component.name for component in self.components]
+        return [component.get_name() for component in self.components]
 
     def get_tool_infos(self):
         return [component.get_info() for component in self.components]

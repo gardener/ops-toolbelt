@@ -36,13 +36,14 @@ def parse_package_info(package_info, provided_binaries, name_key, version_key, i
             info = line.split(":", 1)[1].strip()
     return [binaries, version, info]
 
-def retrieve_packages_info(installed_tools_list, package_manager, show_command, delimiter, name_key, version_key, info_key):
+def retrieve_packages_info(installed_tools_list, package_manager, show_command, version_delimiter, delimiter, name_key, version_key, info_key):
     tools = []
     provided_binaries = {}
     tool_names = []
     for entry in installed_tools_list:
-        tool_names.append(entry[0])
-        provided_binaries[entry[0]] = entry[1]
+        nameWithoutVersion = entry[0].split(version_delimiter)[0]
+        tool_names.append(nameWithoutVersion)
+        provided_binaries[nameWithoutVersion] = entry[1]
     command = [package_manager, show_command]
     command.extend(tool_names)
     output = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, universal_newlines=True)
@@ -77,8 +78,8 @@ if ghelp_info is None:
     print("Failed to load ghelp info")
     exit(1)
 
-apttools = retrieve_packages_info(ghelp_info["apt"], "apt", "show", "\n\n", "Package", "Version", "Description")
-piptools = retrieve_packages_info(ghelp_info["pip"], "pip", "show", "---", "Name", "Version", "Summary")
+apttools = retrieve_packages_info(ghelp_info["apt"], "apt", "show", "=", "\n\n" , "Package", "Version", "Description")
+piptools = retrieve_packages_info(ghelp_info["pip"], "pip", "show", "==", "---", "Name", "Version", "Summary")
 downloaded_tools = retrieve_downloaded_tools_info(ghelp_info["downloaded"])
 hack_tools = retrieve_hacks_info()
 
