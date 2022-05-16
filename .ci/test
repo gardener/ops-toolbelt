@@ -9,8 +9,3 @@ fi
 
 "${SOURCE_PATH}"/generator/validate-tools.py \
     --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
-    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/aws-components.yaml \
-    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/az-components.yaml \
-    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/gcp-components.yaml \
-    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/openstack-components.yaml \
-    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/aliyun-components.yaml

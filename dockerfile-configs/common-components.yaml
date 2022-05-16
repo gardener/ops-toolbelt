@@ -71,6 +71,10 @@
       tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
       rm -f nerdctl.tar.gz
     info: nerdctl is a Docker-compatible CLI for containerd. If the root directory of the host is mounted you can use the files under /hostroot/run/ to connect to the container runtime of the host e.g. 'nerdctl --address unix:///hostroot/run/containerd/contaierd.sock ps'
+  - name: kubectl
+    version: v1.22.7
+    from: https://storage.googleapis.com/kubernetes-release/release/v1.22.7/bin/linux/amd64/kubectl
+    info: command line tool for controlling Kubernetes clusters.
 
 - bash:
   - name: generate_locale
