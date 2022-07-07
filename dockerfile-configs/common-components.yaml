@@ -26,6 +26,7 @@
   - jq
   - figlet
   - tcpdump
+  - sysstat
   - iputils-ping
   - name: silversearcher-ag
     provides: ag
