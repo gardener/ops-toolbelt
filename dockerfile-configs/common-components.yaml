@@ -76,6 +76,15 @@
     version: v1.22.7
     from: https://storage.googleapis.com/kubernetes-release/release/v1.22.7/bin/linux/amd64/kubectl
     info: command line tool for controlling Kubernetes clusters.
+  - name: crictl
+    version: v1.24.1
+    from: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.1/crictl-v1.24.1-linux-amd64.tar.gz
+    to: /crictl.tar.gz
+    command: |
+      tar zxvf crictl.tar.gz -C /usr/local/bin &&\
+      rm -f crictl.tar.gz &&\
+      echo runtime-endpoint: unix:///host/run/containerd/containerd.sock > /etc/crictl.yaml
+    info: CLI for kubelet CRI.
 
 - bash:
   - name: generate_locale
