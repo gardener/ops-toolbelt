@@ -47,13 +47,7 @@ namespace=
 node=
 image=
 tolerations_array="
-  - key: node-role.kubernetes.io/master
-    operator: Exists
-    effect: NoSchedule
   - operator: Exists
-    effect: NoExecute
-  - key: CriticalAddonsOnly
-    operator: Exists
 "
 copy_tolerations=${FALSE}
 node_chroot=${FALSE}
