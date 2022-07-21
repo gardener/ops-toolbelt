@@ -15,20 +15,13 @@ The simplest way of using the `ops-toolbelt` is to just run the following comman
 ```bash
 $ docker run -it eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
 
-Ubuntu 18.04.2 LTS \n \l
+  __ _  __ _ _ __ __| | ___ _ __   ___ _ __   ___| |__   ___| | |
+ / _` |/ _` | '__/ _` |/ _ \ '_ \ / _ \ '__| / __| '_ \ / _ \ | |
+| (_| | (_| | | | (_| |  __/ | | |  __/ |    \__ \ | | |  __/ | |
+ \__, |\__,_|_|  \__,_|\___|_| |_|\___|_|    |___/_| |_|\___|_|_|
+ |___/
 
-This container comes with the following preinstalled tools:
-curl tree silversearcher-ag htop less vim tmux bash-completion dnsutils netcat-openbsd iproute2 dstat ngrep tcpdump python-minimal jq yaml2json kubectl pip cat mdv
-
-The sourced dotfiles are located under /root/dotfiles.
-Additionally you can add your own personal git settings in /root/dotfiles/.config/git/config_personal
-
-There is an operations guide which can be useful when troubleshooting gardener issues.
-It can be found under /guide the documents from it can be read with either cat or mdv.
-Additionally, there is a /hacks directory containing useful scripts. Execute ls /hacks to see what is available.
-
-The following variables have been exported:
-DOTFILES_USER=root DOTFILES_HOME=/root/dotfiles
+Run ghelp to get information about installed tools and packages
 ```
 
 You can then add personal configurations to your `ops-toolbelt` container for tools like `kubectl`, `gcloud` and so on ...
