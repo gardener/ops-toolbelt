@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- bash:
+  - name: workaround
+    command: echo 'Dir::Cache::pkgcache ""; Dir::Cache::srcpkgcache "";' > /etc/apt/apt.conf.d/docker-clean
+    info: ~
+
 - apt-get:
   - curl
   - tree
@@ -86,9 +91,6 @@
 - bash:
   - name: generate_locale
     command: locale-gen "en_US.UTF-8"
-    info: ~
-  - name: workaround
-    command: rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true
     info: ~
 
 - env:
