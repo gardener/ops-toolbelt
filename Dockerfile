@@ -1,5 +1,5 @@
 FROM ubuntu:22.04
-run apt-get --yes update && apt-get --yes install curl tree vim-tiny htop less tmux bash-completion python3-distutils dstat ngrep iotop iftop jq figlet tcpdump sysstat iputils-ping silversearcher-ag iproute2 dnsutils netcat-openbsd python3-minimal;\
+run apt-get --yes update && apt-get --yes install curl tree vim-tiny htop less tmux bash-completion python3-distutils dstat ngrep iotop iftop jq figlet tcpdump sysstat iputils-ping silversearcher-ag iproute2 dnsutils netcat-openbsd python3-minimal locales;\
     rm -rf /var/lib/apt/lists;\
     curl -sLf https://github.com/bronze1man/yaml2json/releases/download/v1.3/yaml2json_linux_amd64 -o /bin/yaml2json && chmod 755 /bin/yaml2json;\
     curl -sLf https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail -o /bin/kubetail && chmod 755 /bin/kubetail;\
@@ -9,7 +9,6 @@ run apt-get --yes update && apt-get --yes install curl tree vim-tiny htop less t
     echo address = \"unix:///host/run/containerd/containerd.sock\" >> /etc/nerdctl/nerdctl.toml &&\
     echo namespace = \"k8s.io\" >> /etc/nerdctl/nerdctl.toml;\
     curl -sLf https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/amd64/kubectl -o /bin/kubectl && chmod 755 /bin/kubectl;\
-    apt-get --yes update && apt-get install --yes locales ;\
     locale-gen "en_US.UTF-8"
 env LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8
 copy ./dotfiles /root/dotfiles
