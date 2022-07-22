@@ -50,6 +50,13 @@
     version: v1.3
     from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_amd64
     info: transform yaml string to json string without the type infomation.
+  - name: pip
+    from: https://bootstrap.pypa.io/get-pip.py
+    to: /get-pip.py
+    command: |
+      python3 /get-pip.py;\
+      rm /get-pip.py
+    info: ~
   - name: kubetail
     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
     info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
