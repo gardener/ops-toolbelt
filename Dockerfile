@@ -3,8 +3,6 @@ RUN echo 'Dir::Cache::pkgcache ""; Dir::Cache::srcpkgcache "";' > /etc/apt/apt.c
 run apt-get --yes update && apt-get --yes install curl tree vim-tiny htop less tmux bash-completion python3-distutils dstat ngrep iotop iftop jq figlet tcpdump sysstat iputils-ping silversearcher-ag iproute2 dnsutils netcat-openbsd python3-minimal;\
     rm -rf /var/lib/apt/lists;\
     curl -sLf https://github.com/bronze1man/yaml2json/releases/download/v1.3/yaml2json_linux_amd64 -o /bin/yaml2json && chmod 755 /bin/yaml2json;\
-    curl -sLf https://bootstrap.pypa.io/pip/get-pip.py -o /get-pip.py; python3 /get-pip.py;\
-    rm /get-pip.py;\
     curl -sLf https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail -o /bin/kubetail && chmod 755 /bin/kubetail;\
     curl -sLf https://github.com/containerd/nerdctl/releases/download/v0.22.0/nerdctl-0.22.0-linux-amd64.tar.gz -o /nerdctl.tar.gz; tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
     rm -f nerdctl.tar.gz &&\
@@ -15,7 +13,6 @@ run apt-get --yes update && apt-get --yes install curl tree vim-tiny htop less t
     apt-get --yes update && apt-get install --yes locales ;\
     locale-gen "en_US.UTF-8"
 env LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8
-run pip install mdv tabulate
 copy ./dotfiles /root/dotfiles
 copy ./hacks /hacks
 run echo "" >> /root/.bashrc;\
