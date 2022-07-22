@@ -4,6 +4,8 @@
 # SOURCE_PATH=${SOURCE_PATH:-}
 # GENERATED_DOCKERFILES_PATH=${GENERATED_DOCKERFILES_PATH:-}
 
+# echo ${GENERATED_DOCKERFILES_PATH}
+
 # if [[ -z ${SOURCE_PATH} ]]; then
 #     SOURCE_PATH="$(readlink -f "$(dirname "${0}")"/..)"
 # fi
@@ -18,3 +20,5 @@
 #     --from-image "ubuntu:${UBUNTU_VERSION}" \
 #     --title "gardener shell" \
 #     --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt.dockerfile
+
+cp $SOURCE_PATH/Dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt.dockerfile

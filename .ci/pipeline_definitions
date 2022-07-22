@@ -12,7 +12,7 @@ ops-toolbelt:
           ops-toolbelt:
             registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt'
-            dockerfile: ops-toolbelt.dockerfile
+            dockerfile: generated_dockerfiles/ops-toolbelt.dockerfile
             inputs:
               steps:
                 build: ~
