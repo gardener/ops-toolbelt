@@ -52,10 +52,10 @@
     info: transform yaml string to json string without the type infomation.
   - name: pip
     from: https://bootstrap.pypa.io/get-pip.py
-    to: get-pip.py
+    to: "$PWD/get-pip.py"
     command: |
-      python3 get-pip.py;\
-      rm get-pip.py
+      python3 "$PWD/get-pip.py" ;\
+      rm "$PWD/get-pip.py"
     info: ~
   - name: kubetail
     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
