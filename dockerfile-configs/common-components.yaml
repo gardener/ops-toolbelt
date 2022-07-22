@@ -53,17 +53,6 @@
   - name: kubetail
     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
     info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
-  - name: nerdctl
-    version: 0.19.0
-    from: https://github.com/containerd/nerdctl/releases/download/v{version}/nerdctl-{version}-linux-amd64.tar.gz
-    to: /nerdctl.tar.gz
-    command: |
-      tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
-      rm -f nerdctl.tar.gz &&\
-      mkdir /etc/nerdctl &&\
-      echo address = \"unix:///host/run/containerd/containerd.sock\" >> /etc/nerdctl/nerdctl.toml &&\
-      echo namespace = \"k8s.io\" >> /etc/nerdctl/nerdctl.toml
-    info: nerdctl is a Docker-compatible CLI for containerd. The root directory of the host has to be mounted under `/host`
   - name: kubectl
     version: v1.22.7
     from: https://storage.googleapis.com/kubernetes-release/release/v1.22.7/bin/linux/amd64/kubectl
@@ -73,6 +62,14 @@
   - name: pip
     command: curl -sLf https://bootstrap.pypa.io/get-pip.py -o /bin/get-pip.py && python3 /bin/get-pip.py && rm /bin/get-pip.py
     info: ~
+  - name: nerdctl
+    command: curl -sLf https://github.com/containerd/nerdctl/releases/download/v0.19.0/nerdctl-0.19.0-linux-amd64.tar.gz -o /nerdctl.tar.gz &&\
+      tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
+      rm -f nerdctl.tar.gz &&\
+      mkdir /etc/nerdctl &&\
+      echo address = \"unix:///host/run/containerd/containerd.sock\" >> /etc/nerdctl/nerdctl.toml &&\
+      echo namespace = \"k8s.io\" >> /etc/nerdctl/nerdctl.toml;\
+    info: nerdctl is a Docker-compatible CLI for containerd. The root directory of the host has to be mounted under `/host`
   - name: generate_locale
     command: locale-gen "en_US.UTF-8"
     info: ~
