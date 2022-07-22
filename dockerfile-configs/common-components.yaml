@@ -87,8 +87,8 @@
   - name: generate_locale
     command: locale-gen "en_US.UTF-8"
     info: ~
-  - name: clean_cache
-    command: rm -rf /var/lib/apt/lists/*
+  - name: workaround
+    command: rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true
     info: ~
 
 - env:
