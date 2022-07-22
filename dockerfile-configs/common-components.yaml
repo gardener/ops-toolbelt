@@ -30,6 +30,7 @@
   - tcpdump
   - sysstat
   - iputils-ping
+  - locales
   - name: silversearcher-ag
     provides: ag
   - name: iproute2
@@ -74,9 +75,7 @@
 
 - bash:
   - name: generate_locale
-    command: |
-      apt-get --yes update && apt-get install --yes locales ;\
-      locale-gen "en_US.UTF-8"
+    command: locale-gen "en_US.UTF-8"
     info: ~
 
 - env:
