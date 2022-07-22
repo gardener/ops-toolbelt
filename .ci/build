@@ -1,24 +1,22 @@
 #!/bin/bash -eu
 
-# UBUNTU_VERSION=20.04
-# SOURCE_PATH=${SOURCE_PATH:-}
-# GENERATED_DOCKERFILES_PATH=${GENERATED_DOCKERFILES_PATH:-}
+UBUNTU_VERSION=20.04
+SOURCE_PATH=${SOURCE_PATH:-}
+GENERATED_DOCKERFILES_PATH=${GENERATED_DOCKERFILES_PATH:-}
 
-# echo ${GENERATED_DOCKERFILES_PATH}
+echo ${GENERATED_DOCKERFILES_PATH}
 
-# if [[ -z ${SOURCE_PATH} ]]; then
-#     SOURCE_PATH="$(readlink -f "$(dirname "${0}")"/..)"
-# fi
+if [[ -z ${SOURCE_PATH} ]]; then
+    SOURCE_PATH="$(readlink -f "$(dirname "${0}")"/..)"
+fi
 
-# if [[ -z "${GENERATED_DOCKERFILES_PATH}" ]]; then
-#     GENERATED_DOCKERFILES_PATH="$(readlink -f "${SOURCE_PATH}/generated_dockerfiles")"
-#     mkdir -p "${GENERATED_DOCKERFILES_PATH}"
-# fi
+if [[ -z "${GENERATED_DOCKERFILES_PATH}" ]]; then
+    GENERATED_DOCKERFILES_PATH="$(readlink -f "${SOURCE_PATH}/generated_dockerfiles")"
+    mkdir -p "${GENERATED_DOCKERFILES_PATH}"
+fi
 
-# "${SOURCE_PATH}"/generator/generate-dockerfile.py \
-#     --dockerfile-config "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
-#     --from-image "ubuntu:${UBUNTU_VERSION}" \
-#     --title "gardener shell" \
-#     --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt.dockerfile
-
-cp $SOURCE_PATH/Dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt.dockerfile
+"${SOURCE_PATH}"/generator/generate-dockerfile.py \
+    --dockerfile-config "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
+    --from-image "ubuntu:${UBUNTU_VERSION}" \
+    --title "gardener shell" \
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt.dockerfile
