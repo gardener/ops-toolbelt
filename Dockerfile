@@ -1,5 +1,4 @@
 FROM ubuntu:22.04
-RUN echo 'Dir::Cache::pkgcache ""; Dir::Cache::srcpkgcache "";' > /etc/apt/apt.conf.d/docker-clean
 run apt-get --yes update && apt-get --yes install curl tree vim-tiny htop less tmux bash-completion python3-distutils dstat ngrep iotop iftop jq figlet tcpdump sysstat iputils-ping silversearcher-ag iproute2 dnsutils netcat-openbsd python3-minimal;\
     rm -rf /var/lib/apt/lists;\
     curl -sLf https://github.com/bronze1man/yaml2json/releases/download/v1.3/yaml2json_linux_amd64 -o /bin/yaml2json && chmod 755 /bin/yaml2json;\
