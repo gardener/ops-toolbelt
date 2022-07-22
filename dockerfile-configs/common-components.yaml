@@ -25,6 +25,7 @@
   - less
   - tmux
   - bash-completion
+  - python3-distutils
   - dstat
   - ngrep
   - iotop
