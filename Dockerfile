@@ -9,7 +9,8 @@ run apt-get --yes update && apt-get --yes install curl tree vim-tiny htop less t
     echo address = \"unix:///host/run/containerd/containerd.sock\" >> /etc/nerdctl/nerdctl.toml &&\
     echo namespace = \"k8s.io\" >> /etc/nerdctl/nerdctl.toml;\
     curl -sLf https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/amd64/kubectl -o /bin/kubectl && chmod 755 /bin/kubectl;\
-    locale-gen "en_US.UTF-8"
+    locale-gen "en_US.UTF-8";\
+    rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true
 env LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8
 copy ./dotfiles /root/dotfiles
 copy ./hacks /hacks
