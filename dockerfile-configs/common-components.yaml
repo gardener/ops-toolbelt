@@ -59,16 +59,6 @@
       python3 /get-pip.py;\
       rm /get-pip.py
     info: ~
-  - name: cat
-    version: v1.1.0
-    from: https://github.com/jingweno/ccat/releases/download/{version}/linux-amd64-1.1.0.tar.gz
-    to: /ccat.tar.gz
-    command: |
-      tar -zxf ccat.tar.gz linux-amd64-1.1.0/ccat &&\
-      mv linux-amd64-1.1.0/ccat /bin/cat &&\
-      rm -rf linux-amd64-1.1.0 ccat.tar.gz &&\
-      chmod 755 /bin/cat
-    info: The colorizing cat. It works similar to cat but displays content with syntax highlighting.
   - name: kubetail
     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
     info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
