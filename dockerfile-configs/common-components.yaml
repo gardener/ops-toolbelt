@@ -19,31 +19,31 @@
 
 - apt-get:
   - curl
-#   - tree
-#   - vim-tiny
-#   - htop
-#   - less
-#   - tmux
-#   - bash-completion
+  - tree
+  - vim-tiny
+  - htop
+  - less
+  - tmux
+  - bash-completion
 #   # - python3-distutils
-#   - dstat
-#   - ngrep
-#   - iotop
-#   - iftop
-#   - jq
-#   - figlet
-#   - tcpdump
-#   - sysstat
-#   - iputils-ping
-#   - locales
-#   - name: silversearcher-ag
-#     provides: ag
-#   - name: iproute2
-#     provides: ip
-#   - name: dnsutils
-#     provides: ["delv", "dig", "mdig", "nslookup", "nsupdate"]
-#   - name: netcat-openbsd
-#     provides: netcat
+  - dstat
+  - ngrep
+  - iotop
+  - iftop
+  - jq
+  - figlet
+  - tcpdump
+  - sysstat
+  - iputils-ping
+  - locales
+  - name: silversearcher-ag
+    provides: ag
+  - name: iproute2
+    provides: ip
+  - name: dnsutils
+    provides: ["delv", "dig", "mdig", "nslookup", "nsupdate"]
+  - name: netcat-openbsd
+    provides: netcat
 
 # - curl:
 #   - name: yaml2json
