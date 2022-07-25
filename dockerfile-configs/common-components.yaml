@@ -14,110 +14,110 @@
 
 - bash:
   - name: workaround
-    command: echo 'Dir::Cache::pkgcache ""; Dir::Cache::srcpkgcache "";' > /etc/apt/apt.conf.d/docker-clean
+    command: echo 'test'
     info: ~
 
-- apt-get:
-  - curl
-  - tree
-  - vim-tiny
-  - htop
-  - less
-  - tmux
-  - bash-completion
-  # - python3-distutils
-  - dstat
-  - ngrep
-  - iotop
-  - iftop
-  - jq
-  - figlet
-  - tcpdump
-  - sysstat
-  - iputils-ping
-  - locales
-  - name: silversearcher-ag
-    provides: ag
-  - name: iproute2
-    provides: ip
-  - name: dnsutils
-    provides: ["delv", "dig", "mdig", "nslookup", "nsupdate"]
-  - name: netcat-openbsd
-    provides: netcat
+# - apt-get:
+#   - curl
+#   - tree
+#   - vim-tiny
+#   - htop
+#   - less
+#   - tmux
+#   - bash-completion
+#   # - python3-distutils
+#   - dstat
+#   - ngrep
+#   - iotop
+#   - iftop
+#   - jq
+#   - figlet
+#   - tcpdump
+#   - sysstat
+#   - iputils-ping
+#   - locales
+#   - name: silversearcher-ag
+#     provides: ag
+#   - name: iproute2
+#     provides: ip
+#   - name: dnsutils
+#     provides: ["delv", "dig", "mdig", "nslookup", "nsupdate"]
+#   - name: netcat-openbsd
+#     provides: netcat
 
-- curl:
-  - name: yaml2json
-    version: v1.3
-    from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_amd64
-    info: transform yaml string to json string without the type infomation.
-  - name: kubetail
-    from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
-    info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
-  - name: kubectl
-    version: v1.22.7
-    from: https://storage.googleapis.com/kubernetes-release/release/v1.22.7/bin/linux/amd64/kubectl
-    info: command line tool for controlling Kubernetes clusters.
+# - curl:
+#   - name: yaml2json
+#     version: v1.3
+#     from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_amd64
+#     info: transform yaml string to json string without the type infomation.
+#   - name: kubetail
+#     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
+#     info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
+#   - name: kubectl
+#     version: v1.22.7
+#     from: https://storage.googleapis.com/kubernetes-release/release/v1.22.7/bin/linux/amd64/kubectl
+#     info: command line tool for controlling Kubernetes clusters.
 
-- bash:
-  # - name: pip
-  #   command: curl -sLf https://bootstrap.pypa.io/get-pip.py -o /bin/get-pip.py && python3 /bin/get-pip.py && rm /bin/get-pip.py
-  #   info: ~
-  - name: nerdctl
-    command: curl -sLf https://github.com/containerd/nerdctl/releases/download/v0.19.0/nerdctl-0.19.0-linux-amd64.tar.gz -o /nerdctl.tar.gz &&\
-      tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
-      rm -f nerdctl.tar.gz &&\
-      mkdir /etc/nerdctl &&\
-      echo address = \"unix:///host/run/containerd/containerd.sock\" >> /etc/nerdctl/nerdctl.toml &&\
-      echo namespace = \"k8s.io\" >> /etc/nerdctl/nerdctl.toml
-    info: nerdctl is a Docker-compatible CLI for containerd. The root directory of the host has to be mounted under `/host`
-  # - name: generate_locale
-  #   command: locale-gen "en_US.UTF-8"
-  #   info: ~
+# - bash:
+#   # - name: pip
+#   #   command: curl -sLf https://bootstrap.pypa.io/get-pip.py -o /bin/get-pip.py && python3 /bin/get-pip.py && rm /bin/get-pip.py
+#   #   info: ~
+#   - name: nerdctl
+#     command: curl -sLf https://github.com/containerd/nerdctl/releases/download/v0.19.0/nerdctl-0.19.0-linux-amd64.tar.gz -o /nerdctl.tar.gz &&\
+#       tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
+#       rm -f nerdctl.tar.gz &&\
+#       mkdir /etc/nerdctl &&\
+#       echo address = \"unix:///host/run/containerd/containerd.sock\" >> /etc/nerdctl/nerdctl.toml &&\
+#       echo namespace = \"k8s.io\" >> /etc/nerdctl/nerdctl.toml
+#     info: nerdctl is a Docker-compatible CLI for containerd. The root directory of the host has to be mounted under `/host`
+#   # - name: generate_locale
+#   #   command: locale-gen "en_US.UTF-8"
+#   #   info: ~
 
-- env:
-  - LANG=en_US.UTF-8
-  - LANGUAGE=en_US.UTF-8
+# - env:
+#   - LANG=en_US.UTF-8
+#   - LANGUAGE=en_US.UTF-8
 
-# - pip:
-#   - mdv
-#   - tabulate
+# # - pip:
+# #   - mdv
+# #   - tabulate
 
-- copy:
-  - name: dotfiles
-    from: ./dotfiles
-    to: /root/dotfiles
-    info: ~
-  - name: hacks
-    from: ./hacks
-    to: /hacks
-    info: ~
+# - copy:
+#   - name: dotfiles
+#     from: ./dotfiles
+#     to: /root/dotfiles
+#     info: ~
+#   - name: hacks
+#     from: ./hacks
+#     to: /hacks
+#     info: ~
 
-- bash:
-  - name: bash-completion
-    command: |
-      echo "" >> /root/.bashrc;\
-      echo "source /etc/profile.d/bash_completion.sh" >> /root/.bashrc
-    info: ~
-  - name: table
-    command: |
-      echo "source /root/dotfiles/.install_on_demand/.table" >> /root/dotfiles/.bashrc
-    info: Helpful tool that can be used to simplify the analysis of iptables entries. Pass a string argument to filter the output via grep.
-  - name: wg
-    command : |
-      echo "source /root/dotfiles/.install_on_demand/.wireguard" >> /root/dotfiles/.bashrc
-    info: Command line tool for the wireguard VPN.
-  - name: dotfiles
-    command: |
-      echo "" >> /root/.bashrc;\
-      echo "# source bashrc from dotfiles" >> /root/.bashrc;\
-      echo "source /root/dotfiles/.bashrc" >> /root/.bashrc;\
-      touch /root/dotfiles/.config/git/config_personal
-    info: Directory containing the currently active (sourced) dotfiles.
-  - name: hacks
-    command: |
-      echo "export PATH=/hacks:\$PATH" >> /root/.bashrc
-    info: ~
+# - bash:
+#   - name: bash-completion
+#     command: |
+#       echo "" >> /root/.bashrc;\
+#       echo "source /etc/profile.d/bash_completion.sh" >> /root/.bashrc
+#     info: ~
+#   - name: table
+#     command: |
+#       echo "source /root/dotfiles/.install_on_demand/.table" >> /root/dotfiles/.bashrc
+#     info: Helpful tool that can be used to simplify the analysis of iptables entries. Pass a string argument to filter the output via grep.
+#   - name: wg
+#     command : |
+#       echo "source /root/dotfiles/.install_on_demand/.wireguard" >> /root/dotfiles/.bashrc
+#     info: Command line tool for the wireguard VPN.
+#   - name: dotfiles
+#     command: |
+#       echo "" >> /root/.bashrc;\
+#       echo "# source bashrc from dotfiles" >> /root/.bashrc;\
+#       echo "source /root/dotfiles/.bashrc" >> /root/.bashrc;\
+#       touch /root/dotfiles/.config/git/config_personal
+#     info: Directory containing the currently active (sourced) dotfiles.
+#   - name: hacks
+#     command: |
+#       echo "export PATH=/hacks:\$PATH" >> /root/.bashrc
+#     info: ~
 
-- env:
-  - DOTFILES_USER=root
-  - DOTFILES_HOME=/root/dotfiles
+# - env:
+#   - DOTFILES_USER=root
+#   - DOTFILES_HOME=/root/dotfiles
