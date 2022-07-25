@@ -63,7 +63,7 @@
   #   command: curl -sLf https://bootstrap.pypa.io/get-pip.py -o /bin/get-pip.py && python3 /bin/get-pip.py && rm /bin/get-pip.py
   #   info: ~
   - name: foo
-    command: /usr/bin/curl -sLf https://storage.googleapis.com/kubernetes-release/release/v1.22.7/bin/linux/amd64/kubectl
+    command: nslookup storage.googleapis.com
     info: ~
   # - name: generate_locale
   #   command: locale-gen "en_US.UTF-8"
