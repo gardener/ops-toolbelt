@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- bash:
+  - name: workaround
+    command: echo 'Dir::Cache::pkgcache ""; Dir::Cache::srcpkgcache "";' > /etc/apt/apt.conf.d/docker-clean
+    info: ~
+
 - apt-get:
   - curl
   - tree
@@ -58,7 +63,7 @@
   #   command: curl -sLf https://bootstrap.pypa.io/get-pip.py -o /bin/get-pip.py && python3 /bin/get-pip.py && rm /bin/get-pip.py
   #   info: ~
   - name: nerdctl
-    command: curl -sLf https://github.com/containerd/nerdctl/releases/download/v0.19.0/nerdctl-0.19.0-linux-amd64.tar.gz -o /nerdctl.tar.gz &&\
+    command: /usr/bin/curl -sLf https://github.com/containerd/nerdctl/releases/download/v0.19.0/nerdctl-0.19.0-linux-amd64.tar.gz -o /nerdctl.tar.gz &&\
       tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
       rm -f nerdctl.tar.gz &&\
       mkdir /etc/nerdctl &&\
