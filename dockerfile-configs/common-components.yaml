@@ -25,7 +25,7 @@
   - less
   - tmux
   - bash-completion
-  - python3-distutils
+  # - python3-distutils
   - dstat
   - ngrep
   - iotop
@@ -59,9 +59,9 @@
     info: command line tool for controlling Kubernetes clusters.
 
 - bash:
-  - name: pip
-    command: curl -sLf https://bootstrap.pypa.io/get-pip.py -o /bin/get-pip.py && python3 /bin/get-pip.py && rm /bin/get-pip.py
-    info: ~
+  # - name: pip
+  #   command: curl -sLf https://bootstrap.pypa.io/get-pip.py -o /bin/get-pip.py && python3 /bin/get-pip.py && rm /bin/get-pip.py
+  #   info: ~
   - name: nerdctl
     command: curl -sLf https://github.com/containerd/nerdctl/releases/download/v0.19.0/nerdctl-0.19.0-linux-amd64.tar.gz -o /nerdctl.tar.gz &&\
       tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
@@ -78,9 +78,9 @@
   - LANG=en_US.UTF-8
   - LANGUAGE=en_US.UTF-8
 
-- pip:
-  - mdv
-  - tabulate
+# - pip:
+#   - mdv
+#   - tabulate
 
 - copy:
   - name: dotfiles
