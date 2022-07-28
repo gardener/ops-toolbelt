@@ -30,6 +30,7 @@
   - tcpdump
   - sysstat
   - iputils-ping
+  - locales
   - name: silversearcher-ag
     provides: ag
   - name: iproute2
@@ -53,21 +54,11 @@
       python3 /get-pip.py;\
       rm /get-pip.py
     info: ~
-  - name: cat
-    version: v1.1.0
-    from: https://github.com/jingweno/ccat/releases/download/{version}/linux-amd64-1.1.0.tar.gz
-    to: /ccat.tar.gz
-    command: |
-      tar -zxf ccat.tar.gz linux-amd64-1.1.0/ccat &&\
-      mv linux-amd64-1.1.0/ccat /bin/cat &&\
-      rm -rf linux-amd64-1.1.0 ccat.tar.gz &&\
-      chmod 755 /bin/cat
-    info: The colorizing cat. It works similar to cat but displays content with syntax highlighting.
   - name: kubetail
     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
     info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
   - name: nerdctl
-    version: 0.19.0
+    version: 0.22.0
     from: https://github.com/containerd/nerdctl/releases/download/v{version}/nerdctl-{version}-linux-amd64.tar.gz
     to: /nerdctl.tar.gz
     command: |
@@ -78,15 +69,13 @@
       echo namespace = \"k8s.io\" >> /etc/nerdctl/nerdctl.toml
     info: nerdctl is a Docker-compatible CLI for containerd. The root directory of the host has to be mounted under `/host`
   - name: kubectl
-    version: v1.22.7
-    from: https://storage.googleapis.com/kubernetes-release/release/v1.22.7/bin/linux/amd64/kubectl
+    version: v1.24.3
+    from: https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/amd64/kubectl
     info: command line tool for controlling Kubernetes clusters.
 
 - bash:
   - name: generate_locale
-    command: |
-      apt-get --yes update && apt-get install --yes locales ;\
-      locale-gen "en_US.UTF-8"
+    command: locale-gen "en_US.UTF-8"
     info: ~
 
 - env:
