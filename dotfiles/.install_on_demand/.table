@@ -13,7 +13,7 @@ function table () {
     echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections ;\
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections ;\
     read -p "Version [latest]: " -r version
-    apt install iptables-persistent"${version:+=$version}" --yes
+    apt-get --yes update && apt-get install --yes iptables-persistent"${version:+=$version}"
   fi
 
   iptables-save | while IFS= read -r line; do

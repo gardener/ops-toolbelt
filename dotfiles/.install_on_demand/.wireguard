@@ -13,7 +13,7 @@ function wireguard() {
           fi
     done
     read -p "Version [latest]: " -r version
-    apt install wireguard"${version:+=$version}" --yes
+    apt-get --yes update && apt-get install --yes wireguard"${version:+=$version}" --yes
   fi
   command wg "$@"
 }
