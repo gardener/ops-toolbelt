@@ -37,6 +37,7 @@ Options:
   -i|--image        Image to use for the privileged pod. The default value is: eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
   -c|--chroot       When this flag is set the host's root directory will also be used as root directory of the pod. By default the host's
                     root directory is mounted under /host on the pod.
+  -o|--hostnetwork  Whether to change the hostNetwork attribute to true.
 EOF
 }
 
@@ -49,6 +50,7 @@ image=
 tolerations_array="
   - operator: Exists
 "
+hostnetwork="false"
 copy_tolerations=${FALSE}
 node_chroot=${FALSE}
 sanitize_hostname() {
@@ -84,6 +86,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -t|--toleration)
       copy_tolerations=${TRUE}
+      shift
+      ;;
+    -o|--hostnetwork)
+      hostnetwork="true"
       shift
       ;;
     -h|--help)
@@ -175,7 +181,7 @@ $tolerations_array
   - name: host-root-volume
     hostPath:
       path: /
-  hostNetwork: true
+  hostNetwork: ${hostnetwork}
   hostPID: true
   restartPolicy: Never
   enableServiceLinks: false
