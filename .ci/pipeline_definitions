@@ -16,6 +16,15 @@ ops-toolbelt:
             inputs:
               steps:
                 build: ~
+            resource_labels:
+            - name: 'gardener.cloud/cve-categorisation'
+              value:
+                network_exposure: 'protected'
+                authentication_enforced: true
+                user_interaction: 'gardener-operator'
+                confidentiality_requirement: 'high'
+                integrity_requirement: 'high'
+                availability_requirement: 'low'
     steps:
       test: ~
       build:
