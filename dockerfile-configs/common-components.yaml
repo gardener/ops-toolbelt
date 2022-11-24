@@ -31,6 +31,7 @@
   - sysstat
   - iputils-ping
   - locales
+  - net-tools
   - name: silversearcher-ag
     provides: ag
   - name: iproute2
