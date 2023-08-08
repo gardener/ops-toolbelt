@@ -66,7 +66,7 @@
     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
     info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
   - name: nerdctl
-    version: 0.22.0
+    version: 1.5.0
     from: https://github.com/containerd/nerdctl/releases/download/v{version}/nerdctl-{version}-linux-amd64.tar.gz
     to: /nerdctl.tar.gz
     command: |
@@ -77,8 +77,8 @@
       echo namespace = \"k8s.io\" >> /etc/nerdctl/nerdctl.toml
     info: nerdctl is a Docker-compatible CLI for containerd. The root directory of the host has to be mounted under `/host`
   - name: kubectl
-    version: v1.24.3
-    from: https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/amd64/kubectl
+    version: v1.25.12
+    from: https://dl.k8s.io/release/v1.25.12/bin/linux/amd64/kubectl
     info: command line tool for controlling Kubernetes clusters.
 
 - bash:
