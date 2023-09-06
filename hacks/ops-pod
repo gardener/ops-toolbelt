@@ -40,7 +40,6 @@ image=
 node_chroot=${NO_CHROOT}
 name="ops-pod-$(whoami)"
 
-default_image="eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest"
 function get_default_namespace() {
   _namespace=$(kubectl config view -o jsonpath="{.contexts[?(@.name == \"$(kubectl config current-context)\")].context.namespace}")
   echo "${_namespace:-default}"
@@ -82,7 +81,7 @@ if [[ ${#positional[@]} -ne 1 ]]; then
 fi
 
 node=${positional[0]}
-image=${image:-$default_image}
+image=${default_image:-"eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest"}
 namespace=${namespace:-$(get_default_namespace)}
 
 node_of_pod=$(kubectl -n ${namespace} get pod ${node} -o jsonpath={.spec.nodeName} 2> /dev/null || true)
