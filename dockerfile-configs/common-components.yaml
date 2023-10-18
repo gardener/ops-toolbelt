@@ -80,6 +80,16 @@
     version: v1.26.9
     from: https://dl.k8s.io/release/{version}/bin/linux/amd64/kubectl
     info: command line tool for controlling Kubernetes clusters.
+  - name: etcdctl
+    version: 3.4.26
+    from: https://github.com/coreos/etcd/releases/download/v{version}/etcd-v{version}-linux-amd64.tar.gz
+    to: /etcd-linux-amd64.tar.gz
+    command: |
+      tar xzvf etcd-linux-amd64.tar.gz &&\
+      cp etcd-v3.4.26-linux-amd64/etcdctl /usr/local/bin/ &&\
+      rm -f etcd-linux-amd64.tar.gz &&\
+      rm -rf etcd-v3.4.26-linux-amd64 etcd-v3.4.26-linux-amd64
+    info: etcdctl is a simple command line client to interact with etcd
 
 - bash:
   - name: generate_locale
