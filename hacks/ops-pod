@@ -34,7 +34,7 @@ Options:
                        effect: NoExecute
                      - key: CriticalAddonsOnly
                        operator: Exists
-  -i|--image        Image to use for the privileged pod. The default value is: eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
+  -i|--image        Image to use for the privileged pod. The default value is: eu.gcr.io/sap-se-gcr-k8s-public/eu_gcr_io/gardener-project/gardener/ops-toolbelt:latest
   -c|--chroot       When this flag is set the host's root directory will also be used as root directory of the pod. By default the host's
                     root directory is mounted under /host on the pod.
   -o|--hostnetwork  Whether to change the hostNetwork attribute to true.
@@ -60,7 +60,7 @@ sanitize_hostname() {
 }
 name="$(sanitize_hostname "ops-pod-$(whoami)")"
 
-default_image="eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest"
+default_image="eu.gcr.io/sap-se-gcr-k8s-public/eu_gcr_io/gardener-project/gardener/ops-toolbelt:latest"
 function get_default_namespace() {
   _namespace=$(kubectl config view -o jsonpath="{.contexts[?(@.name == \"$(kubectl config current-context)\")].context.namespace}")
   echo "${_namespace:-default}"
