@@ -13,7 +13,7 @@ Starting a pod with the ops-toolbel timage requires a running Kubelet and health
 #### Running a container locally
 The simplest way of using the `ops-toolbelt` is to just run the following command:
 ```bash
-$ docker run -it eu.gcr.io/gardener-project/gardener/ops-toolbelt:latest
+$ docker run -it eu.gcr.io/sap-se-gcr-k8s-public/eu_gcr_io/gardener-project/gardener/ops-toolbelt:latest
 
   __ _  __ _ _ __ __| | ___ _ __   ___ _ __   ___| |__   ___| | |
  / _` |/ _` | '__/ _` |/ _ \ '_ \ / _ \ '__| / __| '_ \ / _ \ | |
