@@ -76,7 +76,10 @@ class Copy(Command):
 
     def get_lines(self):
         for component in self.components:
-            yield "{} {}".format(component.get_from(), component.get_to())
+            if component.get_command() is None:
+                yield "{} {}".format(component.get_from(), component.get_to())
+            else:
+                yield "{} {} {}".format(component.get_command(), component.get_from(), component.get_to())
 
 class Pip(Command):
     def __init__(self, components):

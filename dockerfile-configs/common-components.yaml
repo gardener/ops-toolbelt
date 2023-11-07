@@ -105,6 +105,19 @@
     info: ~
 
 - bash:
+  - name: mkdir-nonroot
+    command: |
+      mkdir -p /nonroot && mkdir -p /nonroot/hacks && chown 65532:65532 -R /nonroot
+    info: create a folder `nonroot` and change permissions. Intended to be used by nonroot users.
+
+- copy:
+  - name: nonroot-hacks
+    from: ./hacks/install_etcdctl
+    to: /nonroot/hacks
+    command: --chown=65532:65532
+    info: ~
+
+- bash:
   - name: bash-completion
     command: |
       echo "" >> /root/.bashrc;\

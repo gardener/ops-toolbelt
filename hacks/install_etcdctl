@@ -1,0 +1,59 @@
+#!/bin/bash -e
+# Copyright 2019 Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+function show_help () {
+  echo "Usage: ${0} [arguments]"
+  echo "Possible arguments:"
+  echo "-h, --help       Show this help message and exit"
+  echo "-v, --version    Optional: specify etcdctl version to use. Default: version v3.4.26 will be installed."
+}
+
+function install () {
+  local version=$1
+  local download_url
+
+  if [ -z "$version" ]
+  then # fetch v3.4.26
+    version="v3.4.26"
+  else
+    if [[ ! $version == v* ]]
+    then
+      version="v${version}"
+    fi
+  fi
+
+  echo "installing etcdctl version ${version}"
+  download_url="https://github.com/coreos/etcd/releases/download/${version}/etcd-${version}-linux-amd64.tar.gz"
+
+  curl -sL ${download_url} -o etcd-${version}-linux-amd64.tar.gz && tar -zxvf etcd-${version}-linux-amd64.tar.gz && mv etcd-${version}-linux-amd64/etcdctl . && rm etcd-${version}-linux-amd64.tar.gz && rm -r etcd-${version}-linux-amd64
+
+
+  echo "You can now start using etcdctl. Just execute \"etcdctl\" to use it. See https://etcd.io/docs/v3.4/dev-guide/interacting_v3/ for more details."
+}
+
+case "$1" in
+  --version | -v)
+    install "$2"
+    exit
+    ;;
+  --help | -h)
+    show_help
+    exit
+    ;;
+  *)
+    install
+    exit
+    ;;
+esac
