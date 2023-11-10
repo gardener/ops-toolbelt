@@ -41,6 +41,8 @@ function install () {
 
 
   echo "You can now start using etcdctl. Just execute \"etcdctl\" to use it. See https://etcd.io/docs/v3.4/dev-guide/interacting_v3/ for more details."
+  echo "This tool assumes that it is being run in an ephemeral container in a pod. If this is not the case then please ensure that you provide the correct ecrtificates, the correct endpoint and have all necessary accesses"
+  echo "Certificates to be passed to the command should be mounted onto any container in the pod having a shared process namespace. Please run \"ps -A\" to list all processes and then access the certificates using \"/proc/<proc number>/root/<file-path>\". Pass these certificate file paths to the etcdctl command :)"
 }
 
 case "$1" in
