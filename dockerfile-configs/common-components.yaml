@@ -115,7 +115,7 @@
     from: ./hacks/install_etcdctl
     to: /nonroot/hacks
     command: --chown=65532:65532
-    info: Bash script which installs the `etcdctl` tool in the container.
+    info: Bash script which installs the `etcdctl` tool in the container. If you are running this container as non-root, execute the `install-etcdctl` script in the `/nonroot/hacks` directory.
 
 - bash:
   - name: bash-completion
