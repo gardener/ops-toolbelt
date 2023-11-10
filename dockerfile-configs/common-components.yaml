@@ -108,14 +108,14 @@
   - name: /nonroot/hacks
     command: |
       mkdir -p /nonroot && mkdir -p /nonroot/hacks && chown 65532:65532 -R /nonroot
-    info: create a folder `nonroot` and change permissions. Intended to be used by nonroot users.
+    info: A directory intended to be used by nonroot users.
 
 - copy:
-  - name: nonroot-hacks
+  - name: install_etcdctl
     from: ./hacks/install_etcdctl
     to: /nonroot/hacks
     command: --chown=65532:65532
-    info: ~
+    info: Bash script which installs the `etcdctl` tool in the container.
 
 - bash:
   - name: bash-completion
