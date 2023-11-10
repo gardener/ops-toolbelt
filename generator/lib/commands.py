@@ -76,7 +76,10 @@ class Copy(Command):
 
     def get_lines(self):
         for component in self.components:
-            yield "{} {}".format(component.get_from(), component.get_to())
+            if component.get_command() is None:
+                yield "{} {}".format(component.get_from(), component.get_to())
+            else:
+                yield "{} {} {}".format(component.get_command(), component.get_from(), component.get_to())
 
 class Pip(Command):
     def __init__(self, components):
@@ -152,7 +155,7 @@ class InfoGenerator:
                 apt_get_commands.extend(InfoGenerator._get_package_name_and_bins(command))
             if isinstance(command, Pip):
                 pip_commands.extend(InfoGenerator._get_package_name_and_bins(command))
-            if isinstance(command, (Curl, Git, Execute)):
+            if isinstance(command, (Curl, Git, Execute, Copy)):
                 command_tools = command.get_tools()
                 for tool in command_tools:
                     if tool.get_info() is not None:
