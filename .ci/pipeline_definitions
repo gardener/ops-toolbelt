@@ -1,17 +1,18 @@
 ops-toolbelt:
-  template: 'default'
   base_definition:
-    repo: ~
     traits:
       version:
         preprocess:
           'inject-commit-hash'
         inject_effective_version: true
+      component_descriptor:
+        ocm_repository: europe-docker.pkg.dev/gardener-project/snapshots
+        ocm_repository_mappings:
+          - repository: europe-docker.pkg.dev/gardener-project/releases
       publish:
         dockerimages:
           ops-toolbelt:
-            registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/ops-toolbelt'
+            image: europe-docker.pkg.dev/gardener-project/snapshots/gardener/ops-toolbelt
             dockerfile: ops-toolbelt.dockerfile
             inputs:
               steps:
@@ -32,7 +33,6 @@ ops-toolbelt:
   jobs:
     head-update:
       traits:
-        component_descriptor: ~
         draft_release: ~
     pull-request:
       traits:
@@ -53,4 +53,7 @@ ops-toolbelt:
         publish:
           dockerimages:
             ops-toolbelt:
+              image: europe-docker.pkg.dev/gardener-project/releases/gardener/ops-toolbelt
               tag_as_latest: true
+              extra_push_targets:
+                - eu.gcr.io/gardener-project/gardener/ops-toolbelt
