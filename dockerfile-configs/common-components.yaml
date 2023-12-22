@@ -116,6 +116,13 @@
     command: --chown=65532:65532
     info: Bash script which installs the `etcdctl` tool in the container. If you are running this container as non-root, execute the `install_etcdctl` script in the `/nonroot/hacks` directory.
 
+- copy:
+  - name: install_etcd_cheatsheet
+    from: ./hacks/print-etcd-cheatsheet.sh
+    to: /nonroot/hacks/print-etcd-cheatsheet
+    command: --chown=65532:65532
+    info: Bash script which prints out etcd certificate paths and handy etcdctl comands
+
 - bash:
   - name: bash-completion
     command: |
