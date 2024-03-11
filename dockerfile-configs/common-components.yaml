@@ -2,12 +2,19 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+- bash:
+  - name: debian testing apt-source
+    command: |
+      echo "deb https://cdn-aws.deb.debian.org/debian testing main" >> /etc/apt/sources.list
+    info: ~
+
 - apt-get:
   - curl
   - tree
   - vim-tiny
   - htop
   - less
+  - locales
   - tmux
   - bash-completion
   - python3-distutils
@@ -32,6 +39,8 @@
     provides: netcat
   - name: python3-minimal
     provides: python3
+  - name: python3-tabulate
+    provides: tabulate
 
 - bash:
   - name: install-security-upgrades
@@ -45,13 +54,6 @@
     version: v1.3
     from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_amd64
     info: transform yaml string to json string without the type infomation.
-  - name: pip
-    from: https://bootstrap.pypa.io/pip/get-pip.py
-    to: /get-pip.py
-    command: |
-      python3 /get-pip.py;\
-      rm /get-pip.py
-    info: ~
   - name: kubetail
     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
     info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
@@ -73,16 +75,14 @@
 
 - bash:
   - name: generate_locale
-    command: locale-gen "en_US.UTF-8"
+    command: |
+      echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen;\
+      locale-gen
     info: ~
 
 - env:
   - LANG=en_US.UTF-8
   - LANGUAGE=en_US.UTF-8
-
-- pip:
-  - mdv
-  - tabulate
 
 - copy:
   - name: dotfiles

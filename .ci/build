@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-UBUNTU_VERSION=22.04
+GARDENLINUX_VERSION=nightly
 SOURCE_PATH=${SOURCE_PATH:-}
 GENERATED_DOCKERFILES_PATH=${GENERATED_DOCKERFILES_PATH:-}
 
@@ -15,6 +15,6 @@ fi
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-config "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
-    --from-image "ubuntu:${UBUNTU_VERSION}" \
+    --from-image "ghcr.io/gardenlinux/gardenlinux:${GARDENLINUX_VERSION}" \
     --title "gardener shell" \
     --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt.dockerfile
