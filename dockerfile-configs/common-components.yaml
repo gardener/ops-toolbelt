@@ -117,6 +117,10 @@
     command : |
       echo "source /root/dotfiles/.install_on_demand/.wireguard" >> /root/dotfiles/.bashrc
     info: Command line tool for the wireguard VPN.
+  - name: etcdctl
+    command : |
+      echo "source /root/dotfiles/.install_on_demand/.etcdctl" >> /root/dotfiles/.bashrc
+    info: Command line tool for manual operations on etcdctl
   - name: dotfiles
     command: |
       echo "" >> /root/.bashrc;\
