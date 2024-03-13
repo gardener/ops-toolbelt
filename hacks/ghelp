@@ -29,6 +29,9 @@ def parse_package_info(package_info, provided_binaries, name_key, version_key, i
 
 def retrieve_packages_info(installed_tools_list, package_manager, show_command, version_delimiter, delimiter, name_key, version_key, info_key):
     tools = []
+    if not installed_tools_list:
+        return tools
+
     provided_binaries = {}
     tool_names = []
     for entry in installed_tools_list:
@@ -70,11 +73,13 @@ if ghelp_info is None:
     exit(1)
 
 apttools = retrieve_packages_info(ghelp_info["apt"], "apt", "show", "=", "\n\n" , "Package", "Version", "Description")
+piptools = retrieve_packages_info(ghelp_info["pip"], "pip", "show", "==", "---", "Name", "Version", "Summary")
 downloaded_tools = retrieve_downloaded_tools_info(ghelp_info["downloaded"])
 hack_tools = retrieve_hacks_info()
 
 table = []
 table.extend(apttools)
+table.extend(piptools)
 table.extend(downloaded_tools)
 table.extend(hack_tools)
 
