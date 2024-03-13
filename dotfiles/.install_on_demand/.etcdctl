@@ -16,6 +16,9 @@ function etcdctl_install() {
             echo -e "Error: ${app} not installed."
             return 1
           fi
+          if [ "${_confirmation}" == "" ]; then
+            _confirmation="Y"
+          fi
     done
     read -p "Version [latest]: " -r version
     "${install_func}" "${version}"

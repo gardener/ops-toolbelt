@@ -11,6 +11,9 @@ function wireguard() {
             echo -e "Error: wireguard not installed."
             return 1
           fi
+          if [ "${_confirmation}" == "" ]; then
+            _confirmation="Y"
+          fi
     done
     read -p "Version [latest]: " -r version
     apt-get --yes update && apt-get install --yes wireguard"${version:+=$version}" --yes
