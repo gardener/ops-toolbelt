@@ -17,6 +17,13 @@ function install () {
   local arch
   local platform
   local pkg
+  local dest
+
+  if [[ $(whoami) == "root" ]]; then
+    dest="/usr/local/bin/etcdctl"
+  else
+    dest="${DOTFILES_HOME}/bin/etcdctl"
+  fi
   arch="$(arch)"
   if [[ "${arch}" == "aarch64" ]]; then
     arch="arm64"
@@ -30,7 +37,7 @@ function install () {
   curl -sL "${download_url}" \
     -o "${pkg}.tar.gz" && \
     tar -zxvf "${pkg}.tar.gz" && \
-    mv "${pkg}/etcdctl" /usr/local/bin/etcdctl && \
+    mv "${pkg}/etcdctl" "${dest}" && \
     rm "${pkg}.tar.gz" && \
     rm -r "${pkg}"
   echo "You can now start using etcdctl. Just execute \"etcdctl\" to use it. See https://etcd.io/docs/v3.4/dev-guide/interacting_v3/ for more details."
