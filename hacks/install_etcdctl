@@ -25,9 +25,15 @@ function install () {
     dest="${DOTFILES_HOME}/bin/etcdctl"
   fi
   arch="$(arch)"
-  if [[ "${arch}" == "aarch64" ]]; then
-    arch="arm64"
-  fi
+  case "${arch}" in
+    x86_64)
+      arch="amd64"
+      ;;
+    arm64)
+      arch="arm64"
+      ;;
+  esac
+
   platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
   pkg="etcd-${version}-${platform}-${arch}"
 
