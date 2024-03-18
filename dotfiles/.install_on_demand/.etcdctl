@@ -43,8 +43,7 @@ function _etcdctl_prepend_args(){
   if _check_arg_present "--dial-timeout" "${args[@]}"; then
     cert_args+=("--dial-timeout=2m")
   fi
-  # cert_args+=("${args[@]}")
-  args=("${cert_args[@]}" "${args[@]}")
+  args=("${args[@]}" "${cert_args[@]}")
   echo "${args[*]}"
 }
 
@@ -61,5 +60,5 @@ function _check_arg_present(){
 }
 
 function get_etcd_pid() {
-  ps -A | grep '[e]tcd-wrapper' | awk '{print $1}'
+  echo "$(pgrep wrapper)"
 }
