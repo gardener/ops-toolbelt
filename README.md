@@ -1,5 +1,6 @@
 ## Ops Toolbelt
 
+[![REUSE status](https://api.reuse.software/badge/github.com/gardener/ops-toolbelt)](https://api.reuse.software/info/github.com/gardener/ops-toolbelt)
 
 ### What is the ops-toolbelt
 The `ops-toolbelt` aims to be a standard operator container image with pre-installed useful tools for troubleshooting issues on gardener landscapes. The `ops-toolbelt` images can be used by the Gardener Dashboard web consoles functionality to log into the garden, seed, or shoot clusters.
