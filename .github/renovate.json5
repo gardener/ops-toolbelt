@@ -12,7 +12,13 @@
       // Update `_VERSION` and `_version` variables in Makefiles and scripts.
       // Inspired by `regexManagers:dockerfileVersions` preset.
       customType: "regex",
-      fileMatch: ["Makefile$", "\\.yaml$", "\\.sh$", "^/hack/*"],
+      fileMatch: [
+        "Makefile$",
+        "\\.yaml$",
+        "\\.sh$",
+        "^hacks/*",
+        "^.ci/build$"
+      ],
       matchStrings: [
         "# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s.+?_(VERSION|version) *[?:]?= *\"?(?<currentValue>.+?)\"?\\s"
       ]

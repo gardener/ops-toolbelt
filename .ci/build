@@ -1,5 +1,6 @@
 #!/bin/bash -eu
 
+# renovate: datasource=github-releases depName=gardenlinux/gardenlinux
 GARDENLINUX_VERSION=1443.0
 SOURCE_PATH=${SOURCE_PATH:-}
 GENERATED_DOCKERFILES_PATH=${GENERATED_DOCKERFILES_PATH:-}
