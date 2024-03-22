@@ -14,6 +14,8 @@ function show_help () {
 function install () {
   local version=$1
   local download_url
+  local yellow="\033[0;33m"
+  local nc="\033[0m"
 
   if [ -z "$version" ]
   then # fetch latest
@@ -26,13 +28,14 @@ function install () {
     then
       version="v${version}"
     fi
-    echo "installing k9s version ${version}"
     download_url="https://github.com/derailed/k9s/releases/download/${version}/k9s_Linux_amd64.tar.gz"
   fi
 
   curl -sL ${download_url} -o k9s.tar.gz && tar -zxvf k9s.tar.gz k9s && mv k9s /usr/local/bin/k9s && chmod 755 /usr/local/bin/k9s && rm k9s.tar.gz
 
+  echo -e "${yellow}"
   echo "You can now start using k9s. Just execute \"k9s\" to use it or \"k9s -n mynamespace\" to target a namespace. See https://github.com/derailed/k9s for more details."
+  echo -e "${nc}"
 }
 
 case "$1" in
