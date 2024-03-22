@@ -42,13 +42,6 @@
   - name: python3-tabulate
     provides: tabulate
 
-- bash:
-  - name: install-security-upgrades
-    command: |
-      apt-get --yes update && apt-get -s dist-upgrade | grep "^Inst" | grep -i securi | awk -F " " {'print $2'} | xargs apt-get install;\
-      rm -rf /var/lib/apt/lists
-    info: ~
-
 - curl:
   - name: yaml2json
     version: v1.3
