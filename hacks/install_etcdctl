@@ -13,8 +13,8 @@ function show_help () {
 
 function install () {
   # renovate: datasource=github-releases depName=etcd-io/etcd
-  _version="v3.5.12"
-  local version="${1:-${_version}}"
+  etcd_version="v3.5.12"
+  local version="${1:-${etcd_version}}"
   local download_url
   local arch
   local platform
