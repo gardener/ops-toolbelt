@@ -89,12 +89,20 @@
     from: ./hacks
     to: /hacks
     info: ~
+  - name: dotfiles
+    from: ./dotfiles/.install_on_demand
+    to: /etc/bash/install_on_demand
+    info: ~
 
 - bash:
   - name: /nonroot/hacks
     command: |
       mkdir -p /nonroot && mkdir -p /nonroot/hacks && chown 65532:65532 -R /nonroot
     info: A directory intended to be used by nonroot users.
+  - name: /opt/bin
+    command: |
+      mkdir -p /opt/bin && chmod -R 777 /opt/bin
+    info: A directory intended to allow common install point for ad-hoc install scripts
 
 - copy:
   - name: install_etcdctl
@@ -111,15 +119,15 @@
     info: ~
   - name: table
     command: |
-      echo "source /root/dotfiles/.install_on_demand/.table" >> /root/dotfiles/.bashrc
+      echo "source /etc/bash/install_on_demand/.table" >> /etc/bash.bashrc
     info: Helpful tool that can be used to simplify the analysis of iptables entries. Pass a string argument to filter the output via grep.
   - name: wg
     command : |
-      echo "source /root/dotfiles/.install_on_demand/.wireguard" >> /root/dotfiles/.bashrc
+      echo "source /etc/bash/install_on_demand/.wireguard" >> /etc/bash.bashrc
     info: Command line tool for the wireguard VPN.
   - name: etcdctl
     command : |
-      echo "source /root/dotfiles/.install_on_demand/.etcdctl" >> /root/dotfiles/.bashrc
+      echo "source /etc/bash/install_on_demand/.etcdctl" >> /etc/bash.bashrc
     info: Command line tool for manual operations on etcdctl
   - name: dotfiles
     command: |
@@ -132,6 +140,11 @@
     command: |
       echo "export PATH=/hacks:\$PATH" >> /root/.bashrc
     info: ~
+  - name: opt
+    command: |
+      echo "export PATH=/opt/bin:\${PATH}" >> /etc/bash.bashrc
+    info: User writeable directory, useful for on-demand installations from non-root users.
+
 
 - env:
   - DOTFILES_USER=root
