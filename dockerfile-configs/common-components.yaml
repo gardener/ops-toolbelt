@@ -53,7 +53,7 @@
     info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
   - name: nerdctl
     # renovate: datasource=github-releases depName=containerd/nerdctl
-    version: 1.7.3
+    version: 1.7.5
     from: https://github.com/containerd/nerdctl/releases/download/v{version}/nerdctl-{version}-linux-amd64.tar.gz
     to: /nerdctl.tar.gz
     command: |
