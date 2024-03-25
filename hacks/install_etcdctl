@@ -12,7 +12,9 @@ function show_help () {
 }
 
 function install () {
-  local version="${1:-v3.4.30}" # default version "v3.4.3
+  # renovate: datasource=github-releases depName=etcd-io/etcd
+  _version="v3.5.12"
+  local version="${1:-${_version}}"
   local download_url
   local arch
   local platform
@@ -26,12 +28,13 @@ function install () {
   mkdir -p "${tmp_dir}/dest"
 
   dest="/opt/bin/etcdctl"
+  # dest="/nonroot/hacks/etcdctl"
   if uname="$(whoami)"; then
     if [[ "${uname}" == "root" ]]; then
       dest="/usr/local/bin/etcdctl"
     fi
   fi
-      
+
   arch="$(arch)"
   case "${arch}" in
     x86_64)
@@ -45,7 +48,7 @@ function install () {
   platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
   pkg="etcd-${version}-${platform}-${arch}"
 
-  download_url="https://github.com/coreos/etcd/releases/download/${version}/${pkg}.tar.gz"
+  download_url="https://github.com/etcd-io/etcd/releases/download/${version}/${pkg}.tar.gz"
 
   curl -sL "${download_url}" \
     -o "${tmp_dir}/${pkg}.tar.gz" && \
