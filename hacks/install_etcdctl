@@ -12,8 +12,7 @@ function show_help () {
 }
 
 function install () {
-  # renovate: datasource=github-releases depName=etcd-io/etcd
-  etcd_version="v3.5.12"
+  etcd_version="v3.4.26"
   local version="${1:-${etcd_version}}"
   local download_url
   local arch
