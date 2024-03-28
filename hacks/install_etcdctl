@@ -12,28 +12,53 @@ function show_help () {
 }
 
 function install () {
-  local version=$1
+  etcd_version="v3.4.26"
+  local version="${1:-${etcd_version}}"
   local download_url
+  local arch
+  local platform
+  local pkg
+  local dest
+  local yellow="\033[0;33m"
+  local nc="\033[0m"
+  local tmp_dir
 
-  if [ -z "$version" ]
-  then # fetch v3.4.26
-    version="v3.4.26"
-  else
-    if [[ ! $version == v* ]]
-    then
-      version="v${version}"
+  tmp_dir="$(mktemp -d)"
+  mkdir -p "${tmp_dir}/dest"
+
+  dest="/opt/bin/etcdctl"
+  # dest="/nonroot/hacks/etcdctl"
+  if uname="$(whoami)"; then
+    if [[ "${uname}" == "root" ]]; then
+      dest="/usr/local/bin/etcdctl"
     fi
   fi
 
-  echo "installing etcdctl version ${version}"
-  download_url="https://github.com/coreos/etcd/releases/download/${version}/etcd-${version}-linux-amd64.tar.gz"
+  arch="$(arch)"
+  case "${arch}" in
+    x86_64)
+      arch="amd64"
+      ;;
+    aarch64)
+      arch="arm64"
+      ;;
+  esac
 
-  curl -sL ${download_url} -o etcd-${version}-linux-amd64.tar.gz && tar -zxvf etcd-${version}-linux-amd64.tar.gz && mv etcd-${version}-linux-amd64/etcdctl . && rm etcd-${version}-linux-amd64.tar.gz && rm -r etcd-${version}-linux-amd64
+  platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  pkg="etcd-${version}-${platform}-${arch}"
 
+  download_url="https://github.com/etcd-io/etcd/releases/download/${version}/${pkg}.tar.gz"
 
+  curl -sL "${download_url}" \
+    -o "${tmp_dir}/${pkg}.tar.gz" && \
+    tar -zxvf "${tmp_dir}/${pkg}.tar.gz" -C "${tmp_dir}/dest" && \
+    mv "${tmp_dir}/dest/${pkg}/etcdctl" "${dest}" && \
+    rm -rf "${tmp_dir}"
+  echo -e "${yellow}"
   echo "You can now start using etcdctl. Just execute \"etcdctl\" to use it. See https://etcd.io/docs/v3.4/dev-guide/interacting_v3/ for more details."
-  echo "This tool assumes that it is being run in an ephemeral container in a pod. If this is not the case then please ensure that you provide the correct ecrtificates, the correct endpoint and have all necessary accesses."
+  echo "This tool assumes that it is being run in an ephemeral container in a pod. If this is not the case, please ensure that you provide the correct certificates, the correct endpoint, and have all necessary accesses."
   echo "Certificates to be passed to the command should be mounted onto any container in the pod having a shared process namespace. Please run \"ps -A\" to list all processes and then access the certificates using \"/proc/<proc number>/root/<file-path>\". Pass these certificate file paths to the etcdctl command :)"
+  echo -e "${nc}"
 }
 
 case "$1" in

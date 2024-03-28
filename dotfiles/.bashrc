@@ -52,6 +52,7 @@ if [[ ! -f "$git_config_personal" ]]; then
   [[ -n "$dotfiles_user_email" ]] && echo -e "[user]\n  email = $dotfiles_user_email" >> "$git_config_personal"
 fi
 
+mkdir -p "${DOTFILES_HOME}/bin" "${DOTFILES_HOME}/scripts" 
 # add bin dir to PATH
 [[ -d "$DOTFILES_HOME/bin" ]] && PATH="$DOTFILES_HOME/bin:$PATH"
 
