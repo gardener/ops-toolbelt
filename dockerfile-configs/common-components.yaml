@@ -118,10 +118,10 @@
 
 - copy:
   - name: print-etcd-cheatsheet
-    from: ./hacks/print-etcd-cheatsheet.sh
+    from: ./hacks/print-etcd-cheatsheet
     to: /nonroot/hacks/print-etcd-cheatsheet
     command: --chown=65532:65532
-    info: Bash script which prints out etcd certificate paths and handy etcdctl comands. If you are running this container as a non-root container, execute the script in the `/nonroot/hacks` directory. Else use the one in `/hacks`
+    info: Bash script which prints out etcd certificate paths and handy etcdctl comands. If you are running this container as a non-root container, execute the script in the `/nonroot/hacks` directory. Else use the one in `/hacks`. This script assumes an `etcd-backup-restore` process and an `etcd-wrapper` process are already running.
 
 - bash:
   - name: bash-completion
@@ -154,3 +154,4 @@
 - env:
   - DOTFILES_USER=root
   - DOTFILES_HOME=/root/dotfiles
+  - PATH=/nonroot/hacks:$PATH
