@@ -8,7 +8,7 @@ ENV = "env"
 
 class Dockerfile:
     def __init__(self, from_image, commands):
-        self.from_image = "FROM {}\n".format(from_image)
+        self.from_image = "FROM {}\nARG TARGETARCH\n".format(from_image)
         self.commands = commands
         self.layers = []
 

@@ -25,10 +25,12 @@ function install () {
     fi
   fi
 
-  echo "installing etcdctl version ${version}"
-  download_url="https://github.com/coreos/etcd/releases/download/${version}/etcd-${version}-linux-amd64.tar.gz"
+  arch=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
 
-  curl -sL ${download_url} -o etcd-${version}-linux-amd64.tar.gz && tar -zxvf etcd-${version}-linux-amd64.tar.gz && mv etcd-${version}-linux-amd64/etcdctl . && rm etcd-${version}-linux-amd64.tar.gz && rm -r etcd-${version}-linux-amd64
+  echo "installing etcdctl version ${version}"
+  download_url="https://github.com/coreos/etcd/releases/download/${version}/etcd-${version}-linux-${arch}.tar.gz"
+
+  curl -sL ${download_url} -o etcd-${version}-linux-${arch}.tar.gz && tar -zxvf etcd-${version}-linux-${arch}.tar.gz && mv etcd-${version}-linux-${arch}/etcdctl . && rm etcd-${version}-linux-${arch}.tar.gz && rm -r etcd-${version}-linux-${arch}
 
 
   echo "You can now start using etcdctl. Just execute \"etcdctl\" to use it. See https://etcd.io/docs/v3.4/dev-guide/interacting_v3/ for more details."

@@ -46,7 +46,7 @@
   - name: yaml2json
     # renovate: datasource=github-releases depName=bronze1man/yaml2json
     version: v1.3
-    from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_amd64
+    from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_$(echo ${{TARGETARCH}} |sed 's/x86_64/amd64/;s/arm64/arm/')
     info: transform yaml string to json string without the type infomation.
   - name: kubetail
     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
@@ -54,7 +54,7 @@
   - name: nerdctl
     # renovate: datasource=github-releases depName=containerd/nerdctl
     version: 1.7.5
-    from: https://github.com/containerd/nerdctl/releases/download/v{version}/nerdctl-{version}-linux-amd64.tar.gz
+    from: https://github.com/containerd/nerdctl/releases/download/v{version}/nerdctl-{version}-linux-${{TARGETARCH}}.tar.gz
     to: /nerdctl.tar.gz
     command: |
       tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
@@ -66,7 +66,7 @@
   - name: kubectl
     # renovate: datasource=github-releases depName=kubernetes/kubernetes
     version: v1.28.8
-    from: https://dl.k8s.io/release/{version}/bin/linux/amd64/kubectl
+    from: https://dl.k8s.io/release/{version}/bin/linux/${{TARGETARCH}}/kubectl
     info: command line tool for controlling Kubernetes clusters.
 
 - bash:
