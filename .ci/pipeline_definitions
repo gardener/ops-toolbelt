@@ -10,6 +10,10 @@ ops-toolbelt:
         ocm_repository_mappings:
           - repository: europe-docker.pkg.dev/gardener-project/releases
       publish:
+        oci-builder: docker-buildx
+        platforms:
+        - linux/amd64
+        - linux/arm64
         dockerimages:
           ops-toolbelt:
             image: europe-docker.pkg.dev/gardener-project/snapshots/gardener/ops-toolbelt
@@ -51,6 +55,10 @@ ops-toolbelt:
               channel_name: 'C9CEBQPGE' #internal gardener channel
               slack_cfg_name: 'scp_workspace'
         publish:
+          oci-builder: docker-buildx
+          platforms:
+          - linux/amd64
+          - linux/arm64
           dockerimages:
             ops-toolbelt:
               image: europe-docker.pkg.dev/gardener-project/releases/gardener/ops-toolbelt

@@ -26,6 +26,7 @@ class Dockerfile:
 
     def to_string(self):
         output = self.from_image
+        output += "ARG TARGETARCH\n"
         for layer in self.layers:
             output += layer.get_layer_as_string()
         return output
