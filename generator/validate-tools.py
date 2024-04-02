@@ -7,6 +7,7 @@
 import argparse
 import subprocess
 import shlex
+import re
 
 from lib import dockerfile, commands, config_parser
 
@@ -15,9 +16,12 @@ def validate_tools(commands_list):
     for command in commands_list:
         if isinstance(command, commands.Curl):
             for tool in command.get_tools():
+                cmd_line = tool.get_from()
+                cmd_line = re.sub(r"\$\(echo \${TARGETARCH}.*\)", "amd64", cmd_line)
+                cmd_line = re.sub(r"\${TARGETARCH}", "amd64", cmd_line)
                 try:
                     subprocess.run(
-                        ["curl", "-sLf", shlex.quote(tool.get_from())],
+                        ["curl", "-sLf", shlex.quote(cmd_line)],
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL,
                         check=True)
