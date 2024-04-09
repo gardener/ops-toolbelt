@@ -1,0 +1,22 @@
+#! /usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and Gardener contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+alias k9s="k9s_install"
+function k9s_install() {
+  app="k9s"
+  install_func='/nonroot/hacks/install_k9s'
+
+  if ! hash "${app}" &> /dev/null; then
+    "${install_func}" 1>&2
+  fi
+  # k9s does not start if HOME is not writeable
+  if [ ! -w "${HOME}" ]; then
+    echo "HOME is not writeable. Reconfiguring to /tmp/home" 1>&2
+    mkdir -p "/tmp/home"
+    export HOME="/tmp/home"
+  fi
+  command "${app}" "$@"
+}

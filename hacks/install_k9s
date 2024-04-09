@@ -14,26 +14,51 @@ function show_help () {
 function install () {
   local version=$1
   local download_url
-  local arch=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+  local yellow="\033[0;33m"
+  local nc="\033[0m"
+  local arch
+  local platform
+  local pkg
+  local dest
+  local version_url="https://api.github.com/repos/derailed/k9s/releases/latest"
 
-  if [ -z "$version" ]
-  then # fetch latest
-    local latest_release=$(curl -sL https://api.github.com/repos/derailed/k9s/releases/latest)
-    version=$(echo "${latest_release}" | jq -r '.tag_name')
-    echo "installing latest version ${version}"
-    download_url=$(echo "${latest_release}" | jq -r --arg filename "k9s_Linux_${arch}.tar.gz" '.assets[] | select(.name == $filename) | .browser_download_url')
-  else
-    if [[ ! $version == v* ]]
-    then
-      version="v${version}"
+  tmp_dir="$(mktemp -d)"
+  mkdir -p "${tmp_dir}/dest"
+
+  dest="/opt/bin/k9s"
+  if uname="$(whoami 2> /dev/null)"; then
+    if [[ "${uname}" == "root" ]]; then
+      if [ -w "/usr/local/bin" ]; then
+        dest="/usr/local/bin/k9s"
+      fi
     fi
-    echo "installing k9s version ${version}"
-    download_url="https://github.com/derailed/k9s/releases/download/${version}/k9s_Linux_${arch}.tar.gz"
   fi
 
-  curl -sL ${download_url} -o k9s.tar.gz && tar -zxvf k9s.tar.gz k9s && mv k9s /usr/local/bin/k9s && chmod 755 /usr/local/bin/k9s && rm k9s.tar.gz
+  arch=$(uname -m | sed 's/^x86_64$/amd64/;s/^aarch64$/arm64/')
 
+  platform="$(uname -s)"
+  pkg="k9s_${platform}_${arch}"
+
+  if [ -z "$version" ]; then # fetch latest
+    version=$(curl -sL "${version_url}" | jq -r '.tag_name')
+  fi
+
+  if [[ ! $version == v* ]]; then
+    version="v${version}"
+  fi
+
+  download_url="https://github.com/derailed/k9s/releases/download/${version}/${pkg}.tar.gz"
+
+  curl -sL "${download_url}" \
+    -o "${tmp_dir}/${pkg}.tar.gz" && \
+    tar -zxf "${tmp_dir}/${pkg}.tar.gz" -C "${tmp_dir}/dest" && \
+    mv "${tmp_dir}/dest/k9s" "${dest}" && \
+    chmod 755 "${dest}" && \
+    rm -rf "${tmp_dir}"
+
+  echo -e "${yellow}"
   echo "You can now start using k9s. Just execute \"k9s\" to use it or \"k9s -n mynamespace\" to target a namespace. See https://github.com/derailed/k9s for more details."
+  echo -e "${nc}"
 }
 
 case "$1" in

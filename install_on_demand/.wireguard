@@ -1,0 +1,15 @@
+#! /usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and Gardener contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+alias wg='wireguard'
+function wireguard() {
+  if ! hash wg &> /dev/null; then
+    echo "Installing wireguard via apt" 1>&2
+    apt-get --yes update 1>/dev/null 2>/dev/null && \
+    apt-get install --yes wireguard --yes 1>/dev/null 2>/dev/null
+  fi
+  command wg "$@"
+}

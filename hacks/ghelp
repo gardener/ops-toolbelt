@@ -63,7 +63,7 @@ def retrieve_hacks_info():
     return tools
 
 
-ghelp_info_path="/var/lib/ghelp_info"
+ghelp_info_path = "/var/lib/ghelp_info"
 ghelp_info = None
 with open(ghelp_info_path, "r") as f:
     ghelp_info = json.load(f)
@@ -72,7 +72,7 @@ if ghelp_info is None:
     print("Failed to load ghelp info")
     exit(1)
 
-apttools = retrieve_packages_info(ghelp_info["apt"], "apt", "show", "=", "\n\n" , "Package", "Version", "Description")
+apttools = retrieve_packages_info(ghelp_info["apt"], "apt", "show", "=", "\n\n", "Package", "Version", "Description")
 piptools = retrieve_packages_info(ghelp_info["pip"], "pip", "show", "==", "---", "Name", "Version", "Summary")
 downloaded_tools = retrieve_downloaded_tools_info(ghelp_info["downloaded"])
 hack_tools = retrieve_hacks_info()
@@ -90,8 +90,12 @@ max_info_width = (terminal_width-10)//2
 for i in range(len(table)):
     table[i][0] = textwrap.fill(table[i][0], width=max_name_width)
     if table[i][1] is not None:
-         table[i] [1] = textwrap.fill(table[i][1], width=max_name_width)
-    table[i][2] = textwrap.fill(table[i][2], width=max_info_width)
+        table[i][1] = textwrap.fill(table[i][1], width=max_name_width)
+    table[i][2] = textwrap.fill(
+        table[i][2].replace("\\n", "\n"),
+        width=max_info_width,
+        replace_whitespace=False
+    )
 
 table_headers = ["TOOL/PACKAGE", "VERSION", "NOTES"]
 table_headers[0] = textwrap.fill(table_headers[0], width=max_name_width)
