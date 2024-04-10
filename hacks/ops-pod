@@ -51,7 +51,7 @@ sanitize_hostname() {
 }
 name="$(sanitize_hostname "ops-pod-$(whoami)")"
 
-default_image="europe-docker.pkg.dev/sap-se-gcp-k8s-delivery/releases-public/eu_gcr_io/gardener-project/gardener/ops-toolbelt:latest"
+default_image="europe-docker.pkg.dev/gardener-project/releases/gardener/ops-toolbelt:latest"
 function get_default_namespace() {
   _namespace=$(kubectl config view -o jsonpath="{.contexts[?(@.name == \"$(kubectl config current-context)\")].context.namespace}")
   echo "${_namespace:-default}"
@@ -149,7 +149,6 @@ $tolerations_array
   containers:
   - name: ops-pod
     image: ${image}
-    imagePullPolicy: Always
     command:
     - sleep
     - "43200"
@@ -183,12 +182,12 @@ while [[ $(kubectl -n $namespace get pods | sed -n -r "s/^$name.*Running.*$/Runn
 
 # exec into pod (and chroot into node if a node was selected)
 if [[ ${node_chroot} -eq ${TRUE} ]]; then
-  kubectl -n $namespace exec -ti $name -- bash -c "rm -rf /host/root/dotfiles 1> /dev/null; \
+  kubectl -n $namespace exec -ti $name -- bash -c 'rm -rf /host/root/dotfiles 1> /dev/null; \
                                                    cp -r /root/dotfiles /host/root 1> /dev/null; \
                                                    cp -r /hacks /host 1> /dev/null; rm -f /host/root/.bashrc; \
-                                                   ln -s /root/dotfiles/.bashrc /host/root/.bashrc 1> /dev/null; export PATH=\"/hacks:$PATH\"; \
-                                                   echo -e '\nBE CAREFUL!!! Node root directory mounted under / \n'; \
-                                                   chroot /host /bin/bash"
+                                                   ln -s /root/dotfiles/.bashrc /host/root/.bashrc 1> /dev/null; export PATH="/hacks:$PATH"; \
+                                                   echo -e "\nBE CAREFUL!!! Node root directory mounted under / \n"; \
+                                                   chroot /host /bin/bash'
 else
   kubectl -n $namespace exec -ti $name -- bash -c "echo -e '\nNode root dir is mounted under /host' >> /etc/motd; /bin/bash"
 fi

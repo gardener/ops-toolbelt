@@ -9,7 +9,7 @@ from lib import validation
 class BaseComponentConfig:
     def __init__(self, name, info):
         self.name = name
-        self.info = info
+        self.info = info.replace("\n", "\\\\n") if info is not None else None
 
     def get_info(self):
         return self.info
@@ -27,11 +27,11 @@ class StringComponentConfig(BaseComponentConfig):
 
 class DictComponentConfig(BaseComponentConfig):
     required_keys = [
-        {"key": "name", "types":(str)},
+        {"key": "name", "types": (str)},
     ]
     optional_keys = [
-        {"key": "info", "types":(str, type(None))},
-        {"key": "provides", "types":(str, list, type(None))}
+        {"key": "info", "types": (str, type(None))},
+        {"key": "provides", "types": (str, list, type(None))}
     ]
 
     def __init__(self, config):
@@ -114,6 +114,7 @@ class AptRepoConfig(DictComponentConfig):
         {"key": "repo", "types": (str)},
         {"key": "keyring", "types": (str)}
     ]
+
     def __init__(self, config):
         DictComponentConfig.__init__(self, config)
         self.release_prefix = config.get("release-prefix", "")
@@ -139,7 +140,13 @@ class AptRepoConfig(DictComponentConfig):
 
 
 class ComponentConfigParser:
-    registered_classes = [StringComponentConfig, DictComponentConfig, BashCommandConfig, ToolConfig, AptRepoConfig]
+    registered_classes = [
+        StringComponentConfig,
+        DictComponentConfig,
+        BashCommandConfig,
+        ToolConfig,
+        AptRepoConfig,
+    ]
 
     def __init__(self, *argv):
         for component_class in argv:
@@ -162,4 +169,3 @@ class ComponentConfigParser:
                 raise lastErr
             components.append(component)
         return components
-

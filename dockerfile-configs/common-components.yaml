@@ -89,19 +89,32 @@
     from: ./hacks
     to: /hacks
     info: ~
+  - name: install_on_demand
+    from: ./install_on_demand
+    to: /etc/bash/install_on_demand
+    info: ~
 
 - bash:
   - name: /nonroot/hacks
     command: |
       mkdir -p /nonroot && mkdir -p /nonroot/hacks && chown 65532:65532 -R /nonroot
     info: A directory intended to be used by nonroot users.
+  - name: /opt/bin
+    command: |
+      mkdir -p /opt/bin && chmod -R 777 /opt/bin
+    info: A directory intended to allow common install point for ad-hoc install scripts
 
 - copy:
+  - name: install_k9s 
+    from: ./hacks/install_k9s
+    to: /nonroot/hacks
+    command: --chown=65532:65532
+    info: Bash script which installs the `k9s` tool in the container. If you are running this container as non-root, execute the `install_k9s` script in the `/nonroot/hacks` directory.
   - name: install_etcdctl
     from: ./hacks/install_etcdctl
     to: /nonroot/hacks
     command: --chown=65532:65532
-    info: Bash script which installs the `etcdctl` tool in the container. If you are running this container as non-root, execute the `install-etcdctl` script in the `/nonroot/hacks` directory.
+    info: Bash script which installs the `etcdctl` tool in the container. If you are running this container as non-root, execute the `install_etcdctl` script in the `/nonroot/hacks` directory.
 
 - bash:
   - name: bash-completion
@@ -109,14 +122,16 @@
       echo "" >> /root/.bashrc;\
       echo "source /etc/profile.d/bash_completion.sh" >> /root/.bashrc
     info: ~
-  - name: table
+  - name: install_on_demand
     command: |
-      echo "source /root/dotfiles/.install_on_demand/.table" >> /root/dotfiles/.bashrc
-    info: Helpful tool that can be used to simplify the analysis of iptables entries. Pass a string argument to filter the output via grep.
-  - name: wg
-    command : |
-      echo "source /root/dotfiles/.install_on_demand/.wireguard" >> /root/dotfiles/.bashrc
-    info: Command line tool for the wireguard VPN.
+      echo "source /etc/bash/install_on_demand/.shrc" >> /etc/bash.bashrc
+    info: |
+      A set of "on demand" install scripts that are helpful for troubleshooting.
+      Currently supported are:
+        table: Simplifies iptables analysis. Pass string to filter output via grep.
+        wg: Command line tool for the wireguard VPN.
+        etcdctl: Command line tool for manual operations on etcdctl
+        k9s: TUI for administration of k8s clusters
   - name: dotfiles
     command: |
       echo "" >> /root/.bashrc;\

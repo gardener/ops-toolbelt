@@ -1,0 +1,80 @@
+#! /usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and Gardener contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+alias etcdctl="etcdctl_install"
+function etcdctl_install() {
+  app="etcdctl"
+  install_func='/nonroot/hacks/install_etcdctl'
+
+  if ! hash "${app}" &> /dev/null; then
+    "${install_func}" 1>&2
+  fi
+  command "${app}" $(_etcdctl_prepend_args "$@")
+}
+
+# checks passed arguments and fills in args for certificates
+function _etcdctl_prepend_args(){
+  local cert_args=()
+  local args=()
+  local pid
+
+  pid="$(get_etcd_pid)"
+  if [ "${pid}" == "" ]; then
+    echo "etcd is not running" 1>&2
+    return
+  fi
+  if [ "${#}" -ne 0 ]; then
+    args=("$@")
+  fi
+
+  if ! _check_arg_present "--help" "${args[@]}"; then
+    echo "${args[*]}"
+    return
+  fi
+
+  if _check_arg_present "--cert" "${args[@]}"; then
+    cert_args+=("--cert=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.crt")
+  fi
+  if _check_arg_present "--key" "${args[@]}"; then
+    cert_args+=("--key=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.key")
+  fi
+  if _check_arg_present "--cacert" "${args[@]}"; then
+    cert_args+=("--cacert=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/ca/bundle.crt")
+  fi
+  if _check_arg_present "--endpoints" "${args[@]}"; then
+    cert_args+=("--endpoints=https://etcd-main-local:2379")
+  fi
+  if _check_arg_present "--keepalive-timeout" "${args[@]}"; then
+    cert_args+=("--keepalive-timeout=2m")
+  fi
+  if _check_arg_present "--keepalive-time" "${args[@]}"; then
+    cert_args+=("--keepalive-time=2m")
+  fi
+  if _check_arg_present "--dial-timeout" "${args[@]}"; then
+    cert_args+=("--dial-timeout=2m")
+  fi
+  if _check_arg_present "--dial-timeout" "${args[@]}"; then
+    cert_args+=("--dial-timeout=2m")
+  fi
+  args=("${args[@]}" "${cert_args[@]}")
+  echo "${args[*]}"
+}
+
+function _check_arg_present(){
+  local starts_with="${1}"
+  shift
+  local args=("$@")
+  for arg in "${args[@]}"; do
+    if [[ "${arg}" == "${starts_with}[= ]"* ]]; then
+      return 1
+    fi
+  done
+  return 0
+}
+
+function get_etcd_pid() {
+  pgrep wrapper
+}
