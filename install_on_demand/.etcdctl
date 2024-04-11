@@ -20,6 +20,11 @@ function _etcdctl_prepend_args(){
   local cert_args=()
   local args=()
   local pid
+  local nc_timeout=5
+  local etcd_host="etcd-main-local"
+  local etcd_port=2379
+  local red="\033[1;31m"
+  local nc="\033[0m"
 
   pid="$(get_etcd_pid)"
   if [ "${pid}" == "" ]; then
@@ -36,16 +41,37 @@ function _etcdctl_prepend_args(){
   fi
 
   if _check_arg_present "--cert" "${args[@]}"; then
-    cert_args+=("--cert=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.crt")
+    if [ -f "/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.crt" ]; then
+      cert_args+=("--cert=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.crt")
+    else
+      echo "Certificate not found in the expected path." 1>&2
+      echo -e "${red}You can use --cert=/path/to/file${nc}" 1>&2
+    fi
   fi
   if _check_arg_present "--key" "${args[@]}"; then
-    cert_args+=("--key=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.key")
+    if [ -f "/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.key" ]; then
+      cert_args+=("--key=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.key")
+    else
+      echo "Key not found in the expected path." 1>&2
+      echo -e "${red}You can use --key=/path/to/file${nc}" 1>&2
+    fi
   fi
   if _check_arg_present "--cacert" "${args[@]}"; then
-    cert_args+=("--cacert=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/ca/bundle.crt")
+    if [ -f "/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/ca/bundle.crt" ]; then
+      cert_args+=("--cacert=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/ca/bundle.crt")
+    else
+      echo "CA certificate not found in the expected path." 1>&2
+      echo -e "${red}You can use --cacert=/path/to/file${nc}" 1>&2
+    fi
   fi
   if _check_arg_present "--endpoints" "${args[@]}"; then
-    cert_args+=("--endpoints=https://etcd-main-local:2379")
+    if nc -z -w "${nc_timeout}" "${etcd_host}" "${etcd_port}" 1>/dev/bull 2>/dev/null; then
+      cert_args+=("--endpoints=https://${etcd_host}:${etcd_port}")
+    else
+      echo "Could not connect to deffault etcd host - https://${etcd_host}:${etcd_port} for less than ${nc_timeout} seconds" 1>&2
+      # shellcheck disable=SC2016
+      echo -e "${red}You can use --endpoints=https://"'${ETCD_HOST}:${ETCD_PORT}'"${nc}" 1>&2
+    fi
   fi
   if _check_arg_present "--keepalive-timeout" "${args[@]}"; then
     cert_args+=("--keepalive-timeout=2m")
