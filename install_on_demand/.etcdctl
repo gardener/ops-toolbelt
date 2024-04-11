@@ -52,7 +52,7 @@ function _etcdctl_prepend_args(){
     if [ -f "/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.key" ]; then
       cert_args+=("--key=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.key")
     else
-      echo "Key not found in the expected path." 1>&2
+      echo "TLS key not found in the expected path." 1>&2
       echo -e "${red}You can use --key=/path/to/file${nc}" 1>&2
     fi
   fi
