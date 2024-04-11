@@ -44,7 +44,7 @@ function _etcdctl_prepend_args(){
     if [ -f "/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.crt" ]; then
       cert_args+=("--cert=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client/tls.crt")
     else
-      echo "Certificate not found in the expected path." 1>&2
+      echo "TLS certificate not found in the expected path." 1>&2
       echo -e "${red}You can use --cert=/path/to/file${nc}" 1>&2
     fi
   fi
