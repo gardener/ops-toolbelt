@@ -68,7 +68,7 @@ function _etcdctl_prepend_args(){
     if nc -z -w "${nc_timeout}" "${etcd_host}" "${etcd_port}" 1>/dev/bull 2>/dev/null; then
       cert_args+=("--endpoints=https://${etcd_host}:${etcd_port}")
     else
-      echo "Could not connect to deffault etcd host - https://${etcd_host}:${etcd_port} for less than ${nc_timeout} seconds" 1>&2
+      echo "etcd host https://${etcd_host}:${etcd_port} not reachable within ${nc_timeout} seconds" 1>&2
       # shellcheck disable=SC2016
       echo -e "${red}You can use --endpoints=https://"'${ETCD_HOST}:${ETCD_PORT}'"${nc}" 1>&2
     fi
