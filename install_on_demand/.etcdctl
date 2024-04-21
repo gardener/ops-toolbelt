@@ -52,9 +52,9 @@ function _etcdctl_prepend_args(){
     return
   fi
 
-  cert_base_dir="/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client"
-  crt_path="${cert_base_dir}/tls.crt"
-  key_path="${cert_base_dir}/tls.key"
+  cert_base_dir="/proc/$(get_etcd_pid)/root/var/etcd/ssl/client"
+  crt_path="${cert_base_dir}/client/tls.crt"
+  key_path="${cert_base_dir}/client/tls.key"
   ca_path="${cert_base_dir}/ca/bundle.crt"
   if _check_arg_present "--cert" "${args[@]}"; then
     if [ -f "${crt_path}" ]; then
@@ -81,7 +81,7 @@ function _etcdctl_prepend_args(){
     fi
   fi
   if _check_arg_present "--endpoints" "${args[@]}"; then
-    if nc -z -w "${nc_timeout}" "${etcd_host}" "${etcd_port}" 1>/dev/bull 2>/dev/null; then
+    if nc -z -w "${nc_timeout}" "${etcd_host}" "${etcd_port}" 1>/dev/null 2>/dev/null; then
       cert_args+=("--endpoints=https://${etcd_host}:${etcd_port}")
     else
       log_colored "${yellow}" "etcd host https://${etcd_host}:${etcd_port} not reachable within ${nc_timeout} seconds."
