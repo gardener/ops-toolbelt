@@ -123,5 +123,5 @@ function get_etcd_pid() {
 }
 
 function get_etcd_host() {
-  uname -a | awk '{print $2}' | sed "s/[0-9]/local/"
+  hostname | sed "s/[0-9]/local/"
 }
