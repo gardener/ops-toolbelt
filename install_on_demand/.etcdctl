@@ -21,7 +21,7 @@ function _etcdctl_prepend_args(){
   local args=()
   local pid
   local nc_timeout=5
-  local etcd_host="etcd-main-local"
+  local etcd_host
   local etcd_port=2379
   local yellow="\033[1;33m"
   local red="\033[1;31m"
@@ -39,6 +39,7 @@ function _etcdctl_prepend_args(){
     }
 
   pid="$(get_etcd_pid)"
+  etcd_host="$(get_etcd_host)"
   if [ "${pid}" == "" ]; then
     log_colored "${red}" "etcd is not running locally"
     return
@@ -119,4 +120,8 @@ function _check_arg_present(){
 
 function get_etcd_pid() {
   pgrep wrapper
+}
+
+function get_etcd_host() {
+  uname -a | awk '{print $2}' | sed "s/[0-9]/local/"
 }
