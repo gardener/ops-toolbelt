@@ -58,7 +58,7 @@ function _etcdctl_prepend_args(){
   ca_path="${cert_base_dir}/ca/bundle.crt"
   if _check_arg_present "--cert" "${args[@]}"; then
     if [ -f "${crt_path}" ]; then
-      cert_args+=("--cert=${cert_base_dir}/tls.crt")
+      cert_args+=("--cert=${crt_path}")
     else
       log_colored "${yellow}" "TLS certificate not found in the expected path (${crt_path})."
       log_colored "${nc}" "You can use --cert=/path/to/file"
@@ -74,7 +74,7 @@ function _etcdctl_prepend_args(){
   fi
   if _check_arg_present "--cacert" "${args[@]}"; then
     if [ -f "${ca_path}" ]; then
-      cert_args+=("--cacert=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/ca/bundle.crt")
+      cert_args+=("--cacert=${ca_path}")
     else
       log_colored "${yellow}" "CA certificate not found in the expected path (${ca_path})."
       log_colored "${nc}" "You can use --cacert=/path/to/file"
