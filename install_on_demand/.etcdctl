@@ -90,18 +90,7 @@ function _etcdctl_prepend_args(){
       log_colored "${nc}" "You can use --endpoints=https://"'${ETCD_HOST}:${ETCD_PORT}'
     fi
   fi
-  if _check_arg_present "--keepalive-timeout" "${args[@]}"; then
-    cert_args+=("--keepalive-timeout=2m")
-  fi
-  if _check_arg_present "--keepalive-time" "${args[@]}"; then
-    cert_args+=("--keepalive-time=2m")
-  fi
-  if _check_arg_present "--dial-timeout" "${args[@]}"; then
-    cert_args+=("--dial-timeout=2m")
-  fi
-  if _check_arg_present "--dial-timeout" "${args[@]}"; then
-    cert_args+=("--dial-timeout=2m")
-  fi
+
   args=("${args[@]}" "${cert_args[@]}")
   echo "${args[*]}"
 }
