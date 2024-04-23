@@ -21,7 +21,7 @@ function _etcdctl_prepend_args(){
   local args=()
   local pid
   local nc_timeout=5
-  local etcd_host="etcd-main-local"
+  local etcd_host
   local etcd_port=2379
   local yellow="\033[1;33m"
   local red="\033[1;31m"
@@ -39,6 +39,7 @@ function _etcdctl_prepend_args(){
     }
 
   pid="$(get_etcd_pid)"
+  etcd_host="$(get_etcd_host)"
   if [ "${pid}" == "" ]; then
     log_colored "${red}" "etcd is not running locally"
     return
@@ -52,13 +53,13 @@ function _etcdctl_prepend_args(){
     return
   fi
 
-  cert_base_dir="/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/client"
-  crt_path="${cert_base_dir}/tls.crt"
-  key_path="${cert_base_dir}/tls.key"
+  cert_base_dir="/proc/$(get_etcd_pid)/root/var/etcd/ssl/client"
+  crt_path="${cert_base_dir}/client/tls.crt"
+  key_path="${cert_base_dir}/client/tls.key"
   ca_path="${cert_base_dir}/ca/bundle.crt"
   if _check_arg_present "--cert" "${args[@]}"; then
     if [ -f "${crt_path}" ]; then
-      cert_args+=("--cert=${cert_base_dir}/tls.crt")
+      cert_args+=("--cert=${crt_path}")
     else
       log_colored "${yellow}" "TLS certificate not found in the expected path (${crt_path})."
       log_colored "${nc}" "You can use --cert=/path/to/file"
@@ -74,14 +75,14 @@ function _etcdctl_prepend_args(){
   fi
   if _check_arg_present "--cacert" "${args[@]}"; then
     if [ -f "${ca_path}" ]; then
-      cert_args+=("--cacert=/proc/$(get_etcd_pid)/root/var/etcd/ssl/client/ca/bundle.crt")
+      cert_args+=("--cacert=${ca_path}")
     else
       log_colored "${yellow}" "CA certificate not found in the expected path (${ca_path})."
       log_colored "${nc}" "You can use --cacert=/path/to/file"
     fi
   fi
   if _check_arg_present "--endpoints" "${args[@]}"; then
-    if nc -z -w "${nc_timeout}" "${etcd_host}" "${etcd_port}" 1>/dev/bull 2>/dev/null; then
+    if nc -z -w "${nc_timeout}" "${etcd_host}" "${etcd_port}" 1>/dev/null 2>/dev/null; then
       cert_args+=("--endpoints=https://${etcd_host}:${etcd_port}")
     else
       log_colored "${yellow}" "etcd host https://${etcd_host}:${etcd_port} not reachable within ${nc_timeout} seconds."
@@ -89,18 +90,7 @@ function _etcdctl_prepend_args(){
       log_colored "${nc}" "You can use --endpoints=https://"'${ETCD_HOST}:${ETCD_PORT}'
     fi
   fi
-  if _check_arg_present "--keepalive-timeout" "${args[@]}"; then
-    cert_args+=("--keepalive-timeout=2m")
-  fi
-  if _check_arg_present "--keepalive-time" "${args[@]}"; then
-    cert_args+=("--keepalive-time=2m")
-  fi
-  if _check_arg_present "--dial-timeout" "${args[@]}"; then
-    cert_args+=("--dial-timeout=2m")
-  fi
-  if _check_arg_present "--dial-timeout" "${args[@]}"; then
-    cert_args+=("--dial-timeout=2m")
-  fi
+
   args=("${args[@]}" "${cert_args[@]}")
   echo "${args[*]}"
 }
@@ -119,4 +109,8 @@ function _check_arg_present(){
 
 function get_etcd_pid() {
   pgrep wrapper
+}
+
+function get_etcd_host() {
+  hostname | sed "s/[0-9]/local/"
 }
