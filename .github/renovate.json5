@@ -7,6 +7,8 @@
     "group:monorepos"
   ],
   labels: ["kind/enhancement"],
+  // Add PR footer with empty release note by default.
+  prFooter: "**Release note**:\n```other dependency\nNONE\n```",
   customManagers: [
     {
       // Update `_VERSION` and `_version` variables in Makefiles and scripts.
@@ -44,6 +46,11 @@
       matchPackageNames: ["kubernetes/kubernetes"],
       // This is a compromise due to the version skew policy of Kubernetes.
       allowedVersions: "~1.28"
+    },
+    {
+      // Add PR footer with release notes link for github-releases.
+      matchDatasources: ["github-releases"],
+      prFooter: "**Release note**:\n```other dependency\n`{{depName}}` has been updated to `{{newVersion}}`. [Release Notes](https://github.com/{{depName}}/releases/tag/{{newVersion}})\n```"
     }
   ]
 }
