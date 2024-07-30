@@ -43,16 +43,16 @@ Deploying ops pod on node1
 pod/ops-pod created
 Waiting for pod to be running...
 Waiting for pod to be running...
-This container comes with the following preinstalled tools:
-curl tree silversearcher-ag htop less vim tmux bash-completion dnsutils netcat-openbsd iproute2 dstat ngrep tcpdump python-minimal jq yaml2json kubectl pip cat mdv
+                     _                            _          _ _
+  __ _  __ _ _ __ __| | ___ _ __   ___ _ __   ___| |__   ___| | |
+ / _` |/ _` | '__/ _` |/ _ \ '_ \ / _ \ '__| / __| '_ \ / _ \ | |
+| (_| | (_| | | | (_| |  __/ | | |  __/ |    \__ \ | | |  __/ | |
+ \__, |\__,_|_|  \__,_|\___|_| |_|\___|_|    |___/_| |_|\___|_|_|
+ |___/
 
-The sourced dotfiles are located under /root/dotfiles.
-Additionally you can add your own personal git settings in /root/dotfiles/.config/git/config_personal
+Run ghelp to get information about installed tools and packages
 
-The following variables have been exported:
-DOTFILES_USER=root DOTFILES_HOME=/root/dotfiles
-
-root at node1 in /
+root at ops-pod in /
 $
 ```
 
