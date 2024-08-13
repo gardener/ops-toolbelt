@@ -17,6 +17,7 @@
   - locales
   - tmux
   - bash-completion
+  - procps
   - ngrep
   - iotop
   - iftop
