@@ -9,7 +9,7 @@ import subprocess
 import shlex
 import re
 
-from lib import dockerfile, commands, config_parser
+from lib import commands, config_parser
 
 def validate_tools(commands_list):
     errors = []
@@ -29,8 +29,10 @@ def validate_tools(commands_list):
                     errors.append('Command "{}" failed with exit code {}'.format(e.cmd, e.returncode))
     return errors
 
+
 parser = argparse.ArgumentParser()
-parser.add_argument("--dockerfile-configs", nargs='+', action="append", dest="dockerfile_configs", default=[], required=False, help="yaml file which lists the tools to be tested")
+parser.add_argument("--dockerfile-configs", nargs='+', action="append", dest="dockerfile_configs",
+                    default=[], required=False, help="yaml file which lists the tools to be tested")
 args = parser.parse_args()
 
 dockerfile_config = config_parser.parse_dockerfile_configs(args.dockerfile_configs)
