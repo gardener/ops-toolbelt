@@ -53,7 +53,7 @@ function _etcdctl_prepend_args(){
     return
   fi
 
-  cert_base_dir="/proc/$(get_etcd_pid)/root/var/etcd/ssl/client"
+  cert_base_dir="/proc/$(get_etcd_pid)/root/var/etcd/ssl"
   crt_path="${cert_base_dir}/client/tls.crt"
   key_path="${cert_base_dir}/client/tls.key"
   ca_path="${cert_base_dir}/ca/bundle.crt"
