@@ -4,7 +4,7 @@
 
 ## What is the ops-toolbelt?
 
-The `ops-toolbelt` aims to be a standard container image with pre-installed useful tools for troubleshooting issues on gardener landscapes for human operators. The `ops-toolbelt` images can be used by the Gardener Dashboard web consoles functionality to log into the garden, seed, or shoot clusters.
+The `ops-toolbelt` aims to be a standard container image with pre-installed useful tools for troubleshooting issues on gardener landscapes for human operators.
 
 The pods created with this image can be both general pods and node-bound pods (behaving as if being on the node directly).
 Starting a pod with the `ops-toolbelt` image requires a running `Kubelet`, a healthy control plane, a working VPN connection, and sufficient capacity on the node.
@@ -29,7 +29,7 @@ Run ghelp to get information about installed tools and packages
 
 You can then add personal configurations to your `ops-toolbelt` container for tools like `kubectl`, `gcloud` and so on.
 
-### Running the ops-toolbelt as privileged pod on a node
+### Running ops-toolbelt as a privileged pod on a node
 
 Get the names of the nodes on your cluster and then run `hacks/ops-pod` with the node you want to start the pod on:
 
@@ -65,13 +65,22 @@ Use `./hacks/ops-pod --help` to check what other options are available
 
 ## Building ops-toolbelt images
 
-Dockerfiles for the images are generated from files in the `dockerfile-config` directory.
+Dockerfiles for the images are generated from files in the `dockerfile-configs` directory.
 
-To build all pre-configured images run:
+To generate the Dockerfile for the ops-toolbelt, run:
 
 ```bash
 $ .ci/build
 ```
+
+The generated Dockerfile is created under the `generated_dockerfiles` directory.  
+To build the image, you can use the typical docker build command:
+
+```bash
+$ docker build --file generated_dockerfiles/ops-toolbelt.dockerfile .
+```
+
+to build the corresponding image.
 
 ## Known issues
 
