@@ -119,7 +119,7 @@ cat <<EOF
   --endpoints=https://${etcd_host}:2379
 
   List all keys:
-  etcdctl get "" --prefix --keys-only \\
+  etcdctl get "/" --prefix --keys-only \\
   --cacert=proc/${wrapper_pid}/root/var/etcd/ssl/client/ca/bundle.crt \\
   --cert=proc/${wrapper_pid}/root/var/etcd/ssl/client/client/tls.crt \\
   --key=proc/${wrapper_pid}/root/var/etcd/ssl/client/client/tls.key \\
@@ -127,6 +127,13 @@ cat <<EOF
 
   Put a value against a key:
   etcdctl put <key> <value> \\
+  --cacert=proc/${wrapper_pid}/root/var/etcd/ssl/client/ca/bundle.crt \\
+  --cert=proc/${wrapper_pid}/root/var/etcd/ssl/client/client/tls.crt \\
+  --key=proc/${wrapper_pid}/root/var/etcd/ssl/client/client/tls.key \\
+  --endpoints=https://${etcd_host}:2379
+
+  Put file content against a key:
+  cat <filename> | etcdctl put <key> \\
   --cacert=proc/${wrapper_pid}/root/var/etcd/ssl/client/ca/bundle.crt \\
   --cert=proc/${wrapper_pid}/root/var/etcd/ssl/client/client/tls.crt \\
   --key=proc/${wrapper_pid}/root/var/etcd/ssl/client/client/tls.key \\
