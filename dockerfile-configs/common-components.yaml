@@ -64,7 +64,7 @@
     info: nerdctl is a Docker-compatible CLI for containerd. The root directory of the host has to be mounted under `/host`
   - name: kubectl
     # renovate: datasource=github-releases depName=kubernetes/kubernetes
-    version: v1.28.14
+    version: v1.28.15
     from: https://dl.k8s.io/release/{version}/bin/linux/${{TARGETARCH}}/kubectl
     info: command line tool for controlling Kubernetes clusters.
 
