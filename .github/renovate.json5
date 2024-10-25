@@ -45,7 +45,7 @@
       // Only create PRs for patch updates of kubectl.
       matchPackageNames: ["kubernetes/kubernetes"],
       // This is a compromise due to the version skew policy of Kubernetes.
-      allowedVersions: "~1.28"
+      allowedVersions: "~1.30"
     },
     {
       // Add PR footer with release notes link for github-releases.
