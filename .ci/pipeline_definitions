@@ -34,6 +34,9 @@ ops-toolbelt:
       test: ~
       build:
         output_dir: 'generated_dockerfiles'
+      verify-bandit: ~
+      verify-shellcheck: ~
+
   jobs:
     head-update:
       traits:
@@ -42,6 +45,13 @@ ops-toolbelt:
       traits:
         pull-request: ~
     release:
+      steps:
+        verify-bandit:
+          vars:
+            DESTINATION: "python.sariff"
+        verify-shellcheck:
+          vars:
+            DESTINATION: "bash.sariff"
       traits:
         component_descriptor:
           ocm_repository: europe-docker.pkg.dev/gardener-project/releases
@@ -49,6 +59,23 @@ ops-toolbelt:
           preprocess: 'finalize'
         release:
           nextversion: 'bump_minor'
+          assets:
+            - type: build-step-log
+              step_name: verify-shellcheck
+              purposes:
+                - lint
+                - sast
+                - shellcheck
+              comment: | 
+                We use shellcheck (linter for shell scripts) for SAST scans, reference - https://github.com/koalaman/shellcheck
+            - type: build-step-log
+              step_name: verify-bandit
+              purposes:
+                - lint
+                - sast
+                - bandit
+              comment: | 
+                We use bandit \(linter for python code\) for SAST scans, reference - https://github.com/PyCQA/bandit
         slack:
           default_channel: 'internal_scp_workspace'
           channel_cfgs:
@@ -66,3 +93,10 @@ ops-toolbelt:
               tag_as_latest: true
               extra_push_targets:
                 - eu.gcr.io/gardener-project/gardener/ops-toolbelt
+  repo:
+    source_labels:
+      - name: cloud.gardener.cnudie/dso/scanning-hints/source_analysis/v1
+        value:
+          policy: skip
+          comment: |
+            We use bandit and shellcheck for sast scanning, see attached log.

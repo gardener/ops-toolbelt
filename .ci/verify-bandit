@@ -1,0 +1,8 @@
+#! /usr/bin/env bash
+
+if [ "${DESTINATION}" == "" ]; then
+    bandit --format sarif -r generator
+    exit
+fi
+
+bandit --format sarif -r generator | tee "${DESTINATION}"
