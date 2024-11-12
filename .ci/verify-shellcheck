@@ -1,0 +1,35 @@
+#! /usr/bin/env bash
+
+set -e
+set -o pipefail
+
+FILE_LIST=" \
+    ./install_on_demand/.etcdctl \
+    ./install_on_demand/.table \
+    ./install_on_demand/.shrc \
+    ./install_on_demand/.k9s\
+    ./install_on_demand/.wireguard\
+    ./hacks/find-and-show-in-guide\
+    ./hacks/print-etcd-cheatsheet\
+    ./hacks/ops-pod\
+    ./hacks/install_etcdctl\
+    ./hacks/kb\
+    ./hacks/install_k9s\
+    ./hacks/pb\
+    .ci/test\
+    .ci/build\
+    ./dotfiles/.bashrc\
+    ./dotfiles/.bash_aliases\
+    ./dotfiles/.bash_profile\
+    ./dotfiles/.bash_prompt\
+    ./.ci/verify-shellcheck\
+    ./.ci/verify-bandit\
+"
+
+if [ "${DESTINATION}" == "" ]; then
+    # shellcheck disable=SC2086
+    shellcheck -f json ${FILE_LIST} | shellcheck-sarif
+    exit 0
+fi
+# shellcheck disable=SC2086
+shellcheck -f json ${FILE_LIST} | shellcheck-sarif >"${DESTINATION}"
