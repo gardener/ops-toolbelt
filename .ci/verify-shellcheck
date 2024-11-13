@@ -9,13 +9,10 @@ FILE_LIST=" \
     ./install_on_demand/.shrc \
     ./install_on_demand/.k9s\
     ./install_on_demand/.wireguard\
-    ./hacks/find-and-show-in-guide\
     ./hacks/print-etcd-cheatsheet\
     ./hacks/ops-pod\
     ./hacks/install_etcdctl\
-    ./hacks/kb\
     ./hacks/install_k9s\
-    ./hacks/pb\
     .ci/test\
     .ci/build\
     ./dotfiles/.bashrc\
