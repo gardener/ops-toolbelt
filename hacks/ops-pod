@@ -45,9 +45,9 @@ hostnetwork="false"
 copy_tolerations=${FALSE}
 node_chroot=${FALSE}
 sanitize_hostname() {
-    # K8s rejects pod names that violate this RE '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
-    # due to RFC1123 (Only allow lower-case and alphanumerical values for hostnames)
-    echo "$@" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g'
+  # K8s rejects pod names that violate this RE '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
+  # due to RFC1123 (Only allow lower-case and alphanumerical values for hostnames)
+  echo "$@" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g'
 }
 name="$(sanitize_hostname "ops-pod-$(whoami)")"
 
@@ -61,36 +61,36 @@ positional=()
 while [[ $# -gt 0 ]]; do
   key="${1}"
   case ${key} in
-    -n|--namespace)
-      namespace="${2}"
-      shift
-      shift
-      ;;
-    -i|--image)
-      image="${2}"
-      shift
-      shift
-      ;;
-    -c|--chroot)
-      node_chroot=${TRUE}
-      shift
-      ;;
-    -t|--toleration)
-      copy_tolerations=${TRUE}
-      shift
-      ;;
-    -o|--hostnetwork)
-      hostnetwork="true"
-      shift
-      ;;
-    -h|--help)
-      print_usage
-      exit 0
-      ;;
-    *)
-      positional+=("${1}")
-      shift
-      ;;
+  -n | --namespace)
+    namespace="${2}"
+    shift
+    shift
+    ;;
+  -i | --image)
+    image="${2}"
+    shift
+    shift
+    ;;
+  -c | --chroot)
+    node_chroot=${TRUE}
+    shift
+    ;;
+  -t | --toleration)
+    copy_tolerations=${TRUE}
+    shift
+    ;;
+  -o | --hostnetwork)
+    hostnetwork="true"
+    shift
+    ;;
+  -h | --help)
+    print_usage
+    exit 0
+    ;;
+  *)
+    positional+=("${1}")
+    shift
+    ;;
   esac
 done
 
@@ -104,14 +104,14 @@ node=${positional[0]}
 image=${image:-$default_image}
 namespace=${namespace:-$(get_default_namespace)}
 
-node_of_pod=$(kubectl -n ${namespace} get pod ${node} -o jsonpath={.spec.nodeName} 2> /dev/null || true)
+node_of_pod=$(kubectl -n "${namespace}" get pod "${node}" -o 'jsonpath={.spec.nodeName}' 2>/dev/null || true)
 if [[ -n ${node_of_pod} ]]; then
   echo -e "Pod name provided. Deploying ops pod on the node where ${node} is running: ${node_of_pod}\n"
   node=$node_of_pod
 else
   echo "Node name provided ..."
-  available_nodes=( $(kubectl get nodes | awk '{print $1}' | grep -v NAME) )
-  if [[ " ${available_nodes[*]} " =~ " ${node} " ]]; then
+  # shellcheck disable=SC2076
+  if [[ $(kubectl get nodes -o jsonpath='{.items[*].metadata.name}') =~ " ${node} " ]]; then
     echo -e "Deploying ops pod on ${node}\n"
   else
     echo -e "Error: node ${node} does not exist in the cluster.\n"
@@ -119,31 +119,35 @@ else
   fi
 fi
 
-
 # check if the node name was a pod name and we should actually identify the node from the pod (node that runs the pod)
 
 # Kubify nodes have labels that differ from the names (need an additional suffix)
 node=$(echo "$node" | sed -r "s/^(garden-.*)/\1.openstack.local/")
 
 if [[ $copy_tolerations -eq $TRUE ]]; then
-  tolerations_array=$(kubectl get nodes ${node} -o jsonpath='{range .spec.taints[*]}  - effect: "{@.effect}"{"\n"}    key: "{@.key}"{"\n"}    value: "{@.value}"{"\n"}    operator: "{@.operator}"{"\n"}{end}')
+  tolerations_array=$(kubectl get nodes "${node}" -o jsonpath='{range .spec.taints[*]}  - effect: "{@.effect}"{"\n"}    key: "{@.key}"{"\n"}    value: "{@.value}"{"\n"}    operator: "{@.operator}"{"\n"}{end}')
 fi
 
 # get rid of former pod (if present; best effort)
-kubectl -n $namespace delete pod $name &> /dev/null || true
-while kubectl -n $namespace get pod $name &> /dev/null; do echo "Waiting for old pod to be deleted..."; sleep 1; done
+kubectl -n "${namespace}" delete pod "${name}" &>/dev/null || true
+while kubectl -n "${namespace}" get pod "${name}" &>/dev/null; do
+  echo "Waiting for old pod to be deleted..."
+  sleep 1
+done
 
 # get rid of pod
-trap "EC=\$?; kubectl -n $namespace delete pod $name --wait=false  >&2 || true; exit \$EC" EXIT INT TERM
+# shellcheck disable=SC2064
+trap "EC=\$?; kubectl -n ${namespace} delete pod ${name} --wait=false  >&2 || true; exit \$EC" EXIT INT TERM
 
 # launch pod
-kubectl -n $namespace create -f <(cat << EOF
+kubectl -n "${namespace}" create -f <(
+  cat <<EOF
 apiVersion: v1
 kind: Pod
 metadata:
   name: $name
 spec:
-  $([[ ! -z $node ]] && echo -e "nodeSelector:\n    kubernetes.io/hostname: $node")
+  $([[ -n $node ]] && echo -e "nodeSelector:\n    kubernetes.io/hostname: $node")
   tolerations:
 $tolerations_array
   containers:
@@ -178,16 +182,20 @@ $tolerations_array
 EOF
 )
 
-while [[ $(kubectl -n $namespace get pods | sed -n -r "s/^$name.*Running.*$/Running/p") != "Running" ]]; do echo "Waiting for pod to be running..."; sleep 1; done;
+while [[ $(kubectl -n "${namespace}" get pods | sed -n -r "s/^$name.*Running.*$/Running/p") != "Running" ]]; do
+  echo "Waiting for pod to be running..."
+  sleep 1
+done
 
 # exec into pod (and chroot into node if a node was selected)
 if [[ ${node_chroot} -eq ${TRUE} ]]; then
-  kubectl -n $namespace exec -ti $name -- bash -c 'rm -rf /host/root/dotfiles 1> /dev/null; \
+  # shellcheck disable=SC2016
+  kubectl -n "${namespace}" exec -ti "${name}" -- bash -c 'rm -rf /host/root/dotfiles 1> /dev/null; \
                                                    cp -r /root/dotfiles /host/root 1> /dev/null; \
                                                    cp -r /hacks /host 1> /dev/null; rm -f /host/root/.bashrc; \
                                                    ln -s /root/dotfiles/.bashrc /host/root/.bashrc 1> /dev/null; export PATH="/hacks:$PATH"; \
                                                    echo -e "\nBE CAREFUL!!! Node root directory mounted under / \n"; \
                                                    chroot /host /bin/bash'
 else
-  kubectl -n $namespace exec -ti $name -- bash -c "echo -e '\nNode root dir is mounted under /host' >> /etc/motd; /bin/bash"
+  kubectl -n "${namespace}" exec -ti "${name}" -- bash -c "echo -e '\nNode root dir is mounted under /host' >> /etc/motd; /bin/bash"
 fi

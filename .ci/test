@@ -8,4 +8,4 @@ if [[ -z "${SOURCE_PATH}" ]]; then
 fi
 
 "${SOURCE_PATH}"/generator/validate-tools.py \
-    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
+    --dockerfile-configs "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml

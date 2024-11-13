@@ -14,17 +14,20 @@ function get_git_status() {
     local branchName=''
 
     # check whether the current directory is inside a git repository
-    if [[ $(git rev-parse --is-inside-work-tree &> /dev/null; echo "$?") == '0' ]]; then
+    if [[ $(
+      git rev-parse --is-inside-work-tree &>/dev/null
+      echo "$?"
+    ) == '0' ]]; then
       # check if the current directory is inside .git before running git checks
-      if [[ "$(git rev-parse --is-inside-git-dir 2> /dev/null)" == 'false' ]]; then
+      if [[ "$(git rev-parse --is-inside-git-dir 2>/dev/null)" == 'false' ]]; then
         # ensure the index is up to date
-        git update-index --really-refresh -q &> /dev/null
+        git update-index --really-refresh -q &>/dev/null
         # check for uncommitted changes in the index
-        if ! $(git diff --quiet --ignore-submodules --cached); then
+        if ! git diff --quiet --ignore-submodules --cached; then
           s+='+'
         fi
         # check for unstaged changes
-        if ! $(git diff-files --quiet --ignore-submodules --); then
+        if ! git diff-files --quiet --ignore-submodules --; then
           s+='!'
         fi
         # check for untracked files
@@ -32,16 +35,16 @@ function get_git_status() {
           s+='?'
         fi
         # check for stashed files
-        if $(git rev-parse --verify refs/stash &> /dev/null); then
+        if git rev-parse --verify refs/stash &>/dev/null; then
           s+='$'
         fi
       fi
 
       # get the short symbolic ref (if HEAD isn’t a symbolic ref,
       # get the short SHA for the latest commit, otherwise, just give up)
-      branchName="$(git symbolic-ref --quiet --short HEAD 2> /dev/null || \
-        git symbolic-ref --quiet HEAD 2> /dev/null || \
-        git rev-parse --short HEAD 2> /dev/null || \
+      branchName="$(git symbolic-ref --quiet --short HEAD 2>/dev/null ||
+        git symbolic-ref --quiet HEAD 2>/dev/null ||
+        git rev-parse --short HEAD 2>/dev/null ||
         echo '(unknown)')"
 
       # try to patch branch name as good as possible if we didn't get the short form
@@ -60,11 +63,14 @@ function get_kube_ctx() {
   if [[ -n "${LANDSCAPE_NAME}" ]]; then
     echo -e "${1}${COLOR_CYAN}${LANDSCAPE_NAME}"
   else
-    local kube_ctx="$(kubectl config current-context 2> /dev/null || true)"
+    local kube_ctx
+    kube_ctx="$(kubectl config current-context 2>/dev/null || true)"
     if [[ -n "${kube_ctx}" ]]; then
-      local kube_server="$(kubectl config view --minify --output 'jsonpath={..server}' 2> /dev/null | sed -r 's/http(s)?:\/\/(api\.)?([^:]*)(:[0-9]+)?/\3/' || true)"
+      local kube_server
+      local kube_namespace
+      kube_server="$(kubectl config view --minify --output 'jsonpath={..server}' 2>/dev/null | sed -r 's/http(s)?:\/\/(api\.)?([^:]*)(:[0-9]+)?/\3/' || true)"
       [[ -z $kube_server ]] && kube_server=$kube_ctx
-      local kube_namespace="$(kubectl config view --minify --output 'jsonpath={..namespace}' 2> /dev/null || true)"
+      kube_namespace="$(kubectl config view --minify --output 'jsonpath={..namespace}' 2>/dev/null || true)"
       [[ -z $kube_namespace ]] && kube_namespace="default"
       echo -e "${1}${COLOR_CYAN}${kube_server}${COLOR_LIGHT_GRAY} ${COLOR_MAGENTA}[${kube_namespace}]"
     fi
@@ -73,13 +79,13 @@ function get_kube_ctx() {
 
 # highlight (well-known) privileged users
 case "${USER}" in
-  "root"|"core"|"ubuntu"|"admin"|"vcap") userStyle="${COLOR_RED}";;
-  *)                                     userStyle="${COLOR_ORANGE}";;
+"root" | "core" | "ubuntu" | "admin" | "vcap") userStyle="${COLOR_RED}" ;;
+*) userStyle="${COLOR_ORANGE}" ;;
 esac
 
 # show (preferred) host alias if available
 if [[ -f "${DOTFILES_HOME}/.host_alias" ]]; then
-  hostName="$(cat ${DOTFILES_HOME}/.host_alias)"
+  hostName="$(cat "${DOTFILES_HOME}/.host_alias")"
 else
   hostName="${HOSTNAME}"
 fi
@@ -89,10 +95,10 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 
 # unset current prompt command and set it instead in combination with prompt
 unset PROMPT_COMMAND
-escaped_home=${HOME//\//\\\/}
+# escaped_home=${HOME//\//\\\/}
 # PS1="\[\033]0;Terminal \${USER}@\${hostName}:\${PWD/$escaped_home/~}\007\]" # full title
-PS1="\[\033]0;${hostName}\007\]" # short title
-PS1+="\n" # newline
+PS1="\[\033]0;${hostName}\007\]"         # short title
+PS1+="\n"                                # newline
 PS1+="\[${SGR_BOLD}\]\[${userStyle}\]\u" # username in user style
 PS1+="\[${SGR_RESET}\] at "
 PS1+="\[${SGR_BOLD}\]\[${COLOR_YELLOW}\]${hostName}" # host alias or name
@@ -102,8 +108,8 @@ PS1+="\[${SGR_BOLD}\]\[${COLOR_GREEN}\]\w" # working directory
 # PS1+="\$(get_bosh_user \"${SGR_RESET} as ${SGR_BOLD}\")" # bosh user
 # PS1+="\$(get_cf_target \"${SGR_RESET} targeting CF ${SGR_BOLD}\")" # cf target
 # PS1+="\$(get_cf_user \"${SGR_RESET} as ${SGR_BOLD}\")" # cf user
-PS1+="\$(get_kube_ctx \"${SGR_RESET} on ${SGR_BOLD}\")" # kube context
+PS1+="\$(get_kube_ctx \"${SGR_RESET} on ${SGR_BOLD}\")"   # kube context
 PS1+="\$(get_git_status \"${SGR_RESET} on ${SGR_BOLD}\")" # git status
-PS1+="\n" # newline
+PS1+="\n"                                                 # newline
 PS1+="\[${SGR_RESET}\]\[${SGR_BOLD}\]\$ \[${SGR_RESET}\]" # reset color and finally the prompt
 export PS1
