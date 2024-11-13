@@ -9,14 +9,15 @@ function etcdctl_install() {
   app="etcdctl"
   install_func='/nonroot/hacks/install_etcdctl'
 
-  if ! hash "${app}" &> /dev/null; then
+  if ! hash "${app}" &>/dev/null; then
     "${install_func}" 1>&2
   fi
+  # shellcheck disable=SC2046
   command "${app}" $(_etcdctl_prepend_args "$@")
 }
 
 # checks passed arguments and fills in args for certificates
-function _etcdctl_prepend_args(){
+function _etcdctl_prepend_args() {
   local cert_args=()
   local args=()
   local pid
@@ -32,11 +33,11 @@ function _etcdctl_prepend_args(){
   local ca_path
 
   # print colored messages to stderr, first arg being the color
-  function log_colored(){
-      local color="${1}"
-      shift
-      echo -e "${color}${*}${nc}" 1>&2
-    }
+  function log_colored() {
+    local color="${1}"
+    shift
+    echo -e "${color}${*}${nc}" 1>&2
+  }
 
   pid="$(get_etcd_pid)"
   etcd_host="$(get_etcd_host)"
@@ -95,7 +96,7 @@ function _etcdctl_prepend_args(){
   echo "${args[*]}"
 }
 
-function _check_arg_present(){
+function _check_arg_present() {
   local starts_with="${1}"
   shift
   local args=("$@")

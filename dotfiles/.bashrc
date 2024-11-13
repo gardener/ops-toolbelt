@@ -3,11 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # .bashrc executed by the command interpreter for bash non-login shells
-
+#
+# shellcheck disable=SC1091
+# No sane person specifies shell for .bashrc
+# shellcheck disable=SC2148
 # don't do anything if not running interactively
 case $- in
-  *i*) ;;
-  *) return;;
+*i*) ;;
+*) return ;;
 esac
 
 # append to the history file, don't overwrite
@@ -38,21 +41,22 @@ export VIMINIT="source $DOTFILES_HOME/.vimrc"
 
 # generate personalized git config if missing
 get_github_user_attr() {
-  local user_data="$(curl -skL https://github.com/api/v3/users/$1)"
-  echo $user_data | sed -n -r "s/^.*\"$2\"\s*:\s*\"([^\"]*)\".*$/\1/p"
+  local user_data
+  user_data="$(curl -skL "https://github.com/api/v3/users/${1}")"
+  echo "$user_data" | sed -n -r "s/^.*\"$2\"\s*:\s*\"([^\"]*)\".*$/\1/p"
 }
 
 git_config_personal="$DOTFILES_HOME/.config/git/config_personal"
 if [[ ! -f "$git_config_personal" ]]; then
-  dotfiles_user_name="$(get_github_user_attr $DOTFILES_USER name)"
-  dotfiles_user_email="$(get_github_user_attr $DOTFILES_USER email)"
-  echo -e "# personal settings" > "$git_config_personal"
-  echo -e "[credential]\n  username = $DOTFILES_USER" >> "$git_config_personal"
-  [[ -n "$dotfiles_user_name"  ]] && echo -e "[user]\n  name = $dotfiles_user_name"   >> "$git_config_personal"
-  [[ -n "$dotfiles_user_email" ]] && echo -e "[user]\n  email = $dotfiles_user_email" >> "$git_config_personal"
+  dotfiles_user_name="$(get_github_user_attr "$DOTFILES_USER" name)"
+  dotfiles_user_email="$(get_github_user_attr "$DOTFILES_USER" email)"
+  echo -e "# personal settings" >"$git_config_personal"
+  echo -e "[credential]\n  username = $DOTFILES_USER" >>"$git_config_personal"
+  [[ -n "$dotfiles_user_name" ]] && echo -e "[user]\n  name = $dotfiles_user_name" >>"$git_config_personal"
+  [[ -n "$dotfiles_user_email" ]] && echo -e "[user]\n  email = $dotfiles_user_email" >>"$git_config_personal"
 fi
 
-mkdir -p "${DOTFILES_HOME}/bin" "${DOTFILES_HOME}/scripts" 
+mkdir -p "${DOTFILES_HOME}/bin" "${DOTFILES_HOME}/scripts"
 # add bin dir to PATH
 [[ -d "$DOTFILES_HOME/bin" ]] && PATH="$DOTFILES_HOME/bin:$PATH"
 
@@ -60,7 +64,8 @@ mkdir -p "${DOTFILES_HOME}/bin" "${DOTFILES_HOME}/scripts"
 [[ -d "$DOTFILES_HOME/scripts" ]] && PATH="$DOTFILES_HOME/scripts:$PATH"
 
 # source topic-specific bash completions
-source <(kubectl completion bash 2> /dev/null)
+# shellcheck disable=SC1090
+source <(kubectl completion bash 2>/dev/null)
 
 # source bash aliases
 [[ -s "$DOTFILES_HOME/.bash_aliases" ]] && source "$DOTFILES_HOME/.bash_aliases"
@@ -73,7 +78,7 @@ export PATH=".:$PATH"
 
 # source nearest .source_me/.activate respectively .deactivate when changing directories
 function cd() {
-  builtin cd "$@"
+  builtin cd "$@" || return
   wd="$PWD"
   if [[ -z "$PROMPT_AUTO_SOURCE_PATH" ]] || [[ "$wd" != "$PROMPT_AUTO_SOURCE_PATH"* ]]; then
     [[ -n "$PROMPT_AUTO_SOURCE_PATH" ]] && [[ -f "$PROMPT_AUTO_SOURCE_PATH/.deactivate" ]] && source "$PROMPT_AUTO_SOURCE_PATH/.deactivate"

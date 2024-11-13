@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+# shellcheck disable=SC1091 disable=SC2148
+#
 ##################
 # COLORS & CHARS #
 ##################
@@ -22,17 +24,27 @@ export SGR_INVERSE_UNSET="\033[27m"
 # ansi colors, see https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
 # pick of solarized color theme working fine with light and dark background, see http://ethanschoonover.com/solarized
 # only available when tput is available, otherwise fall-back to 16 colors (ansi escape codes)
-if tput setaf 1 &> /dev/null; then
-  export COLOR_LIGHT_GRAY=$(tput setaf 244) # called base0 in solarized color theme (default color for dark theme)
-  export COLOR_DARK_GRAY=$(tput setaf 241)  # called base00 in solarized color theme (default color for light theme)
-  export COLOR_YELLOW=$(tput setaf 136);
-  export COLOR_ORANGE=$(tput setaf 166);
-  export COLOR_RED=$(tput setaf 160);
-  export COLOR_MAGENTA=$(tput setaf 125);
-  export COLOR_VIOLET=$(tput setaf 61);
-  export COLOR_BLUE=$(tput setaf 33);
-  export COLOR_CYAN=$(tput setaf 37);
-  export COLOR_GREEN=$(tput setaf 64);
+if tput setaf 1 &>/dev/null; then
+  export COLOR_LIGHT_GRAY
+  export COLOR_DARK_GRAY
+  export COLOR_YELLOW
+  export COLOR_ORANGE
+  export COLOR_RED
+  export COLOR_MAGENTA
+  export COLOR_VIOLET
+  export COLOR_BLUE
+  export COLOR_CYAN
+  export COLOR_GREEN
+  COLOR_LIGHT_GRAY=$(tput setaf 244) # called base0 in solarized color theme (default color for dark theme)
+  COLOR_DARK_GRAY=$(tput setaf 241)  # called base00 in solarized color theme (default color for light theme)
+  COLOR_YELLOW=$(tput setaf 136)
+  COLOR_ORANGE=$(tput setaf 166)
+  COLOR_RED=$(tput setaf 160)
+  COLOR_MAGENTA=$(tput setaf 125)
+  COLOR_VIOLET=$(tput setaf 61)
+  COLOR_BLUE=$(tput setaf 33)
+  COLOR_CYAN=$(tput setaf 37)
+  COLOR_GREEN=$(tput setaf 64)
 else
   export COLOR_LIGHT_GRAY="\033[37m"
   export COLOR_DARK_GRAY="\033[90m"
@@ -44,31 +56,31 @@ else
   export COLOR_BLUE="\033[34m"
   export COLOR_CYAN="\033[36m"
   export COLOR_GREEN="\033[32m"
-fi;
+fi
 
 # color given text in given rendition/color
 function color() {
   local rendition=""
   local color="$1"
-  [[ $color == bold_* ]]      && rendition=$SGR_BOLD      && color=${color#*_}
-  [[ $color == dim_* ]]       && rendition=$SGR_DIM       && color=${color#*_}
-  [[ $color == italic_* ]]    && rendition=$SGR_ITALIC    && color=${color#*_}
+  [[ $color == bold_* ]] && rendition=$SGR_BOLD && color=${color#*_}
+  [[ $color == dim_* ]] && rendition=$SGR_DIM && color=${color#*_}
+  [[ $color == italic_* ]] && rendition=$SGR_ITALIC && color=${color#*_}
   [[ $color == underline_* ]] && rendition=$SGR_UNDERLINE && color=${color#*_}
-  [[ $color == inverse_* ]]   && rendition=$SGR_INVERSE   && color=${color#*_}
+  [[ $color == inverse_* ]] && rendition=$SGR_INVERSE && color=${color#*_}
   case "$color" in
-    "light_gray") color=$COLOR_LIGHT_GRAY;;
-    "dark_gray")  color=$COLOR_DARK_GRAY;;
-    "yellow")     color=$COLOR_YELLOW;;
-    "orange")     color=$COLOR_ORANGE;;
-    "red")        color=$COLOR_RED;;
-    "magenta")    color=$COLOR_MAGENTA;;
-    "violet")     color=$COLOR_VIOLET;;
-    "blue")       color=$COLOR_BLUE;;
-    "cyan")       color=$COLOR_CYAN;;
-    "green")      color=$COLOR_GREEN;;
+  "light_gray") color=$COLOR_LIGHT_GRAY ;;
+  "dark_gray") color=$COLOR_DARK_GRAY ;;
+  "yellow") color=$COLOR_YELLOW ;;
+  "orange") color=$COLOR_ORANGE ;;
+  "red") color=$COLOR_RED ;;
+  "magenta") color=$COLOR_MAGENTA ;;
+  "violet") color=$COLOR_VIOLET ;;
+  "blue") color=$COLOR_BLUE ;;
+  "cyan") color=$COLOR_CYAN ;;
+  "green") color=$COLOR_GREEN ;;
   esac
   if tty -s; then
-    echo -e "${rendition}${color}${@:2}${SGR_RESET}"
+    echo -e "${rendition}${color}${*:2}${SGR_RESET}"
   else
     echo "${@:2}"
   fi
@@ -76,27 +88,27 @@ function color() {
 
 # color given notifications
 function debug() {
-  echo -e "$(color light_gray $@)"
+  echo -e "$(color light_gray "${@}")"
 }
 
 function info() {
-  echo -e "$(color cyan $@)"
+  echo -e "$(color cyan "${@}")"
 }
 
 function ok() {
-  echo -e "$(color green $@)"
+  echo -e "$(color green "${@}")"
 }
 
 function warning() {
-  echo -e "$(color orange $@)"
+  echo -e "$(color orange "${@}")"
 }
 
 function error() {
-  echo -e "$(color red $@)"
+  echo -e "$(color red "${@}")"
 }
 
 function fatal() {
-  echo -e "$(color inverse_red $@)"
+  echo -e "$(color inverse_red "${@}")"
 }
 
 # show warning message and abort execution
@@ -114,22 +126,23 @@ function fail() {
 # alignment echo functions
 function left() {
   local width="${1}"
-  local text="${@:2}"
+  local text="${*:2}"
   printf "%-${width}s" "${text}"
 }
 
 function right() {
   local width="${1}"
-  local text="${@:2}"
+  local text="${*:2}"
   printf "%+${width}s" "${text}"
 }
 
 function center() {
   local width="${1}"
-  local text="${@:2}"
-  local text_wo_escape_chars="$(echo ${text} | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g")"
-  local pre_padding=$(((${width}-${#text_wo_escape_chars})/2))
-  local post_padding=$((${width}-${#text_wo_escape_chars}-${pre_padding}))
+  local text="${*:2}"
+  local text_wo_escape_chars
+  text_wo_escape_chars="$(echo "${text}" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g")"
+  local pre_padding=$(((width - ${#text_wo_escape_chars}) / 2))
+  local post_padding=$((width - ${#text_wo_escape_chars} - pre_padding))
   printf "%*.*s%s%*.*s" ${pre_padding} ${pre_padding} " " "${text}" ${post_padding} ${post_padding} " "
 }
 
@@ -148,31 +161,33 @@ function hr() {
 }
 
 # box (centering text)
-box()
-{
-  local width="$((${1}-2+${2}*2))"
+box() {
+  local width="$((${1} - 2 + ${2} * 2))"
   local padding="${2}"
   local margin="${3}"
-  local text="${@:4}"
-  local text_wo_escape_chars="$(echo ${text} | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g")"
-  if (( ${#text_wo_escape_chars} > ${width} )); then
+  local text="${*:4}"
+  local text_wo_escape_chars
+  text_wo_escape_chars="$(echo "${text}" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g")"
+  if ((${#text_wo_escape_chars} > width)); then
     width=${#text_wo_escape_chars}
   fi
-  local width="$((${width}+${padding}*2))"
-  local dash="$(printf "\e(0q\e(B")"
-  for (( i=1; i <= ${margin}; i++ )); do printf "\n"; done
-  printf "$(line $margin)\e(0l\e(B$(line "${width}" "${dash}")\e(0k\e(B\n"
-  for (( i=1; i <= ${padding}; i++ )); do printf "$(line $margin)\e(0x\e(B$(center "${width}")\e(0x\e(B\n"; done
-  printf "$(line $margin)\e(0x\e(B$(center "${width}" "${text}")\e(0x\e(B\n"
-  for (( i=1; i <= ${padding}; i++ )); do printf "$(line $margin)\e(0x\e(B$(center "${width}")\e(0x\e(B\n"; done
-  printf "$(line $margin)\e(0m\e(B$(line "${width}" "${dash}")\e(0j\e(B\n"
-  for (( i=1; i <= ${margin}; i++ )); do printf "\n"; done
+  local width="$((width + padding * 2))"
+  local dash
+  dash="$(printf "\e(0q\e(B")"
+  for ((i = 1; i <= margin; i++)); do printf "\n"; done
+  printf "%s" "$(line "$margin")\e(0l\e(B$(line "${width}" "${dash}")\e(0k\e(B\n"
+  for ((i = 1; i <= padding; i++)); do printf "%s" "$(line "${margin}")\e(0x\e(B$(center "${width}")\e(0x\e(B\n"; done
+  printf "%s" "$(line "$margin")\e(0x\e(B$(center "${width}" "${text}")\e(0x\e(B\n"
+  for ((i = 1; i <= padding; i++)); do printf "%s" "$(line "${margin}")\e(0x\e(B$(center "${width}")\e(0x\e(B\n"; done
+  printf "%s" "$(line "$margin")\e(0m\e(B$(line "${width}" "${dash}")\e(0j\e(B\n"
+  for ((i = 1; i <= margin; i++)); do printf "\n"; done
 }
 
 # show colors
 function colors() {
   printf " %-10s  %-10s  %-10s  %-10s  %-10s  %-10s \n" "NORMAL" "BOLD" "DIM" "ITALIC" "UNDERLINE" "INVERSE"
-  for i in $(seq 1 72); do printf "\e(0\x71\e(B"; done; printf "\n"
+  for i in $(seq 1 72); do printf "\e(0\x71\e(B"; done
+  printf "\n"
   for color in LIGHT_GRAY DARK_GRAY YELLOW ORANGE RED MAGENTA VIOLET BLUE CYAN GREEN; do
     printf "$SGR_RESET$(eval printf "\$COLOR_$color") %-10s $SGR_RESET" $color
     printf "$SGR_BOLD$(eval printf "\$COLOR_$color") %-10s $SGR_BOLD_UNSET" $color
@@ -180,7 +195,7 @@ function colors() {
     printf "$SGR_ITALIC$(eval printf "\$COLOR_$color") %-10s $SGR_ITALIC_UNSET" $color
     printf "$SGR_UNDERLINE$(eval printf "\$COLOR_$color") %-10s $SGR_UNDERLINE_UNSET" $color
     printf "$SGR_INVERSE$(eval printf "\$COLOR_$color") %-10s $SGR_INVERSE_UNSET" $color
-    printf "$SGR_RESET\n"
+    printf "%s\n" "$SGR_RESET"
   done
 
   echo
@@ -194,10 +209,10 @@ function colors() {
 
 # show box characters
 function box_chars() {
-  char=( 6a 6b 6c 6d 6e 71 74 75 76 77 78 )
-  for i in ${char[*]}
-  do
-    printf "0x$i \x$i \e(0\x$i\e(B\n"
+  char=(6a 6b 6c 6d 6e 71 74 75 76 77 78)
+  # shellcheck disable=SC2048
+  for i in ${char[*]}; do
+    printf "%s" "0x$i \x$i \e(0\x$i\e(B\n"
   done
 }
 
@@ -210,11 +225,13 @@ alias c='clear'
 
 # find alias (-a), built-in (-b), command (-c) and function (-A function)
 function fa() {
+  # shellcheck disable=2086 disable=2207
   commands=($(compgen -abcA function $1 | sort -u))
+  # shellcheck disable=2068
   for command in ${commands[@]}; do
     details="$(alias | grep -E "^alias $command=" | cut -c 7-)"
     if [ -z "$details" ]; then
-      details="$(declare -f $command)"
+      details="$(declare -f "${command}")"
     fi
     if [ -z "$details" ]; then
       details="$command"
@@ -264,7 +281,7 @@ alias root='sudo -i'
 # backup file
 function bak() {
   bak=$1.$(date +%Y%m%d-%H%M).bak
-  cp -p -r $1 $bak
+  cp -p -r "$1" "$bak"
   echo "Backed up $1 to $bak"
 }
 
@@ -277,12 +294,13 @@ alias ..='cd ..'
 function create_directory_traversal_aliases() {
   local dotSlash=""
   local baseName=""
-  for i in 1 2 3 4 5 6 7 8 9
-  do
-    dotSlash=${dotSlash}'../';
+  for i in 1 2 3 4 5 6 7 8 9; do
+    dotSlash=${dotSlash}'../'
     baseName="..${i}"
+    # shellcheck disable=SC2139
     alias $baseName="cd ${dotSlash}"
     baseName="${i}.."
+    # shellcheck disable=SC2139
     alias $baseName="cd ${dotSlash}"
   done
 }
@@ -292,9 +310,9 @@ unset create_directory_traversal_aliases
 # watch/loop command(s)
 alias watch='watch --interval 1 --differences --color --no-title ' # trailing space is important for consecutive alias expansion, see http://unix.stackexchange.com/questions/25327/watch-command-alias-expansion
 function loop() {
-  let i=0
+  ((i = 0))
   while true; do
-    let i++
+    ((i++))
     echo -e "[$(color green INVOCATION:) $(color red $i)]"
     eval "$*"
     sleep 1
@@ -303,18 +321,18 @@ function loop() {
 
 # url conversion
 function urlencode() {
-    local length="${#1}"
-    for (( i = 0; i < length; i++ )); do
-        local c="${1:i:1}"
-        case $c in
-            [a-zA-Z0-9.~_-]) printf "$c" ;;
-            *) printf '%%%02X' "'$c"
-        esac
-    done
+  local length="${#1}"
+  for ((i = 0; i < length; i++)); do
+    local c="${1:i:1}"
+    case $c in
+    [a-zA-Z0-9.~_-]) printf "%s" "$c" ;;
+    *) printf '%%%02X' "'$c" ;;
+    esac
+  done
 }
 function urldecode() {
-    local url_encoded="${1//+/ }"
-    printf '%b' "${url_encoded//%/\\x}"
+  local url_encoded="${1//+/ }"
+  printf '%b' "${url_encoded//%/\\x}"
 }
 
 # base64 conversion
@@ -330,7 +348,7 @@ function tosecs() {
   date -d "$*" +"%s"
 }
 function todate() {
-  date -d @$1 -u +"%Y-%m-%d %H:%M:%S %z"
+  date -d "@${1}" -u +"%Y-%m-%d %H:%M:%S %z"
 }
 
 # set time manually (in case of ntp issues)
@@ -359,10 +377,11 @@ function clone() {
   else
     owner="$1"
     repo="$2"
-    git clone -c http.sslVerify=false --recursive https://github.com/$owner/$repo.git
+    git clone -c http.sslVerify=false --recursive "https://github.com/${owner}/${repo}.git"
   fi
 }
 function commit() {
+  # shellcheck disable=SC2153
   GIT_COMMITTER_NAME="$USER_NAME" GIT_COMMITTER_EMAIL="$USER_EMAIL" git commit --author="$USER_NAME <$USER_EMAIL>" "$@"
 }
 function push() {
@@ -377,7 +396,7 @@ function push() {
   git add --patch # ask for confirmation of individual hunks and deletions
   git add . --all # auto-stage all new/removed files
   git status
-  read -p "[Commit Message / Final Confirmation] Describe your change: " msg
+  read -rp "[Commit Message / Final Confirmation] Describe your change: " msg
   if [ -z "$msg" ]; then
     commit -m "Update"
   else
@@ -437,7 +456,7 @@ function make_sudoer() {
   fi
 
   # grant sudo privileges to user
-  echo "$user_name ALL=(root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/10-"$user_name" > /dev/null
+  echo "$user_name ALL=(root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/10-"$user_name" >/dev/null
   sudo chmod 0440 /etc/sudoers.d/10-"$user_name"
 }
 
@@ -449,8 +468,8 @@ function name() {
   local name="$1"
   name=${name##*@} # strip of user (in case this is an ssh host)
   name=${name%%:*} # strip of port (in case this is an ssh host)
-  echo $name > "$DOTFILES_HOME/.host_alias"
-  source $DOTFILES_HOME/.bash_prompt
+  echo "$name" >"$DOTFILES_HOME/.host_alias"
+  source "$DOTFILES_HOME"/.bash_prompt
 }
 
 # fuse
@@ -464,18 +483,22 @@ function fuse() {
   folder="${folder%\\}"
   # check whether we should mount or unmount the file system based on present state
   if [[ ! -d ~/fuse/$folder ]]; then
-    mkdir -p ~/fuse/"$folder" 1> /dev/null && sshfs $address ~/fuse/"$folder" 1> /dev/null && echo "Mounted successfully: ~/fuse/$folder" && return 0
+    mkdir -p ~/fuse/"$folder" 1>/dev/null && sshfs "$address" ~/fuse/"$folder" 1>/dev/null && echo "Mounted successfully: ~/fuse/$folder" && return 0
   else
-    [[ $(ls ~/fuse/"$folder" 2> /dev/null) ]] && umount -f ~/fuse/"$folder" 1> /dev/null
-    rm -d ~/fuse/"$folder" 1> /dev/null && echo "Unmounted successfully: ~/fuse/$1" && return 0
+    [[ $(ls ~/fuse/"$folder" 2>/dev/null) ]] && umount -f ~/fuse/"$folder" 1>/dev/null
+    rm -d ~/fuse/"$folder" 1>/dev/null && echo "Unmounted successfully: ~/fuse/$1" && return 0
   fi
   echo "Operation failed!" && [[ ! $(ls -A ~/fuse/"$folder" 2>/dev/null) ]] && rm -d ~/fuse/"$folder"
 }
 
 # tmux
+# shellcheck disable=SC2120
 function ts() {
   cp -f "$DOTFILES_HOME/.tmux.conf" "/tmp/.tmux.$DOTFILES_USER.conf"
-  local session="$1"; local detach=""; [[ "$1" == "-d" ]] && detach="-d" && session="${@:2}"; session=${session:-default}
+  local session="$1"
+  local detach=""
+  [[ "$1" == "-d" ]] && detach="-d" && session="${*:2}"
+  session=${session:-default}
   echo -n "Creating new $session session: "
   tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" -f "/tmp/.tmux.$DOTFILES_USER.conf" new-session $detach -s "$session"
 }
@@ -486,23 +509,23 @@ function ta() {
       session="$(tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" display-message -p "#S" 2>/dev/null | sed -r "s/^0$//p")"
       echo "Full command: tmux -S /tmp/.tmux.$DOTFILES_USER.socket attach-session -t ${session:-<session>}"
     else
-      if [[ $(tmux -S /tmp/.tmux.$DOTFILES_USER.socket ls 2>/dev/null | grep -E "^default:.*$") ]]; then
+      if tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" ls 2>/dev/null | grep -qE "^default:.*$"; then
         echo -n "Attaching to default session: "
-        tmux -S /tmp/.tmux.$DOTFILES_USER.socket attach-session -t "default"
+        tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" attach-session -t "default"
       else
         ts
       fi
     fi
   else
     echo -n "Attaching to $1 session: "
-    tmux -S /tmp/.tmux.$DOTFILES_USER.socket attach-session -t "$1"
+    tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" attach-session -t "$1"
   fi
 }
 function tk() {
   if [[ -z "$1" ]]; then
-    tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" ls | grep -F : | awk -F':' '{print $1}' | xargs -i tmux -S /tmp/.tmux.$DOTFILES_USER.socket kill-session -t {}
+    tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" ls | grep -F : | awk -F':' '{print $1}' | xargs -I{} tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" kill-session -t {}
   else
-    tmux -S /tmp/.tmux.$DOTFILES_USER.socket kill-session -t "$1"
+    tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" kill-session -t "$1"
   fi
 }
 alias tls='tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" ls 2>&1 | grep -v "failed to connect to server"'
@@ -534,7 +557,7 @@ function k() {
   if [[ -z $DOTFILES_KUBECTL_NAMESPACE ]]; then
     kubectl "$@"
   else
-    kubectl --namespace=$DOTFILES_KUBECTL_NAMESPACE "$@"
+    kubectl --namespace="$DOTFILES_KUBECTL_NAMESPACE" "$@"
   fi
 }
 alias kd='kubectl --namespace=default'
