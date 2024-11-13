@@ -7,7 +7,7 @@ from functools import reduce
 class ConfigValidator:
     @staticmethod
     def validate_str(clazz, config):
-         if not isinstance(config, str):
+        if not isinstance(config, str):
             raise TypeError("Incorrect type for {} config. Required str, got {}.".format(clazz, type(config)))
 
     @staticmethod
@@ -24,9 +24,14 @@ class ConfigValidator:
 
     @staticmethod
     def __is_dict_config_valid(config, required_keys, optional_keys=None):
-        validate_required_keys = lambda key: False if key["key"] not in config.keys() or not isinstance(config[key["key"]], key["types"]) else True
-        validate_optional_keys = lambda key: False if key["key"] in config.keys() and not isinstance(config[key["key"]], key["types"]) else True
-        reducer = lambda x, y: x and y
+        def validate_required_keys(key):
+            return False if key["key"] not in config.keys() or not isinstance(config[key["key"]], key["types"]) else True
+
+        def validate_optional_keys(key):
+            return False if key["key"] in config.keys() and not isinstance(config[key["key"]], key["types"]) else True
+
+        def reducer(x, y):
+            return x and y
 
         return (required_keys is None or len(required_keys) == 0 or reduce(reducer, map(validate_required_keys, required_keys))) \
             and (optional_keys is None or len(optional_keys) == 0 or reduce(reducer, map(validate_optional_keys, optional_keys)))
