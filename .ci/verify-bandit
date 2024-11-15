@@ -1,5 +1,9 @@
 #! /usr/bin/env bash
 
+if ! which bandit &>/dev/null; then
+    pip3 install bandit &>/dev/null
+fi
+
 if [ "${DESTINATION}" == "" ]; then
     bandit --format sarif -r generator
     exit
