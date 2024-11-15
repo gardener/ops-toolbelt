@@ -12,7 +12,7 @@ function show_help () {
 }
 
 function install () {
-  etcd_version="v3.4.26"
+  etcd_version="v3.4.34"
   local version="${1:-${etcd_version}}"
   local download_url
   local arch
