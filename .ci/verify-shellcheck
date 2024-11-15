@@ -23,6 +23,18 @@ FILE_LIST=" \
     ./.ci/verify-bandit\
 "
 
+if ! command shellcheck 1>&2 >/dev/null; then
+    apk add shellcheck
+fi
+
+if ! command shellcheck-sarif 1>&2 >/dev/null; then
+    # Cargo is required to install shellcheck-sarif
+    if ! command cargo 1>&2 >/dev/null; then
+        apk add cargo
+    fi
+    cargo install shellcheck-sarif
+fi
+
 if [ "${DESTINATION}" == "" ]; then
     # shellcheck disable=SC2086
     shellcheck -f json ${FILE_LIST} | shellcheck-sarif
