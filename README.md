@@ -16,7 +16,7 @@ Starting a pod with the `ops-toolbelt` image requires a running `Kubelet`, a hea
 The simplest way of using the `ops-toolbelt` is to just run the following command:
 
 ```bash
-$ docker run -it europe-docker.pkg.dev/sap-se-gcp-k8s-delivery/releases-public/eu_gcr_io/gardener-project/gardener/ops-toolbelt:latest
+$ docker run -it europe-docker.pkg.dev/gardener-project/releases/gardener/ops-toolbelt:latest
 
   __ _  __ _ _ __ __| | ___ _ __   ___ _ __   ___| |__   ___| | |
  / _` |/ _` | '__/ _` |/ _ \ '_ \ / _ \ '__| / __| '_ \ / _ \ | |
