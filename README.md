@@ -70,17 +70,22 @@ Dockerfiles for the images are generated from files in the `dockerfile-configs` 
 To generate the Dockerfile for the ops-toolbelt, run:
 
 ```bash
-$ .ci/build
+$ make build
 ```
 
 The generated Dockerfile is created under the `generated_dockerfiles` directory.  
-To build the image, you can use the typical docker build command:
+To build the image, use:
 
 ```bash
-$ docker build --file generated_dockerfiles/ops-toolbelt.dockerfile .
+$ make build-image
 ```
 
 to build the corresponding image.
+
+You can run the image with:
+
+```bash
+docker run -ti --rm ops-toobelt:latest
 
 ## Known issues
 
