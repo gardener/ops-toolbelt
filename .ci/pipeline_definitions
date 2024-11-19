@@ -51,7 +51,7 @@ ops-toolbelt:
             DESTINATION: '"python.sarif"'
         verify-shellcheck:
           vars:
-            DESTINATION: '"bash.sariff"'
+            DESTINATION: '"bash.sarif"'
       traits:
         component_descriptor:
           ocm_repository: europe-docker.pkg.dev/gardener-project/releases
