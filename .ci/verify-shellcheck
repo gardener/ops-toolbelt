@@ -3,6 +3,7 @@
 set -e
 set -o pipefail
 
+SHELLCHECK_VERSION="0.9.0-r4"
 FILE_LIST=" \
     ./install_on_demand/.etcdctl \
     ./install_on_demand/.table \
@@ -23,16 +24,16 @@ FILE_LIST=" \
     ./.ci/verify-bandit\
 "
 
-if ! command shellcheck 1>&2 >/dev/null; then
-    apk add shellcheck
+if ! command -v shellcheck 1>&2 >/dev/null; then
+    apk add "shellcheck=${SHELLCHECK_VERSION}"
 fi
 
-if ! command shellcheck-sarif 1>&2 >/dev/null; then
+if ! command -v shellcheck-sarif 1>&2 >/dev/null; then
     # Cargo is required to install shellcheck-sarif
-    if ! command cargo 1>&2 >/dev/null; then
+    if ! command -v cargo 1>&2 >/dev/null; then
         apk add cargo
     fi
-    cargo install shellcheck-sarif
+    cargo -v install shellcheck-sarif
 fi
 
 if [ "${DESTINATION}" == "" ]; then
