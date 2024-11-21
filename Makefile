@@ -26,12 +26,12 @@ venv-update:
 
 venv: venv-build venv-update
 
-validate: ensure-venv ensure-shellcheck
+verify: ensure-venv ensure-shellcheck
 	@.ci/verify-bandit
 	@.ci/verify-shellcheck
 
-build: validate
+build: ensure-venv
 	@.ci/build
 
-build-image: validate build
+build-image: build
 	@docker build -t ops-toolbelt -f generated_dockerfiles/ops-toolbelt.dockerfile . --no-cache

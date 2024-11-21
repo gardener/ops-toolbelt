@@ -3,7 +3,14 @@
 set -e
 set -o pipefail
 
-SHELLCHECK_VERSION="0.9.0-r4"
+SOURCE_PATH=${SOURCE_PATH:-}
+
+if [[ -z ${SOURCE_PATH} ]]; then
+    SOURCE_PATH="$(readlink -f "$(dirname "${0}")"/..)"
+fi
+cd "${SOURCE_PATH}" || exit 1
+
+SHELLCHECK_VERSION="0.10.0-r1"
 FILE_LIST=" \
     ./install_on_demand/.etcdctl \
     ./install_on_demand/.table \
@@ -25,15 +32,16 @@ FILE_LIST=" \
 "
 
 if ! command -v shellcheck 1>&2 >/dev/null; then
-    apk add "shellcheck=${SHELLCHECK_VERSION}"
+    apk add "shellcheck=${SHELLCHECK_VERSION}" >/dev/null 2>&1 || exit 2
 fi
 
 if ! command -v shellcheck-sarif 1>&2 >/dev/null; then
     # Cargo is required to install shellcheck-sarif
     if ! command -v cargo 1>&2 >/dev/null; then
-        apk add cargo
+        apk add cargo >/dev/null 2>&1 || exit 3
     fi
-    cargo -v install shellcheck-sarif
+    cargo -v install shellcheck-sarif >/dev/null 2>&1 || exit 4
+    export PATH="${HOME}/.cargo/bin:${PATH}"
 fi
 
 if [ "${DESTINATION}" == "" ]; then
@@ -42,4 +50,4 @@ if [ "${DESTINATION}" == "" ]; then
     exit 0
 fi
 # shellcheck disable=SC2086
-shellcheck -f json ${FILE_LIST} | shellcheck-sarif >"${DESTINATION}"
+shellcheck -f json ${FILE_LIST} | shellcheck-sarif | tee "${DESTINATION}"
