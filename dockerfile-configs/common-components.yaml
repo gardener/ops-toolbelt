@@ -44,7 +44,7 @@
 - curl:
   - name: yaml2json
     # renovate: datasource=github-releases depName=bronze1man/yaml2json
-    version: v1.3.3
+    version: v1.3.4
     from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_$(echo ${{TARGETARCH}} |sed 's/x86_64/amd64/;s/arm64/arm/')
     info: transform yaml string to json string without the type infomation.
   - name: kubetail
