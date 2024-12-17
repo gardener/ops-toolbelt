@@ -110,12 +110,12 @@ if [[ -n ${node_of_pod} ]]; then
   node=$node_of_pod
 else
   echo "Node name provided ..."
-  # shellcheck disable=SC2076
-  if [[ $(kubectl get nodes -o jsonpath='{.items[*].metadata.name}') =~ " ${node} " ]]; then
+  if kubectl get nodes -o jsonpath='{.items[*].metadata.name}' | grep -q "\b${node}\b"; then
     echo -e "Deploying ops pod on ${node}\n"
   else
     echo -e "Error: node ${node} does not exist in the cluster.\n"
     print_usage
+    exit 2
   fi
 fi
 
