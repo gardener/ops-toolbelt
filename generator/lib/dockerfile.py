@@ -2,9 +2,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-RUN = "run"
-COPY = "copy"
-ENV = "env"
+RUN = "RUN"
+COPY = "COPY"
+ENV = "ENV"
 
 class Dockerfile:
     def __init__(self, from_image, commands):
