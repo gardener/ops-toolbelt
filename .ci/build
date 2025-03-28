@@ -10,8 +10,8 @@ if [[ -z ${SOURCE_PATH} ]]; then
 fi
 
 if [[ -z "${GENERATED_DOCKERFILES_PATH}" ]]; then
+    mkdir -p "${SOURCE_PATH}/generated_dockerfiles"
     GENERATED_DOCKERFILES_PATH="$(readlink -f "${SOURCE_PATH}/generated_dockerfiles")"
-    mkdir -p "${GENERATED_DOCKERFILES_PATH}"
 fi
 
 "${SOURCE_PATH}"/generator/generate-dockerfile.py \
