@@ -112,6 +112,11 @@
     to: /nonroot/hacks
     command: --chown=65532:65532
     info: Bash script which installs the `etcdctl` tool in the container. If you are running this container as non-root, execute the `install_etcdctl` script in the `/nonroot/hacks` directory.
+  - name: install_auger
+    from: ./hacks/install_auger
+    to: /nonroot/hacks
+    command: --chown=65532:65532
+    info: Bash script which installs the `auger` tool in the container. If you are running this container as non-root, execute the `install_auger` script in the `/nonroot/hacks` directory.
 
 - copy:
   - name: print-etcd-cheatsheet
