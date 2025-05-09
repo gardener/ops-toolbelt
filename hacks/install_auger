@@ -1,0 +1,72 @@
+#!/bin/bash -e
+
+# SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and Gardener contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+function show_help () {
+  echo "Usage: ${0} [arguments]"
+  echo "Possible arguments:"
+  echo "-h, --help       Show this help message and exit"
+  echo "-v, --version    Optional: specify auger version to use. Default: latest version will be installed"
+}
+
+function install () {
+  local version=$1
+  local download_url
+  local yellow="\033[0;33m"
+  local nc="\033[0m"
+  local arch
+  local platform
+  local pkg
+  local dest
+  local version_url="https://api.github.com/repos/etcd-io/auger/releases/latest"
+
+  tmp_dir="$(mktemp -d)"
+  mkdir -p "${tmp_dir}/dest"
+
+  dest="/opt/bin/auger"
+  if uname="$(whoami 2> /dev/null)"; then
+    if [[ "${uname}" == "root" ]]; then
+      if [ -w "/usr/local/bin" ]; then
+        dest="/usr/local/bin/auger"
+      fi
+    fi
+  fi
+
+  if [ -z "$version" ]; then # fetch latest
+    version=$(curl -sL "${version_url}" | jq -r '.tag_name')
+  fi
+  pkg_version=${version/#v/}
+  arch=$(uname -m | sed 's/^x86_64$/amd64/;s/^aarch64$/arm64/')
+  platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  pkg="auger_${pkg_version}_${platform}_${arch}"
+
+  download_url="https://github.com/etcd-io/auger/releases/download/${version}/${pkg}.tar.gz"
+
+  curl -sL "${download_url}" \
+    -o "${tmp_dir}/${pkg}.tar.gz" && \
+    tar -zxf "${tmp_dir}/${pkg}.tar.gz" -C "${tmp_dir}/dest" && \
+    mv "${tmp_dir}/dest/auger" "${dest}" && \
+    chmod 755 "${dest}" && \
+    rm -rf "${tmp_dir}"
+
+  echo -e "${yellow}"
+  echo "You can now start using auger. Just execute \"auger\" to use it. See https://github.com/etcd-io/auger/blob/main/README.md#modify-data-via-etcdctl for examples"
+  echo -e "${nc}"
+}
+
+case "$1" in
+  --version | -v)
+    install "$2"
+    exit
+    ;;
+  --help | -h)
+    show_help
+    exit
+    ;;
+  *)
+    install
+    exit
+    ;;
+esac

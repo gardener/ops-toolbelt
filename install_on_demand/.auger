@@ -1,0 +1,17 @@
+#! /usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company and Gardener contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+alias auger="auger_install"
+function auger_install() {
+  app="auger"
+  install_func='/nonroot/hacks/install_auger'
+
+  if ! hash "${app}" &>/dev/null; then
+    "${install_func}" 1>&2
+  fi
+
+  command "${app}" "$@"
+}
