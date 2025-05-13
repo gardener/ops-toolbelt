@@ -43,9 +43,17 @@
     },
     {
       // Only create PRs for patch updates of kubectl.
-      matchPackageNames: ["kubernetes/kubernetes"],
-      // This is a compromise due to the version skew policy of Kubernetes.
-      allowedVersions: "~1.32"
+      "matchPackageNames": ["kubernetes/kubernetes"],
+      "matchUpdateTypes": ["patch"],
+      "enabled": true
+    },
+    {
+      // Don't go wild with the minor version.
+      // Keep the currently supported within Gardener - 1 for minor version.
+      "matchPackageNames": ["kubernetes/kubernetes"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    }
     },
     {
       // Add PR footer with release notes link for github-releases.
