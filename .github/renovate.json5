@@ -53,7 +53,6 @@
       "matchPackageNames": ["kubernetes/kubernetes"],
       "matchUpdateTypes": ["major", "minor"],
       "enabled": false
-    }
     },
     {
       // Add PR footer with release notes link for github-releases.
