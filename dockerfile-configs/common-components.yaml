@@ -19,6 +19,8 @@
   - bash-completion
   - procps
   - ngrep
+  - iotop
+  - iftop
   - jq
   - figlet
   - tcpdump
