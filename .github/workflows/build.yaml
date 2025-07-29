@@ -1,0 +1,140 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      mode:
+        required: true
+        type: string
+        default: snapshot
+        description: |
+          the mode to use. either `snapshot` or `release`. Will affect effective version, as well
+          as target-oci-registry.
+
+jobs:
+  prepare:
+    uses: gardener/cc-utils/.github/workflows/prepare.yaml@master
+    permissions:
+      contents: read
+    with:
+      mode: ${{ inputs.mode }}
+
+  generate-dockerfile:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: gardener/cc-utils/.github/actions/install-gardener-gha-libs@master
+      - uses: actions/checkout@v4
+      - name: generate-dockerfile
+        shell: bash
+        run: |
+          set -euo
+          gardenlinux_version="$( cat .ocm/base-component.yaml | yq .componentReferences[0].version)"
+          generator/generate-dockerfile.py \
+            --dockerfile-config dockerfile-configs/common-components.yaml \
+            --from-image "ghcr.io/gardenlinux/gardenlinux:${gardenlinux_version}" \
+            --title 'gardener shell' \
+            --dockerfile ops-toolbelt.dockerfile
+
+          tar czf dockerfile.tar.gz ops-toolbelt.dockerfile
+      - uses: actions/upload-artifact@v4
+        with:
+          name: generated-dockerfile
+          path: dockerfile.tar.gz
+
+  oci-images:
+    name: Build OCI-Images
+    needs:
+      - prepare
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    secrets: inherit
+    uses: gardener/cc-utils/.github/workflows/oci-ocm.yaml@master
+    strategy:
+      matrix:
+        args:
+          - name: ops-toolbelt
+            dockerfile: ops-toolbelt.dockerfile
+            oci-repository: gardener/ops-toolbelt
+            ocm-labels:
+              name: gardener.cloud/cve-categorisation
+              value:
+                network_exposure: protected
+                authentication_enforced: true
+                user_interaction: gardener-operator
+                confidentiality_requirement: high
+                integrity_requirement: high
+                availability_requirement: low
+    with:
+      name: ${{ matrix.args.name }}
+      version: ${{ needs.prepare.outputs.version }}
+      dockerfile: ${{ matrix.args.dockerfile }}
+      build-ctx-artefact: generated-dockerfile
+      untar-build-ctx-artefact: dockerfile.tar.gz
+      oci-registry: ${{ needs.prepare.outputs.oci-registry }}
+      oci-repository: ${{ matrix.args.oci-repository }}
+      oci-platforms: linux/amd64,linux/arm64
+      ocm-labels: ${{ toJSON(matrix.args.ocm-labels) }}
+      extra-tags: latest
+
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: test
+        shell: bash
+        run: |
+          set -eu
+          generator/validate-tools.py \
+            --dockerfile-configs dockerfile-configs/common-components.yaml
+
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        args:
+          - executable: .ci/verify-shellcheck
+            linter: shellcheck
+            comment: |
+              we use shellcheck for sast-scans. See: https://github.com/koalaman/shellcheck
+            evidence-fname: shellcheck.tar.gz
+          - executable: .ci/verify-bandit
+            linter: bandit
+            comment: |
+              we use bandit for sast-scans. See: https://github.com/PyCQA/bandit
+            evidence-fname: bandit.tar.gz
+    steps:
+      - uses: gardener/cc-utils/.github/actions/trusted-checkout@master
+      - name: verify
+        run: |
+          set -eu
+          DESTINATION="/tmp/${{ matrix.args.evidence-fname }}" "${{ matrix.args.executable }}"
+          mkdir /tmp/blobs.d
+          tar czf /tmp/blobs.d/${{ matrix.args.evidence-fname }} "/tmp/${{ matrix.args.evidence-fname }}"
+
+      - name: add-sast-report-to-component-descriptor
+        uses: gardener/cc-utils/.github/actions/export-ocm-fragments@master
+        with:
+          blobs-directory: /tmp/blobs.d
+          ocm-resources: |
+            name: ${{ matrix.args.linter }}-report
+            relation: local
+            access:
+              type: localBlob
+              localReference: ${{ matrix.args.evidence-fname }}
+            labels:
+              - name: gardener.cloud/purposes
+                value:
+                  - lint
+                  - sast
+                  - ${{ matrix.args.linter }}
+              - name: gardener.cloud/comment
+                value: |
+                  ${{ matrix.args.comment }}
