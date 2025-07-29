@@ -30,7 +30,7 @@ jobs:
         shell: bash
         run: |
           set -euo
-          gardenlinux_version='1877.0'
+          gardenlinux_version="$( cat .ocm/base-component.yaml | yq .componentReferences[0].version)"
           generator/generate-dockerfile.py \
             --dockerfile-config dockerfile-configs/common-components.yaml \
             --from-image "ghcr.io/gardenlinux/gardenlinux:${gardenlinux_version}" \
