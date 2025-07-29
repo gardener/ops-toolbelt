@@ -1,6 +1,7 @@
 componentReferences:
   - name: gardenlinux
     componentName: github.com/gardenlinux/gardenlinux
+    # renovate: datasource=github-releases depName=gardenlinux/gardenlinux
     version: '1877.0'
 main-source:
   labels:
