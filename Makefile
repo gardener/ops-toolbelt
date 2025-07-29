@@ -1,3 +1,7 @@
+PYTHON := python3
+VENV_DIR := .venv
+VENV_BIN := $(VENV_DIR)/bin
+VENV_PYTHON := $(VENV_BIN)/$(PYTHON)
 red=\033[0;31m
 color_reset=\033[0m
 
@@ -5,7 +9,7 @@ color_reset=\033[0m
 ensure-venv:
 	@if [ ! -d ".venv" ]; then \
 		echo "$(red)Virtual environment not found. Please run:$(color_reset) make venv"; \
-		exit 1; \
+		$(MAKE) venv-update; \
 	fi
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
 		echo "$(red)Activate yout venv with:$(color_reset) source .venv/bin/activate"; \
@@ -17,14 +21,13 @@ ensure-shellcheck:
 	@command -v shellcheck-sarif > /dev/null || { echo "shellcheck-sarif is not installed. Please install shellcheck-sarif"; exit 1; }
 
 venv-build:
-	@python3 -m venv .venv
-	@$(MAKE) venv-update
+	@$(PYTHON) -m venv .venv
 	@echo "Virtual environment created. Run $(red)'source .venv/bin/activate'$(color_reset) to activate it."
 
 venv-update:
 	@source .venv/bin/activate; pip install --upgrade pip; pip install -r requirements.txt
 
-venv: venv-build venv-update
+venv: venv-update
 
 verify: ensure-venv ensure-shellcheck
 	@.ci/verify-bandit
