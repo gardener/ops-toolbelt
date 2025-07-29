@@ -1,3 +1,7 @@
+componentReferences:
+  - name: gardenlinux
+    componentName: github.com/gardenlinux/gardenlinux
+    version: '1877.0'
 main-source:
   labels:
     - name: cloud.gardener.cnudie/dso/scanning-hints/source_analysis/v1
