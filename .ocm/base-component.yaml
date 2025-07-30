@@ -1,12 +1,11 @@
 componentReferences:
-  - name: gardenlinux
-    componentName: github.com/gardenlinux/gardenlinux
-    # renovate: datasource=github-releases depName=gardenlinux/gardenlinux
-    version: '1877.0'
+- componentName: github.com/gardenlinux/gardenlinux
+  name: gardenlinux
+  # renovate: datasource=github-releases depName=gardenlinux/gardenlinux
+  version: '1877.1'
 main-source:
   labels:
-    - name: cloud.gardener.cnudie/dso/scanning-hints/source_analysis/v1
-      value:
-        policy: skip
-        comment:
-            We use bandit and shellcheck for sast scanning, see attached reports.
+  - name: cloud.gardener.cnudie/dso/scanning-hints/source_analysis/v1
+    value:
+      comment: We use bandit and shellcheck for sast scanning, see attached reports.
+      policy: skip
