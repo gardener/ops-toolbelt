@@ -90,9 +90,25 @@ jobs:
         shell: bash
         run: |
           set -eu
+          mkdir /tmp/blobs.d
           generator/validate-tools.py \
-            --dockerfile-configs dockerfile-configs/common-components.yaml
-
+            --dockerfile-configs dockerfile-configs/common-components.yaml \
+            |& tee /tmp/blobs.d/verify-log.txt
+          tar czf /tmp/blobs.d/verify-log.tar.gz -C/tmp/blobs.d verify-log.txt
+      - name: add-test-report-to-component-descriptor
+        uses: gardener/cc-utils/.github/actions/export-ocm-fragments@master
+        with:
+          blobs-directory: /tmp/blobs.d
+          ocm-resources: |
+            name: test-results
+            relation: local
+            access:
+              type: localBlob
+              localReference: verify-log.tar.gz
+            labels:
+              - name: gardener.cloud/purposes
+                value:
+                  - test
   verify:
     runs-on: ubuntu-latest
     permissions:
@@ -124,17 +140,18 @@ jobs:
         with:
           blobs-directory: /tmp/blobs.d
           ocm-resources: |
-            name: ${{ matrix.args.linter }}-report
-            relation: local
-            access:
-              type: localBlob
-              localReference: ${{ matrix.args.evidence-fname }}
-            labels:
-              - name: gardener.cloud/purposes
-                value:
-                  - lint
-                  - sast
-                  - ${{ matrix.args.linter }}
-              - name: gardener.cloud/comment
-                value: |
-                  ${{ matrix.args.comment }}
+            - name: ${{ matrix.args.linter }}-report
+              relation: local
+              access:
+                type: localBlob
+                localReference: ${{ matrix.args.evidence-fname }}
+              labels:
+                - name: gardener.cloud/purposes
+                  value:
+                    - lint
+                    - sast
+                    - ${{ matrix.args.linter }}
+                - name: gardener.cloud/comment
+                  value: |
+                    ${{ matrix.args.comment }}
+
