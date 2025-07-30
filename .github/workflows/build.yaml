@@ -29,10 +29,8 @@ jobs:
       - name: generate-dockerfile
         shell: bash
         run: |
-          make venv-build
-          source .venv/bin/activate
           make build
-          tar czf dockerfile.tar.gz ops-toolbelt.dockerfile
+          tar czf dockerfile.tar.gz /home/runner/work/ops-toolbelt/ops-toolbelt/generated_dockerfiles/ops-toolbelt.dockerfile
       - uses: actions/upload-artifact@v4
         with:
           name: generated-dockerfile

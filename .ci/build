@@ -1,8 +1,12 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+
+set -e
+set -u
 
 GARDENLINUX_VERSION=$(yq .componentReferences[0].version .ocm/base-component.yaml)
 SOURCE_PATH=${SOURCE_PATH:-}
 GENERATED_DOCKERFILES_PATH=${GENERATED_DOCKERFILES_PATH:-}
+PYTHON="${VENV_PYTHON:-python3}"
 
 if [[ -z ${SOURCE_PATH} ]]; then
     SOURCE_PATH="$(readlink -f "$(dirname "${0}")"/..)"
@@ -13,8 +17,8 @@ if [[ -z "${GENERATED_DOCKERFILES_PATH}" ]]; then
     GENERATED_DOCKERFILES_PATH="$(readlink -f "${SOURCE_PATH}/generated_dockerfiles")"
 fi
 
-"${SOURCE_PATH}"/generator/generate-dockerfile.py \
+"${PYTHON}" "${SOURCE_PATH}"/generator/generate-dockerfile.py \
     --dockerfile-config "${SOURCE_PATH}"/dockerfile-configs/common-components.yaml \
     --from-image "ghcr.io/gardenlinux/gardenlinux:${GARDENLINUX_VERSION}" \
     --title "gardener shell" \
-    --dockerfile "${GENERATED_DOCKERFILES_PATH}"/ops-toolbelt.dockerfile
+    --dockerfile "${GENERATED_DOCKERFILES_PATH}/ops-toolbelt.dockerfile"
