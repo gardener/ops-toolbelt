@@ -38,3 +38,8 @@ build: ensure-venv
 
 build-image: build
 	@docker build -t ops-toolbelt -f generated_dockerfiles/ops-toolbelt.dockerfile . --no-cache
+
+validate: ensure-venv
+	@$(VENV_PYTHON) generator/validate-tools.py \
+            --dockerfile-configs dockerfile-configs/common-components.yaml
+

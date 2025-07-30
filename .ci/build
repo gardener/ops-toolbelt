@@ -1,7 +1,6 @@
 #!/bin/bash -eu
 
-# renovate: datasource=github-releases depName=gardenlinux/gardenlinux
-GARDENLINUX_VERSION=1877.1
+GARDENLINUX_VERSION=$(yq .componentReferences[0].version .ocm/base-component.yaml)
 SOURCE_PATH=${SOURCE_PATH:-}
 GENERATED_DOCKERFILES_PATH=${GENERATED_DOCKERFILES_PATH:-}
 
