@@ -30,7 +30,7 @@ jobs:
         shell: bash
         run: |
           make build
-          tar czf dockerfile.tar.gz /home/runner/work/ops-toolbelt/ops-toolbelt/generated_dockerfiles/ops-toolbelt.dockerfile
+          tar czf dockerfile.tar.gz generated_dockerfiles/ops-toolbelt.dockerfile
       - uses: actions/upload-artifact@v4
         with:
           name: generated-dockerfile
@@ -50,7 +50,7 @@ jobs:
       matrix:
         args:
           - name: ops-toolbelt
-            dockerfile: ops-toolbelt.dockerfile
+            dockerfile: generated_dockerfiles/ops-toolbelt.dockerfile
             oci-repository: gardener/ops-toolbelt
             ocm-labels:
               name: gardener.cloud/cve-categorisation
