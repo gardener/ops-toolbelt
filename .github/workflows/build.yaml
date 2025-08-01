@@ -94,7 +94,7 @@ jobs:
           generator/validate-tools.py \
             --dockerfile-configs dockerfile-configs/common-components.yaml \
             |& tee /tmp/blobs.d/verify-log.txt
-          tar czf /tmp/blobs.d/verify-log.tar.gz -C/tmp/blobs.d verify-log.txt
+          tar czf /tmp/blobs.d/verify-log.tar.gz -C /tmp/blobs.d verify-log.txt
       - name: add-test-report-to-component-descriptor
         uses: gardener/cc-utils/.github/actions/export-ocm-fragments@master
         with:
