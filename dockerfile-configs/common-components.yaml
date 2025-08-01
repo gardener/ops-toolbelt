@@ -119,6 +119,11 @@
     to: /nonroot/hacks
     command: --chown=65532:65532
     info: Bash script which installs the `auger` tool in the container. If you are running this container as non-root, execute the `install_auger` script in the `/nonroot/hacks` directory.
+  - name: install_pwru
+    from: ./hacks/install_pwru
+    to: /nonroot/hacks
+    command: --chown=65532:65532
+    info: Bash script which installs the `pwru` tool in the container. If you are running this container as non-root, execute the `install_pwru` script in the `/nonroot/hacks` directory.
 
 - copy:
   - name: print-etcd-cheatsheet

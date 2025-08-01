@@ -4,6 +4,7 @@ set -e
 set -o pipefail
 
 SOURCE_PATH=${SOURCE_PATH:-}
+PYTHON="${VENV_PYTHON:-python3}"
 
 if [[ -z ${SOURCE_PATH} ]]; then
     SOURCE_PATH="$(readlink -f "$(dirname "${0}")"/..)"
@@ -20,4 +21,4 @@ if [ "${DESTINATION}" == "" ]; then
     exit
 fi
 
-bandit --format sarif -r generator | tee "${DESTINATION}"
+${PYTHON} -m bandit --format sarif -r generator | tee "${DESTINATION}"

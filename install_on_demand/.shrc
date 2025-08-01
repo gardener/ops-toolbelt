@@ -9,5 +9,6 @@ source /etc/bash/install_on_demand/.wireguard
 source /etc/bash/install_on_demand/.etcdctl
 source /etc/bash/install_on_demand/.k9s
 source /etc/bash/install_on_demand/.auger
+source /etc/bash/install_on_demand/.pwru
 
 export PATH="/opt/bin:${PATH}"

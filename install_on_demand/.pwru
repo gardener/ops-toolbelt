@@ -1,0 +1,17 @@
+#! /usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company and Gardener contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+alias pwru="pwru_install"
+function pwru_install() {
+  app="pwru"
+  install_func='/nonroot/hacks/install_pwru'
+
+  if ! hash "${app}" &>/dev/null; then
+    "${install_func}" 1>&2
+  fi
+
+  command "${app}" "$@"
+}
