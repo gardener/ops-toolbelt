@@ -17,7 +17,6 @@ function install () {
   local yellow="\033[0;33m"
   local nc="\033[0m"
   local arch
-  local platform
   local pkg
   local dest
   local version_url="https://api.github.com/repos/cilium/pwru/releases/latest"
