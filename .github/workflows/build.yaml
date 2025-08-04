@@ -39,6 +39,7 @@ jobs:
   oci-images:
     name: Build OCI-Images
     needs:
+      - generate-dockerfile
       - prepare
     permissions:
       contents: read
