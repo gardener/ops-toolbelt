@@ -30,6 +30,8 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-cov",
+    "pytest-mock",
+    "pytest-subtests",
     "flake8",
     "black",
     "mypy",
