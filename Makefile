@@ -4,6 +4,7 @@ VENV_DIR := .venv
 VENV_BIN := $(VENV_DIR)/bin
 VENV_PYTHON := $(VENV_BIN)/$(PYTHON)
 VENV_PIP := $(VENV_BIN)/pip
+APP = 
 red=\033[0;31m
 color_reset=\033[0m
 
@@ -37,3 +38,6 @@ build: ensure-venv
 
 build-image: build
 	@docker build -t ops-toolbelt -f generated_dockerfiles/ops-toolbelt.dockerfile . --no-cache
+
+pkg-test: venv
+	@$(VENV_BIN)/pytest tests -v --cov=$(APP)

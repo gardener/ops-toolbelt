@@ -32,6 +32,11 @@ def ensure_env_key_pair(value: str) -> str:
         raise ValueError(
             f"Invalid environment variable format: '{value}'. Expected 'KEY=VALUE'."
         )
+    k, v = value.split("=", 1)
+    if len(k) == 0 or len(v) == 0:
+        raise ValueError(
+            f"Invalid environment variable format: '{value}'. Both key and value must be non-empty."
+        )
     return value
 
 
@@ -70,7 +75,7 @@ class BashItemList(BaseContainerfileDirective):
         return ";\\\n    ".join(bash.command for bash in self.items)
 
     def to_containerfile_directive(self) -> str:
-        return f"{self.key} ${self.to_shortened_containerfile_directive()}"
+        return f"{self.key} {self.to_shortened_containerfile_directive()}"
 
 
 class AptGetItem(BaseItem):
@@ -97,12 +102,12 @@ class AptGetItemList(BaseContainerfileDirective):
     )
 
     def to_shortened_containerfile_directive(self) -> str:
-        return self.apt_get_command + " ".join(
+        return f"{self.apt_get_command} " + " ".join(
             item.name if isinstance(item, AptGetItem) else item for item in self.items
         )
 
     def to_containerfile_directive(self) -> str:
-        return f"{self.key} {self.to_containerfile_directive()}"
+        return f"{self.key} {self.to_shortened_containerfile_directive()}"
 
 
 class CurlItem(BaseItem):
@@ -131,7 +136,7 @@ class CurlItem(BaseItem):
         cmd = f"curl -sLf {data.source} -o {data.to}"
         if not data.command:
             data.command = f"chmod 755 {data.to}"
-        data.command = f"{cmd}; {data.command}"
+        data.command = f"{cmd} && {data.command}"
         return data
 
 
@@ -141,7 +146,7 @@ class CurlItemList(BaseContainerfileDirective):
     key: SupportedfileCommands = "RUN"
 
     def to_shortened_containerfile_directive(self) -> str:
-        return ";\\n\n    ".join([c.command for c in self.items])
+        return ";\\\n    ".join([c.command for c in self.items])
 
     def to_containerfile_directive(self) -> str:
         return f"{self.key} {self.to_shortened_containerfile_directive()}"
