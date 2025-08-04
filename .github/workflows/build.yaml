@@ -29,15 +29,8 @@ jobs:
       - name: generate-dockerfile
         shell: bash
         run: |
-          set -euo
-          gardenlinux_version="$( cat .ocm/base-component.yaml | yq .componentReferences[0].version)"
-          generator/generate-dockerfile.py \
-            --dockerfile-config dockerfile-configs/common-components.yaml \
-            --from-image "ghcr.io/gardenlinux/gardenlinux:${gardenlinux_version}" \
-            --title 'gardener shell' \
-            --dockerfile ops-toolbelt.dockerfile
-
-          tar czf dockerfile.tar.gz ops-toolbelt.dockerfile
+          make build
+          tar czf dockerfile.tar.gz generated_dockerfiles/ops-toolbelt.dockerfile
       - uses: actions/upload-artifact@v4
         with:
           name: generated-dockerfile
@@ -46,6 +39,7 @@ jobs:
   oci-images:
     name: Build OCI-Images
     needs:
+      - generate-dockerfile
       - prepare
     permissions:
       contents: read
@@ -57,7 +51,7 @@ jobs:
       matrix:
         args:
           - name: ops-toolbelt
-            dockerfile: ops-toolbelt.dockerfile
+            dockerfile: generated_dockerfiles/ops-toolbelt.dockerfile
             oci-repository: gardener/ops-toolbelt
             ocm-labels:
               name: gardener.cloud/cve-categorisation
@@ -91,8 +85,7 @@ jobs:
         run: |
           set -eu
           mkdir /tmp/blobs.d
-          generator/validate-tools.py \
-            --dockerfile-configs dockerfile-configs/common-components.yaml \
+          make validate \
             |& tee /tmp/blobs.d/verify-log.txt
           tar czf /tmp/blobs.d/verify-log.tar.gz -C/tmp/blobs.d verify-log.txt
       - name: add-test-report-to-component-descriptor
