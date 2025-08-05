@@ -52,6 +52,7 @@ class BaseItem(BaseModel):
 
 class BaseContainerfileDirective(BaseModel):
     key: SupportedfileCommands
+    can_be_combined: bool = True
 
     def to_shortened_containerfile_directive(self) -> str:
         """Only the command part of the containerfile directive"""
@@ -65,11 +66,33 @@ class BaseContainerfileDirective(BaseModel):
 class BashItem(BaseItem):
     command: CommandString
 
+    @field_validator("command", mode="after")
+    @classmethod
+    def strip_whitespace(cls, value: str) -> str:
+        """Strip leading and trailing whitespace from the command."""
+        return value.strip()
+
+    @field_validator("command", mode="after")
+    @classmethod
+    def left_indetnt_lines_after_first(cls, value: str) -> str:
+        return value.replace("\n", "\n    ").replace("\r", "")
+
 
 class BashItemList(BaseContainerfileDirective):
     name: Literal["bash"]
     items: list[BashItem]
     key: SupportedfileCommands = "RUN"
+
+    @field_validator("items", mode="before")
+    @classmethod
+    def convert_string_to_bash_item(cls, value: list[Any]) -> list[BashItem]:
+        result = []
+        for item in value:
+            if isinstance(item, str):
+                result.append(BashItem(name="bash", command=item))
+            else:
+                result.append(item)
+        return result
 
     def to_shortened_containerfile_directive(self) -> str:
         return ";\\\n    ".join(bash.command for bash in self.items)
@@ -110,7 +133,7 @@ class AptGetItemList(BaseContainerfileDirective):
         return f"{self.key} {self.to_shortened_containerfile_directive()}"
 
 
-class CurlItem(BaseItem):
+class CurlItem(BashItem):
     version: str = ""
     source: HttpUrl = Field(alias="from")
     to: Path
@@ -186,12 +209,21 @@ class CopyItemList(BaseContainerfileDirective):
     name: Literal["copy"]
     items: list[CopyItem]
     key: SupportedfileCommands = "COPY"
+    can_be_combined: bool = False
 
     def to_shortened_containerfile_directive(self) -> str:
         return "\n".join([c.to_containerfile_directive() for c in self.items])
 
     def to_containerfile_directive(self) -> str:
         return self.to_shortened_containerfile_directive()
+
+
+class ContainerLayer(BaseModel):
+    key: SupportedfileCommands
+    commands: list[str]
+
+    def __str__(self) -> str:
+        return "; ".join(self.commands)
 
 
 class Containerfile(BaseModel):
@@ -204,3 +236,6 @@ class Containerfile(BaseModel):
             Field(discriminator="name"),
         ]
     ]
+
+    def to_containerfile(self, layers: list[ContainerLayer]) -> str:
+        return f"FROM {self.from_image}\n{'\n'.join([str(l) for l in layers])}"

@@ -35,18 +35,23 @@ def test_bash_item_list():
                 "command": "some --command",
                 "info": "Some info about the package",
             },
-            {"name": "package", "command": "package --with --command"},
+            {
+                "name": "package",
+                "command": """package --with \\
+    --multiline --command
+""",
+            },
+            {"name": "package", "command": "another-package --with --command"},
         ],
     )
 
-    assert (
-        bil.to_shortened_containerfile_directive()
-        == "some --command;\\\n    package --with --command"
-    )
-    assert (
-        bil.to_containerfile_directive()
-        == "RUN some --command;\\\n    package --with --command"
-    )
+    expected_shortened = """some --command;\\
+    package --with \\
+        --multiline --command;\\
+    another-package --with --command"""
+
+    assert bil.to_shortened_containerfile_directive() == expected_shortened
+    assert bil.to_containerfile_directive() == f"""RUN {expected_shortened}"""
 
 
 def test_apt_get_item(subtests):
@@ -96,6 +101,24 @@ def test_curl_item(subtests):
             == "curl -sLf http://example.com/pkg/123 -o /tmp/pkg-123 && ls -la /tmp/pkg-123"
         )
 
+    with subtests.test("Full multiline command"):
+        c = m.CurlItem.model_validate(
+            {
+                "name": "curl",
+                "version": "123",
+                "from": "http://example.com/pkg/{version}",
+                "to": "/tmp/pkg-123",
+                "command": """ls -la /tmp/pkg-123\\
+echo""",
+            }
+        )
+        assert str(c.source) == "http://example.com/pkg/123"
+        assert c.to == Path("/tmp/pkg-123")
+        assert (
+            c.command
+            == """curl -sLf http://example.com/pkg/123 -o /tmp/pkg-123 && ls -la /tmp/pkg-123\\
+    echo"""
+        )
     with subtests.test("Minimal definition"):
         c = m.CurlItem.model_validate(
             {
