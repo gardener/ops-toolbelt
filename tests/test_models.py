@@ -83,6 +83,25 @@ def test_apt_get_item_list():
     )
 
 
+def test_shell_aware_http_url(subtests):
+    with subtests.test("Valid URL"):
+        url = m.ShellAwareHttpUrl("http://example.com")
+        assert str(url) == "http://example.com"
+
+    with subtests.test("URL with shell expansion"):
+        url = m.ShellAwareHttpUrl(
+            "http://example.com/pkg$(echo ${{TARGETARCH}} | sed 's/x86_64/amd64/;s/arm64/arm/')"
+        )
+        assert (
+            str(url)
+            == "http://example.com/pkg$(echo ${{TARGETARCH}} | sed 's/x86_64/amd64/;s/arm64/arm/')"
+        )
+
+    with subtests.test("Invalid URL raises ValueError"):
+        with pytest.raises(ValueError):
+            m.ShellAwareHttpUrl("invalid-url")
+
+
 def test_curl_item(subtests):
     with subtests.test("Full definition"):
         c = m.CurlItem.model_validate(
@@ -131,6 +150,24 @@ echo""",
         assert (
             c.command
             == "curl -sLf http://example.com/pkg -o /bin/curl-cmd && chmod 755 /bin/curl-cmd"
+        )
+
+    with subtests.test("Minimal definition with shell expansion"):
+        c = m.CurlItem.model_validate(
+            {
+                "name": "curl-cmd",
+                "version": "1.0",
+                "from": "http://example.com/pkg$(echo ${{TARGETARCH}} |sed 's/x86_64/amd64/;s/arm64/arm/')",
+            }
+        )
+        assert (
+            str(c.source)
+            == "http://example.com/pkg$(echo ${TARGETARCH} |sed 's/x86_64/amd64/;s/arm64/arm/')"
+        )
+        assert c.to == Path("/bin/curl-cmd")
+        assert (
+            c.command
+            == "curl -sLf http://example.com/pkg$(echo ${TARGETARCH} |sed 's/x86_64/amd64/;s/arm64/arm/') -o /bin/curl-cmd && chmod 755 /bin/curl-cmd"
         )
 
 
