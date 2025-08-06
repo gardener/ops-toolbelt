@@ -39,8 +39,7 @@ def generate_containerfile():
             from_image=s.from_image,
             title=s.title,
         )
-    with open("/tmp/containerfile", "w", encoding="utf-8") as cf:
-        # with open(containerfile.container_file, "w", encoding="utf-8") as cf:
+    with open(containerfile.container_file, "w", encoding="utf-8") as cf:
         cf.write(
             containerfile.to_containerfile(
                 directives_to_layers(containerfile.components)
