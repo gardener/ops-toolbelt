@@ -120,13 +120,19 @@ class AptGetItemList(BaseContainerfileDirective):
     items: list[AptGetItem | PackageNameString]
     key: SupportedfileCommands = "RUN"
     apt_get_command: str = Field(
-        default="apt-get update -y && apt-get install -y",
+        default="apt-get --yes update && apt-get --yes install",
         alias="apt-get-command",
     )
 
     def to_shortened_containerfile_directive(self) -> str:
-        return f"{self.apt_get_command} " + " ".join(
-            item.name if isinstance(item, AptGetItem) else item for item in self.items
+        return (
+            f"{self.apt_get_command} "
+            + " ".join(
+                item.name if isinstance(item, AptGetItem) else item
+                for item in self.items
+            )
+            + """;\\
+    rm -rf /var/lib/apt/lists"""
         )
 
     def to_containerfile_directive(self) -> str:
@@ -273,7 +279,7 @@ class ContainerLayer(BaseModel):
     commands: list[str]
 
     def __str__(self) -> str:
-        return "; ".join(self.commands)
+        return ";\\\n".join(self.commands)
 
 
 class Containerfile(BaseModel):

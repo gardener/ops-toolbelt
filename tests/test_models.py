@@ -75,11 +75,13 @@ def test_apt_get_item_list():
 
     assert (
         a.to_shortened_containerfile_directive()
-        == "apt-get update -y && apt-get install -y abc def ghi"
+        == """apt-get --yes update && apt-get --yes install abc def ghi;\\
+    rm -rf /var/lib/apt/lists"""
     )
     assert (
         a.to_containerfile_directive()
-        == "RUN apt-get update -y && apt-get install -y abc def ghi"
+        == """RUN apt-get --yes update && apt-get --yes install abc def ghi;\\
+    rm -rf /var/lib/apt/lists"""
     )
 
 
