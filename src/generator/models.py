@@ -1,4 +1,4 @@
-# s.from_imagss /usr/bin/env python3
+#!/usr/bin/env python3
 
 """
 Models for the generator package.
@@ -133,9 +133,46 @@ class AptGetItemList(BaseContainerfileDirective):
         return f"{self.key} {self.to_shortened_containerfile_directive()}"
 
 
+class ShellAwareHttpUrl(str):
+    def __new__(cls, v: str) -> "ShellAwareHttpUrl":
+        """Create new instance after validation"""
+        validated = cls.validate(v)
+        return super().__new__(cls, validated)
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type, handler):
+        from pydantic_core import core_schema
+
+        return core_schema.no_info_after_validator_function(
+            cls.validate,
+            core_schema.str_schema(),
+        )
+
+    @classmethod
+    def validate(cls, v: str) -> str:
+        """
+        Validate a URL that may contain shell variables or command substitutions.
+        Replace shell constructs with placeholder values for URL validation.
+        """
+        var_pattern = r"(?<!\\)\$(?:[a-zA-Z_][a-zA-Z0-9_]*|\{[^}]+\})"
+        subshell_pattern = r"(?<!\\)(?:\$\([^)]+\)|`[^`]+`)"
+
+        _val = v
+
+        _val = re.sub(var_pattern, "placeholder", _val)
+        _val = re.sub(subshell_pattern, "placeholder", _val)
+
+        try:
+            HttpUrl(_val)
+        except Exception as e:
+            raise ValueError(f"Invalid URL: {v}") from e
+
+        return v
+
+
 class CurlItem(BashItem):
     version: str = ""
-    source: HttpUrl = Field(alias="from")
+    source: ShellAwareHttpUrl = Field(alias="from")
     to: Path
     command: CommandString = ""
 

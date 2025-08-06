@@ -8,6 +8,13 @@ APP = generator
 IMAGE_TAG ?= latest
 IMAGE_REPO ?= ghcr.io/gardenlinux/gardenlinux
 BUILT_IMAGE ?= ops-toolbelt
+ifeq ($(shell uname), Darwin)
+    OPEN = open
+else
+    OPEN = xdg-open
+endif
+TEST_CASES =
+
 red=\033[0;31m
 color_reset=\033[0m
 
@@ -60,6 +67,9 @@ build-image: build
 	@docker build -t $(BUILT_IMAGE) -f generated_dockerfiles/$(BUILT_IMAGE).dockerfile . --no-cache
 
 pkg-test: venv
-	@$(VENV_BIN)/pytest tests -v --cov=$(APP)
+	@$(VENV_BIN)/pytest tests $(TEST_CASES) -v --cov=$(APP) --cov-report=html
 
-test: pkg-test ensure-venv
+pkg-test-with-report: pkg-test
+	@$(OPEN) htmlcov/index.html || echo "HTML report not generated, please check the test results in the terminal."
+
+test: pkg-test verify
