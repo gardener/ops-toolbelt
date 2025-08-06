@@ -4,7 +4,12 @@
 import generator.models as m
 
 Components = (
-    m.AptGetItemList | m.CopyItemList | m.CurlItemList | m.BashItemList | m.EnvItemList
+    m.AptGetItemList
+    | m.CopyItemList
+    | m.CurlItemList
+    | m.BashItemList
+    | m.EnvItemList
+    | m.ArgItemList
 )
 ComponentsList = list[Components]
 

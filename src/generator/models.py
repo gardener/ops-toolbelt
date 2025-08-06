@@ -255,6 +255,19 @@ class CopyItemList(BaseContainerfileDirective):
         return self.to_shortened_containerfile_directive()
 
 
+class ArgItemList(BaseContainerfileDirective):
+    name: Literal["arg"]
+    items: list[str]
+    key: SupportedfileCommands = "ARG"
+    can_be_combined: bool = False
+
+    def to_shortened_containerfile_directive(self) -> str:
+        return "\n".join([f"ARG {item}" for item in self.items])
+
+    def to_containerfile_directive(self) -> str:
+        return self.to_shortened_containerfile_directive()
+
+
 class ContainerLayer(BaseModel):
     key: SupportedfileCommands
     commands: list[str]
@@ -269,7 +282,12 @@ class Containerfile(BaseModel):
     from_image: str = "ghcr.io/gardenlinux/gardenlinux:latest"
     components: list[
         Annotated[
-            AptGetItemList | CopyItemList | CurlItemList | BashItemList | EnvItemList,
+            AptGetItemList
+            | CopyItemList
+            | CurlItemList
+            | BashItemList
+            | EnvItemList
+            | ArgItemList,
             Field(discriminator="name"),
         ]
     ]

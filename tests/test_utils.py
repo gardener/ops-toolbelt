@@ -3,6 +3,7 @@
 import generator.utils as u
 from generator.models import (
     AptGetItemList,
+    ArgItemList,
     CopyItemList,
     CurlItemList,
     BashItemList,
@@ -26,6 +27,7 @@ def test_group_components_by_key(mocker):
     mocker.patch("pathlib.Path.exists", return_value=True)
     directives = [
         BashItemList(name="bash", items=["ls -la", "touch /dev/null"]),
+        ArgItemList(name="arg", items=["ARG_VAR1=value1", "ARG_VAR2"]),
         AptGetItemList(name="apt-get", items=["curl", "tree"]),
         CopyItemList(
             name="copy",
@@ -51,6 +53,20 @@ def test_group_components_by_key(mocker):
         {
             "RUN": [
                 BashItemList(name="bash", items=["ls -la", "touch /dev/null"]),
+            ],
+        },
+        {
+            "ARG": [
+                ArgItemList(
+                    key="ARG",
+                    can_be_combined=False,
+                    name="arg",
+                    items=["ARG_VAR1=value1", "ARG_VAR2"],
+                ),
+            ],
+        },
+        {
+            "RUN": [
                 AptGetItemList(name="apt-get", items=["curl", "tree"]),
             ]
         },
