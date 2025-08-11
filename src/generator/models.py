@@ -5,6 +5,7 @@ Models for the generator package.
 """
 
 import re
+import json
 from pathlib import Path
 from typing import Annotated, Any, Literal
 from pydantic import (
@@ -49,6 +50,9 @@ class BaseItem(BaseModel):
     name: PackageNameString
     info: str | None = None
 
+    def dump_ghelp(self) -> tuple:
+        return self.name, self.info
+
 
 class BaseContainerfileDirective(BaseModel):
     key: SupportedfileCommands
@@ -61,6 +65,10 @@ class BaseContainerfileDirective(BaseModel):
     def to_containerfile_directive(self) -> str:
         """Full containerfile directive"""
         return f"{self.key} {self.to_shortened_containerfile_directive()}"
+
+    def to_ghelp_format(self) -> list:
+        """Convert items to ghelp format"""
+        return [item.dump_ghelp() for item in self.items]
 
 
 class BashItem(BaseItem):
@@ -97,22 +105,23 @@ class BashItemList(BaseContainerfileDirective):
     def to_shortened_containerfile_directive(self) -> str:
         return ";\\\n    ".join(bash.command for bash in self.items)
 
-    def to_containerfile_directive(self) -> str:
-        return f"{self.key} {self.to_shortened_containerfile_directive()}"
-
 
 class AptGetItem(BaseItem):
     provides: PackageNameString | list[PackageNameString]
 
     @model_validator(mode="before")
     @classmethod
-    def fill_providers_if_empty(cls, data: Any) -> Any:
+    def fill_provides_if_empty(cls, data: Any) -> Any:
         if isinstance(data, str):
             return data
         if isinstance(data, dict):
             if "provides" not in data:
                 data["provides"] = data["name"]
-        return data
+            return data
+        raise ValueError(f"Input not as expected {data}")
+
+    def dump_ghelp(self) -> tuple:
+        return self.name, self.provides
 
 
 class AptGetItemList(BaseContainerfileDirective):
@@ -135,8 +144,12 @@ class AptGetItemList(BaseContainerfileDirective):
     rm -rf /var/lib/apt/lists"""
         )
 
-    def to_containerfile_directive(self) -> str:
-        return f"{self.key} {self.to_shortened_containerfile_directive()}"
+    def to_ghelp_format(self) -> list:
+        """Convert items to ghelp format"""
+        return [
+            item.dump_ghelp() if isinstance(item, AptGetItem) else (item, item)
+            for item in self.items
+        ]
 
 
 class ShellAwareHttpUrl(str):
@@ -205,6 +218,10 @@ class CurlItem(BashItem):
         data.command = f"{cmd} && {data.command}"
         return data
 
+    def dump_ghelp(self) -> tuple[str, str | None, str | None]:
+        """Dump ghelp format for curl item"""
+        return self.name, self.version or None, self.info or None
+
 
 class CurlItemList(BaseContainerfileDirective):
     name: Literal["curl"]
@@ -214,8 +231,8 @@ class CurlItemList(BaseContainerfileDirective):
     def to_shortened_containerfile_directive(self) -> str:
         return ";\\\n    ".join([c.command for c in self.items])
 
-    def to_containerfile_directive(self) -> str:
-        return f"{self.key} {self.to_shortened_containerfile_directive()}"
+    def to_ghelp_format(self) -> list:
+        return [i.dump_ghelp() for i in self.items]
 
 
 EnvString = Annotated[str, Field(AfterValidator(ensure_env_key_pair))]
@@ -282,6 +299,43 @@ class ContainerLayer(BaseModel):
         return ";\\\n".join(self.commands)
 
 
+class InfoGenerator(BaseModel):
+    key: SupportedfileCommands = "RUN"
+    name: Literal["you-shall not use this"] = "you-shall not use this"
+    components: list[
+        Annotated[
+            AptGetItemList
+            | CopyItemList
+            | CurlItemList
+            | BashItemList
+            | EnvItemList
+            | ArgItemList,
+            Field(discriminator="name"),
+        ]
+    ]
+    can_be_combined: bool = True
+
+    def to_ghelp_format(self) -> dict:
+        """Convert components to ghelp.json format"""
+        result = {"apt": [], "pip": [], "downloaded": []}
+
+        for component in self.components:
+            if isinstance(component, AptGetItemList):
+                result["apt"].extend(component.to_ghelp_format())
+                continue
+            if isinstance(component, CurlItemList):
+                result["downloaded"].extend(component.to_ghelp_format())
+                continue
+            if isinstance(component, (BashItemList, CopyItemList)):
+                result["downloaded"].extend(component.to_ghelp_format())
+                continue
+
+        return result
+
+    def to_shortened_containerfile_directive(self) -> str:
+        return f"echo '{json.dumps(self.to_ghelp_format())}' > /var/lib/ghelp_info"
+
+
 class Containerfile(BaseModel):
     container_file: Path
     title: str = "gardener shell"
@@ -293,7 +347,8 @@ class Containerfile(BaseModel):
             | CurlItemList
             | BashItemList
             | EnvItemList
-            | ArgItemList,
+            | ArgItemList
+            | InfoGenerator,
             Field(discriminator="name"),
         ]
     ]

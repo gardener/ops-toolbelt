@@ -10,6 +10,7 @@ Components = (
     | m.BashItemList
     | m.EnvItemList
     | m.ArgItemList
+    | m.InfoGenerator
 )
 ComponentsList = list[Components]
 
