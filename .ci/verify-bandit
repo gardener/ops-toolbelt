@@ -11,14 +11,9 @@ if [[ -z ${SOURCE_PATH} ]]; then
 fi
 cd "${SOURCE_PATH}" || exit 1
 
-python3 -m venv .venv
-# shellcheck disable=SC1091
-source .venv/bin/activate
-pip3 install -r requirements.txt >/dev/null 2>&1
-
 if [ "${DESTINATION}" == "" ]; then
-    bandit --format sarif -r generator
+    "${PYTHON}" -m bandit --format sarif -r src
     exit
 fi
 
-${PYTHON} -m bandit --format sarif -r generator | tee "${DESTINATION}"
+${PYTHON} -m bandit --format sarif -r src | tee "${DESTINATION}"

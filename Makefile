@@ -22,15 +22,16 @@ color_reset=\033[0m
 help:
 	@echo "Usage:"
 	@echo "  Scripting related:"
-	@echo "    make venv          - Create or update the virtual environment"
-	@echo "    make ensure-venv   - Ensure the virtual environment exists"
-	@echo "    make verify        - Run verification checks (linting and static code checks)"
-	@echo "    make pkg-test      - Run package unit tests"
-	@echo "    make test          - Run all tests"
+	@echo "    make venv                      - Create or update the virtual environment"
+	@echo "    make ensure-venv               - Ensure the virtual environment exists"
+	@echo "    make verify                    - Run verification checks (linting and static code checks)"
+	@echo "    make pkg-test                  - Run package unit tests"
+	@echo "    make pkg-test-with-report      - Run package unit tests, open coverage report in browser"
+	@echo "    make test                      - Run all tests"
 	@echo "  Package related:"
-	@echo "    make build         - Generate Dockerfile. Builds upon gardenlinux latest tag, set the IMAGE_REPO and IMAGE_TAG envs"
-	@echo "    make validate      - Validate the generator configuration"
-	@echo "    make build-image   - Build the Docker image from the generated Dockerfile"
+	@echo "    make build                     - Generate Dockerfile. Builds upon gardenlinux latest tag, set the IMAGE_REPO and IMAGE_TAG envs"
+	@echo "    make validate                  - Validate the generator configuration"
+	@echo "    make build-image               - Build the Docker image from the generated Dockerfile"
 
 ensure-venv:
 	@if [ ! -d ".venv" ]; then $(MAKE) venv-build; fi
