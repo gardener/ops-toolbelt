@@ -25,7 +25,7 @@ jobs:
       contents: read
     steps:
       - uses: gardener/cc-utils/.github/actions/install-gardener-gha-libs@master
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: generate-dockerfile
         shell: bash
         run: |
@@ -79,7 +79,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: test
         shell: bash
         run: |
