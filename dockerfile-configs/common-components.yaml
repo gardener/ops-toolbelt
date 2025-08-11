@@ -2,6 +2,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+- name: arg
+  items:
+  - TARGETARCH
+
 - name: bash
   items:
   - name: debian testing apt-source
@@ -178,3 +182,11 @@
   - DOTFILES_USER=root
   - DOTFILES_HOME=/root/dotfiles
   - PATH=/nonroot/hacks:$PATH
+
+- name: bash
+  items:
+    - name: UI/UX conf
+      command: |
+        echo 'printf ${COLOR_GREEN}; figlet gardener shell; printf ${SGR_RESET}' >> /root/.bashrc;\
+        echo 'echo \n' >> /root/.bashrc;\
+        echo "echo Run \$(color orange 'ghelp') to get information about installed tools and packages"  >> /root/.bashrc
