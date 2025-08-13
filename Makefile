@@ -5,7 +5,7 @@ VENV_BIN = $(VENV_DIR)/bin
 VENV_PYTHON = $(VENV_BIN)/$(PYTHON)
 VENV_PIP = $(VENV_BIN)/pip
 APP = generator
-IMAGE_TAG ?= latest
+IMAGE_TAG ?= $(shell yq '.componentReferences[] | select(.name == "gardenlinux") | .version' .ocm/base-component.yaml)
 IMAGE_REPO ?= ghcr.io/gardenlinux/gardenlinux
 BUILT_IMAGE ?= ops-toolbelt
 ifeq ($(shell uname), Darwin)
@@ -24,6 +24,8 @@ help:
 	@echo "  Scripting related:"
 	@echo "    make venv                      - Create or update the virtual environment"
 	@echo "    make ensure-venv               - Ensure the virtual environment exists"
+	@echo "    make verify-bandit             - Run bandit security checks"
+	@echo "    make verify-shellcheck          - Run shellcheck on scripts"
 	@echo "    make verify                    - Run verification checks (linting and static code checks)"
 	@echo "    make pkg-test                  - Run package unit tests"
 	@echo "    make pkg-test-with-report      - Run package unit tests, open coverage report in browser"
@@ -38,7 +40,7 @@ ensure-venv:
 
 ensure-shellcheck:
 	@command -v shellcheck > /dev/null || { echo "shellcheck is not installed. Please install shellcheck"; exit 1; }
-	@command -v shellcheck-sarif > /dev/null || { echo "shellcheck-sarif is not installed. Please install shellcheck-sarif"; exit 1; }
+	@if ! command -v shellcheck-sarif > /dev/null; then cargo install shellcheck-sarif; fi
 
 venv-build:
 	@$(PYTHON) -m venv .venv
@@ -50,9 +52,13 @@ venv-update: ensure-venv
 
 venv: venv-update
 
-verify: ensure-venv ensure-shellcheck
-	@VENV_PYTHON=$(VENV_PYTHON) .ci/verify-bandit
+verify-bandit: ensure-venv
+	@VENV_BIN=$(VENV_BIN) .ci/verify-bandit
+
+verify-shellcheck: ensure-shellcheck
 	@.ci/verify-shellcheck
+
+verify: verify-bandit verify-shellcheck
 
 validate: venv
 	$(VENV_BIN)/generator-validate --dockerfile-config dockerfile-configs/common-components.yaml
