@@ -83,7 +83,7 @@ jobs:
       - name: test
         shell: bash
         run: |
-          set -eu
+          set -euo pipefail
           mkdir /tmp/blobs.d
           make test \
             |& tee /tmp/blobs.d/verify-log.txt
