@@ -25,10 +25,14 @@ class GeneratorSettings(ValidateSettings):
 def validate():
     s = ValidateSettings()  # type: ignore
     with open(s.dockerfile_config, encoding="utf-8") as f:
-        Dockerfile(
-            dockerfile_file=Path("/dev/null"),
-            components=yaml.safe_load(f),
-        )
+        try:
+            Dockerfile(
+                dockerfile_file=Path("/dev/null"),
+                components=yaml.safe_load(f),
+            )
+        except ValidationError as e:
+            print(f"Invalid configuration in {s.dockerfile_config}")
+            raise e
 
 
 def generate_dockerfile():

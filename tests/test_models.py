@@ -1,7 +1,9 @@
 #! /usr/bin/env python3
 
 from pathlib import Path
+from pydantic import ValidationError
 import pytest
+
 
 from generator import models as m
 
@@ -26,32 +28,43 @@ def test_ensure_env_key_pair():
         m.ensure_env_key_pair("KEY=")
 
 
-def test_bash_item_list():
-    bil = m.BashItemList(
-        name="bash",
-        items=[
-            {
-                "name": "some",
-                "command": "some --command",
-                "info": "Some info about the package",
-            },
-            {
-                "name": "package",
-                "command": """package --with \\
+def test_bash_item_list(subtests):
+    with subtests.test("Valid BashItemList"):
+        bil = m.BashItemList(
+            name="bash",
+            items=[
+                {
+                    "name": "some",
+                    "command": "some --command",
+                    "info": "Some info about the package",
+                },
+                {
+                    "name": "package",
+                    "command": """package --with \\
     --multiline --command
-""",
-            },
-            {"name": "package", "command": "another-package --with --command"},
-        ],
-    )
+    """,
+                },
+                {"name": "package", "command": "another-package --with --command"},
+            ],
+        )
 
-    expected_shortened = """some --command;\\
+        expected_shortened = """some --command;\\
     package --with \\
         --multiline --command;\\
     another-package --with --command"""
 
-    assert bil.to_shortened_dockerfile_directive() == expected_shortened
-    assert bil.to_dockerfile_directive() == f"""RUN {expected_shortened}"""
+        assert bil.to_shortened_dockerfile_directive() == expected_shortened
+        assert bil.to_dockerfile_directive() == f"""RUN {expected_shortened}"""
+
+    with subtests.test("Extra key in item"):
+        with pytest.raises(ValidationError):
+            m.BashItemList(
+                name="bash",
+                items=[
+                    {"name": "invalid", "command": "invalid command", "extra": "key"},
+                    {"name": "invalid", "command": "another invalid command"},
+                ],
+            )
 
 
 def test_apt_get_item(subtests):
@@ -67,22 +80,43 @@ def test_apt_get_item(subtests):
         a = m.AptGetItem(name="abc")
         assert a.provides == "abc"
 
+    with subtests.test("Invalid keys"):
+        with pytest.raises(ValidationError):
+            m.AptGetItem.model_validate({
+                "b1": "invalid",
+                "name": "abc",
+                "info": "Some info",
+                "provides": "def",
+            })
 
-def test_apt_get_item_list():
-    a = m.AptGetItemList(
-        name="apt-get", items=[{"name": "abc"}, {"name": "def"}, "ghi"]
-    )
 
-    assert (
-        a.to_shortened_dockerfile_directive()
-        == """apt-get --yes update && apt-get --yes install abc def ghi;\\
+def test_apt_get_item_list(subtests):
+    with subtests.test("Valid configs"):
+        a = m.AptGetItemList(
+            name="apt-get", items=[{"name": "abc"}, {"name": "def"}, "ghi"]
+        )
+
+        assert (
+            a.to_shortened_dockerfile_directive()
+            == """apt-get --yes update && apt-get --yes install abc def ghi;\\
     rm -rf /var/lib/apt/lists"""
-    )
-    assert (
-        a.to_dockerfile_directive()
-        == """RUN apt-get --yes update && apt-get --yes install abc def ghi;\\
+        )
+        assert (
+            a.to_dockerfile_directive()
+            == """RUN apt-get --yes update && apt-get --yes install abc def ghi;\\
     rm -rf /var/lib/apt/lists"""
-    )
+        )
+    with subtests.test("Extra keys"):
+        with pytest.raises(ValidationError):
+            m.AptGetItemList.model_validate({
+                "name": "apt-get",
+                "items": [
+                    {"name": "abc"},
+                    {"name": "def"},
+                    "ghi",
+                ],
+                "extra": "key",
+            })
 
 
 def test_shell_aware_http_url(subtests):
@@ -172,38 +206,66 @@ echo""",
             == "curl -sLf http://example.com/pkg$(echo ${TARGETARCH} |sed 's/x86_64/amd64/;s/arm64/arm/') -o /bin/curl-cmd && chmod 755 /bin/curl-cmd"
         )
 
+    with subtests.test("Extra keys"):
+        with pytest.raises(ValidationError):
+            m.CurlItem.model_validate({
+                "name": "curl",
+                "from": "http://example.com/pkg",
+                "to": "/bin/curl",
+                "extra": "key",
+            })
 
-def test_curl_item_list():
-    cil = m.CurlItemList(
-        name="curl",
-        items=[
-            {
-                "name": "curl1",
-                "from": "http://example.com/pkg1",
-            },
-            {
-                "name": "curl2",
-                "from": "http://example.com/pkg2",
-            },
-        ],
-    )
 
-    short = """curl -sLf http://example.com/pkg1 -o /bin/curl1 && chmod 755 /bin/curl1;\\
+def test_curl_item_list(subtests):
+    with subtests.test("Valid CurlItemList"):
+        cil = m.CurlItemList(
+            name="curl",
+            items=[
+                {
+                    "name": "curl1",
+                    "from": "http://example.com/pkg1",
+                },
+                {
+                    "name": "curl2",
+                    "from": "http://example.com/pkg2",
+                },
+            ],
+        )
+
+        short = """curl -sLf http://example.com/pkg1 -o /bin/curl1 && chmod 755 /bin/curl1;\\
     curl -sLf http://example.com/pkg2 -o /bin/curl2 && chmod 755 /bin/curl2"""
-    assert cil.to_shortened_dockerfile_directive() == short
-    assert cil.to_dockerfile_directive() == f"RUN {short}"
+        assert cil.to_shortened_dockerfile_directive() == short
+        assert cil.to_dockerfile_directive() == f"RUN {short}"
+    with subtests.test("Extra key"):
+        with pytest.raises(ValidationError):
+            m.CurlItemList.model_validate({
+                "name": "curl",
+                "items": [
+                    {"name": "curl1", "from": "http://example.com/pkg1"},
+                    {"name": "curl2", "from": "http://example.com/pkg2"},
+                ],
+                "extra": "key",
+            })
 
 
-def test_env_item_list():
-    eil = m.EnvItemList(
-        name="env",
-        items=["ENV_VAR1=value1", "ENV_VAR2=value2"],
-    )
+def test_env_item_list(subtests):
+    with subtests.test("Valid EnvItemList"):
+        eil = m.EnvItemList(
+            name="env",
+            items=["ENV_VAR1=value1", "ENV_VAR2=value2"],
+        )
 
-    assert (
-        eil.to_shortened_dockerfile_directive() == "ENV_VAR1=value1 ENV_VAR2=value2"
-    )
-    assert eil.to_dockerfile_directive() == "ENV ENV_VAR1=value1 ENV_VAR2=value2"
+        assert (
+            eil.to_shortened_dockerfile_directive() == "ENV_VAR1=value1 ENV_VAR2=value2"
+        )
+        assert eil.to_dockerfile_directive() == "ENV ENV_VAR1=value1 ENV_VAR2=value2"
+    with subtests.test("Extra key"):
+        with pytest.raises(ValidationError):
+            m.EnvItemList.model_validate({
+                "name": "env",
+                "items": ["ENV_VAR1=value1", "ENV_VAR2=value2"],
+                "extra": "key",
+            })
 
 
 def test_copy_item(subtests, mocker):
@@ -231,25 +293,48 @@ def test_copy_item(subtests, mocker):
         )
         assert copy_item.to_dockerfile_directive() == "COPY /my/path /my/dest"
 
+    with subtests.test("Extra key"):
+        with pytest.raises(ValidationError):
+            m.CopyItem.model_validate({
+                "from": "/my/path",
+                "to": "/my/dest",
+                "extra": "key",
+            })
 
-def test_copy_item_list(mocker):
+
+def test_copy_item_list(mocker, subtests):
     mocker.patch("pathlib.Path.is_file", return_value=True)
     mocker.patch("pathlib.Path.is_dir", return_value=True)
     mocker.patch("pathlib.Path.exists", return_value=True)
 
-    cil = m.CopyItemList(
-        name="copy",
-        items=[
-            {"from": "/path/to/file1", "to": "/dest/file1"},
-            {
-                "from": "/path/to/file2",
-                "to": "/dest/file2",
-                "command": "--chown=1000:1000",
-            },
-        ],
-    )
+    with subtests.test("Valid CopyItemList"):
+        cil = m.CopyItemList(
+            name="copy",
+            items=[
+                {"from": "/path/to/file1", "to": "/dest/file1"},
+                {
+                    "from": "/path/to/file2",
+                    "to": "/dest/file2",
+                    "command": "--chown=1000:1000",
+                },
+            ],
+        )
 
-    assert cil.to_shortened_dockerfile_directive() == (
-        """COPY /path/to/file1 /dest/file1
+        assert cil.to_shortened_dockerfile_directive() == (
+            """COPY /path/to/file1 /dest/file1
 COPY --chown=1000:1000 /path/to/file2 /dest/file2"""
-    )
+        )
+    with subtests.test("Extra key"):
+        with pytest.raises(ValidationError):
+            m.copy_item_list = m.CopyItemList.model_validate({
+                "name": "copy",
+                "items": [
+                    {"from": "/path/to/file1", "to": "/dest/file1"},
+                    {
+                        "from": "/path/to/file2",
+                        "to": "/dest/file2",
+                        "command": "--chown=1000:1000",
+                    },
+                ],
+                "extra": "key",
+            })

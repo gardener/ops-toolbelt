@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Annotated, Any, Literal
 from pydantic import (
     BaseModel,
+    ConfigDict,
     DirectoryPath,
     Field,
     AfterValidator,
@@ -45,8 +46,11 @@ SupportedDockerfileCommands = Literal["ARG", "RUN", "ENV", "COPY"]
 PackageNameString = Annotated[str, Field(AfterValidator(package_name_string_validator))]
 CommandString = str
 
+class OpinionatedBaseModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
 
-class BaseItem(BaseModel):
+
+class BaseItem(OpinionatedBaseModel):
     name: PackageNameString
     info: str | None = None
 
@@ -54,7 +58,7 @@ class BaseItem(BaseModel):
         return self.name, self.info
 
 
-class BaseDockerfileDirective(BaseModel):
+class BaseDockerfileDirective(OpinionatedBaseModel):
     key: SupportedDockerfileCommands
     can_be_combined: bool = True
 
@@ -292,7 +296,7 @@ class ArgItemList(BaseDockerfileDirective):
         return self.to_shortened_dockerfile_directive()
 
 
-class DockerfileLayer(BaseModel):
+class DockerfileLayer(OpinionatedBaseModel):
     key: SupportedDockerfileCommands
     commands: list[str]
 
@@ -300,7 +304,7 @@ class DockerfileLayer(BaseModel):
         return ";\\\n".join(self.commands)
 
 
-class InfoGenerator(BaseModel):
+class InfoGenerator(OpinionatedBaseModel):
     key: SupportedDockerfileCommands = "RUN"
     name: Literal["you-shall not use this"] = "you-shall not use this"
     components: list[
@@ -337,7 +341,7 @@ class InfoGenerator(BaseModel):
         return f"echo '{json.dumps(self.to_ghelp_format())}' > /var/lib/ghelp_info"
 
 
-class Dockerfile(BaseModel):
+class Dockerfile(OpinionatedBaseModel):
     dockerfile_file: Path
     title: str = "gardener shell"
     from_image: str = "ghcr.io/gardenlinux/gardenlinux:latest"
