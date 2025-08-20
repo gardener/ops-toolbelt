@@ -79,4 +79,4 @@ pkg-test: venv
 pkg-test-with-report: pkg-test
 	@$(OPEN) htmlcov/index.html || echo "HTML report not generated, please check the test results in the terminal."
 
-test: pkg-test verify
+test: pkg-test verify validate
