@@ -2,7 +2,6 @@ SHELL := /usr/bin/env bash
 PYTHON := python3
 VENV_DIR = .venv
 VENV_BIN = $(VENV_DIR)/bin
-VENV_PYTHON = $(VENV_BIN)/$(PYTHON)
 VENV_PIP = $(VENV_BIN)/pip
 APP = generator
 IMAGE_TAG ?= $(shell yq '.componentReferences[] | select(.name == "gardenlinux") | .version' .ocm/base-component.yaml)
@@ -25,7 +24,7 @@ help:
 	@echo "    make venv                      - Create or update the virtual environment"
 	@echo "    make ensure-venv               - Ensure the virtual environment exists"
 	@echo "    make verify-bandit             - Run bandit security checks"
-	@echo "    make verify-shellcheck          - Run shellcheck on scripts"
+	@echo "    make verify-shellcheck         - Run shellcheck on scripts"
 	@echo "    make verify                    - Run verification checks (linting and static code checks)"
 	@echo "    make pkg-test                  - Run package unit tests"
 	@echo "    make pkg-test-with-report      - Run package unit tests, open coverage report in browser"
