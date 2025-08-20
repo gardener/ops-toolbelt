@@ -12,8 +12,8 @@ fi
 cd "${SOURCE_PATH}" || exit 1
 
 if [ "${DESTINATION}" == "" ]; then
-    "${VENV_BIN}/bandit" --format sarif -r src
+    "${VENV_BIN}/bandit" --format sarif -r src hacks/ghelp
     exit
 fi
 
-"${VENV_BIN}/bandit" --format sarif -r src | tee "${DESTINATION}"
+"${VENV_BIN}/bandit" --format sarif -r src hacks/ghelp | tee "${DESTINATION}"
