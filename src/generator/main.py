@@ -41,8 +41,7 @@ def generate_dockerfile():
         components = yaml.safe_load(f)
     dockerfile = Dockerfile(
         dockerfile_file=s.dockerfile,
-        # ToDo: we shouldn't deepcopy here
-        components=deepcopy(components),
+        components=components,
         from_image=s.from_image,
         title=s.title,
     )

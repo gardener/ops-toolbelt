@@ -20,7 +20,6 @@ def test_group_components_by_key(mocker):
     mocker.patch("pathlib.Path.is_file", return_value=True)
     mocker.patch("pathlib.Path.is_dir", return_value=True)
     mocker.patch("pathlib.Path.exists", return_value=True)
-    # TODO: Fix
     directives = [
         m.BashItemList(name="bash", items=["ls -la", "touch /dev/null"]),
         m.ArgItemList(name="arg", items=["ARG_VAR1=value1", "ARG_VAR2"]),
@@ -44,6 +43,64 @@ def test_group_components_by_key(mocker):
         m.BashItemList(name="bash", items=["pwd"]),
     ]
 
+    grouped = u.group_components_by_key(directives)
+    expected = [
+        {
+            "RUN": [
+                m.BashItemList(name="bash", items=["ls -la", "touch /dev/null"]),
+            ],
+        },
+        {
+            "ARG": [
+                m.ArgItemList(
+                    key="ARG",
+                    can_be_combined=False,
+                    name="arg",
+                    items=["ARG_VAR1=value1", "ARG_VAR2"],
+                ),
+            ],
+        },
+        {
+            "RUN": [
+                m.AptGetItemList(name="apt-get", items=["curl", "tree"]),
+            ]
+        },
+        {
+            "COPY": [
+                m.CopyItemList(
+                    name="copy",
+                    items=[
+                        {"from": "/some/path", "to": "/some/path"},
+                        {"from": "/another/file", "to": "/yet/another/file"},
+                    ],
+                )
+            ]
+        },
+        {
+            "RUN": [
+                m.CurlItemList(
+                    name="curl",
+                    items=[
+                        {"name": "example1", "from": "https://example.com"},
+                        {"name": "example2", "from": "https://another.example.com"},
+                    ],
+                ),
+                m.BashItemList(name="bash", items=["ls -la", "touch /dev/null"]),
+            ]
+        },
+        {
+            "ENV": [
+                m.EnvItemList(name="env", items=["A=B", "C=D"]),
+            ]
+        },
+        {
+            "RUN": [
+                m.BashItemList(name="bash", items=["pwd"]),
+            ]
+        },
+    ]
+
+    assert grouped == expected
 
 def test_directives_to_layers(mocker):
     """Test directives_to_layers function with various directive types."""

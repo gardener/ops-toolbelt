@@ -8,6 +8,7 @@ import re
 import json
 from pathlib import Path
 from typing import Annotated, Any, Literal
+from pydantic_core import core_schema
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -164,8 +165,6 @@ class ShellAwareHttpUrl(str):
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type, handler):
-        # TODO: Fx
-        from pydantic_core import core_schema
 
         return core_schema.no_info_after_validator_function(
             cls.validate,
@@ -193,6 +192,11 @@ class ShellAwareHttpUrl(str):
 
         return v
 
+class OptionalFormatedDict(dict):
+    """ Dict that will return missing dict keys as {key}"""
+
+    def __missing__(self, key: str) -> Any:
+        return "{" + key + "}"
 
 class CurlItem(BashItem):
     version: str = ""
@@ -204,7 +208,7 @@ class CurlItem(BashItem):
     @classmethod
     def template_url(cls, data: Any) -> Any:
         if isinstance(data["from"], str):
-            data["from"] = data["from"].format(version=data.get("version", ""))
+            data["from"] = data["from"].format_map(OptionalFormatedDict(version=data.get("version", "")))
         return data
 
     @model_validator(mode="before")

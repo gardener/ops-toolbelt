@@ -338,3 +338,8 @@ COPY --chown=1000:1000 /path/to/file2 /dest/file2"""
                 ],
                 "extra": "key",
             })
+
+def test_optional_formated_dict():
+    assert m.OptionalFormatedDict({"key": "value"}) == {"key": "value"}
+    assert m.OptionalFormatedDict()["my_key"] == "{my_key}"
+    assert m.OptionalFormatedDict(a="b")["a"] == "b"
