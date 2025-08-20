@@ -43,7 +43,7 @@ dev = [
 ]
 
 [project.scripts]
-generator = "generator.main:generate_containerfile"
+generator = "generator.main:generate_dockerfile"
 generator-validate = "generator.main:validate"
 
 [tool.setuptools]

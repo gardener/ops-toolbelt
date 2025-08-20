@@ -41,7 +41,7 @@ def ensure_env_key_pair(value: str) -> str:
     return value
 
 
-SupportedfileCommands = Literal["ARG", "RUN", "ENV", "COPY"]
+SupportedDockerfileCommands = Literal["ARG", "RUN", "ENV", "COPY"]
 PackageNameString = Annotated[str, Field(AfterValidator(package_name_string_validator))]
 CommandString = str
 
@@ -54,17 +54,17 @@ class BaseItem(BaseModel):
         return self.name, self.info
 
 
-class BaseContainerfileDirective(BaseModel):
-    key: SupportedfileCommands
+class BaseDockerfileDirective(BaseModel):
+    key: SupportedDockerfileCommands
     can_be_combined: bool = True
 
-    def to_shortened_containerfile_directive(self) -> str:
-        """Only the command part of the containerfile directive"""
+    def to_shortened_dockerfile_directive(self) -> str:
+        """Only the command part of the dockerfile directive"""
         raise NotImplementedError("Subclasses must implement this method.")
 
-    def to_containerfile_directive(self) -> str:
-        """Full containerfile directive"""
-        return f"{self.key} {self.to_shortened_containerfile_directive()}"
+    def to_dockerfile_directive(self) -> str:
+        """Full dockerfile directive"""
+        return f"{self.key} {self.to_shortened_dockerfile_directive()}"
 
     def to_ghelp_format(self) -> list:
         """Convert items to ghelp format"""
@@ -86,10 +86,10 @@ class BashItem(BaseItem):
         return value.replace("\n", "\n    ").replace("\r", "")
 
 
-class BashItemList(BaseContainerfileDirective):
+class BashItemList(BaseDockerfileDirective):
     name: Literal["bash"]
     items: list[BashItem]
-    key: SupportedfileCommands = "RUN"
+    key: SupportedDockerfileCommands = "RUN"
 
     @field_validator("items", mode="before")
     @classmethod
@@ -102,7 +102,7 @@ class BashItemList(BaseContainerfileDirective):
                 result.append(item)
         return result
 
-    def to_shortened_containerfile_directive(self) -> str:
+    def to_shortened_dockerfile_directive(self) -> str:
         return ";\\\n    ".join(bash.command for bash in self.items)
 
 
@@ -124,16 +124,16 @@ class AptGetItem(BaseItem):
         return self.name, self.provides
 
 
-class AptGetItemList(BaseContainerfileDirective):
+class AptGetItemList(BaseDockerfileDirective):
     name: Literal["apt-get"]
     items: list[AptGetItem | PackageNameString]
-    key: SupportedfileCommands = "RUN"
+    key: SupportedDockerfileCommands = "RUN"
     apt_get_command: str = Field(
         default="apt-get --yes update && apt-get --yes install",
         alias="apt-get-command",
     )
 
-    def to_shortened_containerfile_directive(self) -> str:
+    def to_shortened_dockerfile_directive(self) -> str:
         return (
             f"{self.apt_get_command} "
             + " ".join(
@@ -160,6 +160,7 @@ class ShellAwareHttpUrl(str):
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type, handler):
+        # TODO: Fx
         from pydantic_core import core_schema
 
         return core_schema.no_info_after_validator_function(
@@ -223,12 +224,12 @@ class CurlItem(BashItem):
         return self.name, self.version or None, self.info or None
 
 
-class CurlItemList(BaseContainerfileDirective):
+class CurlItemList(BaseDockerfileDirective):
     name: Literal["curl"]
     items: list[CurlItem]
-    key: SupportedfileCommands = "RUN"
+    key: SupportedDockerfileCommands = "RUN"
 
-    def to_shortened_containerfile_directive(self) -> str:
+    def to_shortened_dockerfile_directive(self) -> str:
         return ";\\\n    ".join([c.command for c in self.items])
 
     def to_ghelp_format(self) -> list:
@@ -238,12 +239,12 @@ class CurlItemList(BaseContainerfileDirective):
 EnvString = Annotated[str, Field(AfterValidator(ensure_env_key_pair))]
 
 
-class EnvItemList(BaseContainerfileDirective):
+class EnvItemList(BaseDockerfileDirective):
     name: Literal["env"]
     items: list[EnvString]
-    key: SupportedfileCommands = "ENV"
+    key: SupportedDockerfileCommands = "ENV"
 
-    def to_shortened_containerfile_directive(self):
+    def to_shortened_dockerfile_directive(self):
         return " ".join(self.items)
 
 
@@ -251,7 +252,7 @@ class CopyItem(BaseItem):
     source: FilePath | DirectoryPath = Field(alias="from")
     to: Path
     command: str = Field(default="", description="Arguments for COPY directive")
-    key: SupportedfileCommands = "COPY"
+    key: SupportedDockerfileCommands = "COPY"
 
     @field_validator("command", mode="after")
     @classmethod
@@ -261,38 +262,38 @@ class CopyItem(BaseItem):
                 return f" {value}"
         return value
 
-    def to_containerfile_directive(self) -> str:
+    def to_dockerfile_directive(self) -> str:
         return f"{self.key}{self.command} {self.source} {self.to}"
 
 
-class CopyItemList(BaseContainerfileDirective):
+class CopyItemList(BaseDockerfileDirective):
     name: Literal["copy"]
     items: list[CopyItem]
-    key: SupportedfileCommands = "COPY"
+    key: SupportedDockerfileCommands = "COPY"
     can_be_combined: bool = False
 
-    def to_shortened_containerfile_directive(self) -> str:
-        return "\n".join([c.to_containerfile_directive() for c in self.items])
+    def to_shortened_dockerfile_directive(self) -> str:
+        return "\n".join([c.to_dockerfile_directive() for c in self.items])
 
-    def to_containerfile_directive(self) -> str:
-        return self.to_shortened_containerfile_directive()
+    def to_dockerfile_directive(self) -> str:
+        return self.to_shortened_dockerfile_directive()
 
 
-class ArgItemList(BaseContainerfileDirective):
+class ArgItemList(BaseDockerfileDirective):
     name: Literal["arg"]
     items: list[str]
-    key: SupportedfileCommands = "ARG"
+    key: SupportedDockerfileCommands = "ARG"
     can_be_combined: bool = False
 
-    def to_shortened_containerfile_directive(self) -> str:
+    def to_shortened_dockerfile_directive(self) -> str:
         return "\n".join([f"ARG {item}" for item in self.items])
 
-    def to_containerfile_directive(self) -> str:
-        return self.to_shortened_containerfile_directive()
+    def to_dockerfile_directive(self) -> str:
+        return self.to_shortened_dockerfile_directive()
 
 
-class ContainerLayer(BaseModel):
-    key: SupportedfileCommands
+class DockerfileLayer(BaseModel):
+    key: SupportedDockerfileCommands
     commands: list[str]
 
     def __str__(self) -> str:
@@ -300,7 +301,7 @@ class ContainerLayer(BaseModel):
 
 
 class InfoGenerator(BaseModel):
-    key: SupportedfileCommands = "RUN"
+    key: SupportedDockerfileCommands = "RUN"
     name: Literal["you-shall not use this"] = "you-shall not use this"
     components: list[
         Annotated[
@@ -332,12 +333,12 @@ class InfoGenerator(BaseModel):
 
         return result
 
-    def to_shortened_containerfile_directive(self) -> str:
+    def to_shortened_dockerfile_directive(self) -> str:
         return f"echo '{json.dumps(self.to_ghelp_format())}' > /var/lib/ghelp_info"
 
 
-class Containerfile(BaseModel):
-    container_file: Path
+class Dockerfile(BaseModel):
+    dockerfile_file: Path
     title: str = "gardener shell"
     from_image: str = "ghcr.io/gardenlinux/gardenlinux:latest"
     components: list[
@@ -353,5 +354,5 @@ class Containerfile(BaseModel):
         ]
     ]
 
-    def to_containerfile(self, layers: list[ContainerLayer]) -> str:
+    def to_dockerfile(self, layers: list[DockerfileLayer]) -> str:
         return f"FROM {self.from_image}\n{'\n'.join([str(l) for l in layers])}"

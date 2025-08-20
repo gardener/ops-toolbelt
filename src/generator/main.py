@@ -7,7 +7,7 @@ from copy import deepcopy
 from pydantic import FilePath, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from generator.models import Containerfile, InfoGenerator
+from generator.models import Dockerfile, InfoGenerator
 from generator.utils import directives_to_layers
 
 
@@ -23,31 +23,31 @@ class GeneratorSettings(ValidateSettings):
 
 
 def validate():
-    s = ValidateSettings()
+    s = ValidateSettings()  # type: ignore
     with open(s.dockerfile_config, encoding="utf-8") as f:
-        Containerfile(
-            container_file=Path("/dev/null"),
+        Dockerfile(
+            dockerfile_file=Path("/dev/null"),
             components=yaml.safe_load(f),
         )
 
 
-def generate_containerfile():
-    s = GeneratorSettings()
+def generate_dockerfile():
+    s = GeneratorSettings()  # type: ignore
     with open(s.dockerfile_config, encoding="utf-8") as f:
         components = yaml.safe_load(f)
-    containerfile = Containerfile(
-        container_file=s.dockerfile,
+    dockerfile = Dockerfile(
+        dockerfile_file=s.dockerfile,
         # ToDo: we shouldn't deepcopy here
         components=deepcopy(components),
         from_image=s.from_image,
         title=s.title,
     )
     info_generator = InfoGenerator(components=components)
-    containerfile.components.append(info_generator)
+    dockerfile.components.append(info_generator)
 
-    with open(containerfile.container_file, "w", encoding="utf-8") as cf:
+    with open(dockerfile.dockerfile_file, "w", encoding="utf-8") as cf:
         cf.write(
-            containerfile.to_containerfile(
-                directives_to_layers(containerfile.components)
+            dockerfile.to_dockerfile(
+                directives_to_layers(dockerfile.components)
             )
         )

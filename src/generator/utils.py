@@ -16,7 +16,7 @@ ComponentsList = list[Components]
 
 
 def can_combine_group_with_previous(
-    prev_key: m.SupportedfileCommands, drv: Components
+    prev_key: m.SupportedDockerfileCommands, drv: Components
 ) -> bool:
     if drv.key != prev_key:
         return False
@@ -25,9 +25,9 @@ def can_combine_group_with_previous(
 
 def group_components_by_key(
     directives: ComponentsList,
-) -> list[dict[m.SupportedfileCommands, ComponentsList]]:
-    prev_key: m.SupportedfileCommands | None = None
-    res: list[dict[m.SupportedfileCommands, ComponentsList]] = []
+) -> list[dict[m.SupportedDockerfileCommands, ComponentsList]]:
+    prev_key: m.SupportedDockerfileCommands | None = None
+    res: list[dict[m.SupportedDockerfileCommands, ComponentsList]] = []
     current_group: ComponentsList = []
 
     for drv in directives:
@@ -52,19 +52,19 @@ def group_components_by_key(
     return res
 
 
-def grouped_components_to_container_layers(
-    grouped_components: list[dict[m.SupportedfileCommands, ComponentsList]],
-) -> list[m.ContainerLayer]:
+def grouped_components_to_dockerfile_layers(
+    grouped_components: list[dict[m.SupportedDockerfileCommands, ComponentsList]],
+) -> list[m.DockerfileLayer]:
     layers = []
     for group in grouped_components:
         for key, items in group.items():
             layers.append(
-                m.ContainerLayer(
+                m.DockerfileLayer(
                     key=key,
                     commands=[
-                        item.to_containerfile_directive()
+                        item.to_dockerfile_directive()
                         if idx == 0
-                        else f"    {item.to_shortened_containerfile_directive()}"
+                        else f"    {item.to_shortened_dockerfile_directive()}"
                         for idx, item in enumerate(items)
                     ],
                 )
@@ -74,5 +74,5 @@ def grouped_components_to_container_layers(
 
 def directives_to_layers(
     directives: ComponentsList,
-) -> list[m.ContainerLayer]:
-    return grouped_components_to_container_layers(group_components_by_key(directives))
+) -> list[m.DockerfileLayer]:
+    return grouped_components_to_dockerfile_layers(group_components_by_key(directives))

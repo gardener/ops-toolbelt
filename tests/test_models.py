@@ -50,8 +50,8 @@ def test_bash_item_list():
         --multiline --command;\\
     another-package --with --command"""
 
-    assert bil.to_shortened_containerfile_directive() == expected_shortened
-    assert bil.to_containerfile_directive() == f"""RUN {expected_shortened}"""
+    assert bil.to_shortened_dockerfile_directive() == expected_shortened
+    assert bil.to_dockerfile_directive() == f"""RUN {expected_shortened}"""
 
 
 def test_apt_get_item(subtests):
@@ -74,12 +74,12 @@ def test_apt_get_item_list():
     )
 
     assert (
-        a.to_shortened_containerfile_directive()
+        a.to_shortened_dockerfile_directive()
         == """apt-get --yes update && apt-get --yes install abc def ghi;\\
     rm -rf /var/lib/apt/lists"""
     )
     assert (
-        a.to_containerfile_directive()
+        a.to_dockerfile_directive()
         == """RUN apt-get --yes update && apt-get --yes install abc def ghi;\\
     rm -rf /var/lib/apt/lists"""
     )
@@ -190,8 +190,8 @@ def test_curl_item_list():
 
     short = """curl -sLf http://example.com/pkg1 -o /bin/curl1 && chmod 755 /bin/curl1;\\
     curl -sLf http://example.com/pkg2 -o /bin/curl2 && chmod 755 /bin/curl2"""
-    assert cil.to_shortened_containerfile_directive() == short
-    assert cil.to_containerfile_directive() == f"RUN {short}"
+    assert cil.to_shortened_dockerfile_directive() == short
+    assert cil.to_dockerfile_directive() == f"RUN {short}"
 
 
 def test_env_item_list():
@@ -201,9 +201,9 @@ def test_env_item_list():
     )
 
     assert (
-        eil.to_shortened_containerfile_directive() == "ENV_VAR1=value1 ENV_VAR2=value2"
+        eil.to_shortened_dockerfile_directive() == "ENV_VAR1=value1 ENV_VAR2=value2"
     )
-    assert eil.to_containerfile_directive() == "ENV ENV_VAR1=value1 ENV_VAR2=value2"
+    assert eil.to_dockerfile_directive() == "ENV ENV_VAR1=value1 ENV_VAR2=value2"
 
 
 def test_copy_item(subtests, mocker):
@@ -219,7 +219,7 @@ def test_copy_item(subtests, mocker):
             }
         )
         assert (
-            copy_item.to_containerfile_directive()
+            copy_item.to_dockerfile_directive()
             == "COPY --chown=65532:65532 /my/path /my/dest"
         )
     with subtests.test("Does not have command"):
@@ -229,7 +229,7 @@ def test_copy_item(subtests, mocker):
                 "to": "/my/dest",
             }
         )
-        assert copy_item.to_containerfile_directive() == "COPY /my/path /my/dest"
+        assert copy_item.to_dockerfile_directive() == "COPY /my/path /my/dest"
 
 
 def test_copy_item_list(mocker):
@@ -249,7 +249,7 @@ def test_copy_item_list(mocker):
         ],
     )
 
-    assert cil.to_shortened_containerfile_directive() == (
+    assert cil.to_shortened_dockerfile_directive() == (
         """COPY /path/to/file1 /dest/file1
 COPY --chown=1000:1000 /path/to/file2 /dest/file2"""
     )

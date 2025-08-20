@@ -20,6 +20,7 @@ def test_group_components_by_key(mocker):
     mocker.patch("pathlib.Path.is_file", return_value=True)
     mocker.patch("pathlib.Path.is_dir", return_value=True)
     mocker.patch("pathlib.Path.exists", return_value=True)
+    # TODO: Fix
     directives = [
         m.BashItemList(name="bash", items=["ls -la", "touch /dev/null"]),
         m.ArgItemList(name="arg", items=["ARG_VAR1=value1", "ARG_VAR2"]),
@@ -80,29 +81,29 @@ def test_directives_to_layers(mocker):
     layers = u.directives_to_layers(directives)
 
     expected_layers = [
-        m.ContainerLayer(key="RUN", commands=["RUN ls -la;\\\n    touch /dev/null"]),
-        m.ContainerLayer(key="ARG", commands=["ARG ARG_VAR1=value1\nARG ARG_VAR2"]),
-        m.ContainerLayer(
+        m.DockerfileLayer(key="RUN", commands=["RUN ls -la;\\\n    touch /dev/null"]),
+        m.DockerfileLayer(key="ARG", commands=["ARG ARG_VAR1=value1\nARG ARG_VAR2"]),
+        m.DockerfileLayer(
             key="RUN",
             commands=[
                 "RUN apt-get --yes update && apt-get --yes install curl tree;\\\n    rm -rf /var/lib/apt/lists"
             ],
         ),
-        m.ContainerLayer(
+        m.DockerfileLayer(
             key="COPY",
             commands=[
                 "COPY /some/path /some/path\nCOPY /another/file /yet/another/file"
             ],
         ),
-        m.ContainerLayer(
+        m.DockerfileLayer(
             key="RUN",
             commands=[
                 "RUN curl -sLf https://example.com -o /bin/example1 && chmod 755 /bin/example1;\\\n    curl -sLf https://another.example.com -o /bin/example2 && chmod 755 /bin/example2",
                 "    ls -la;\\\n    touch /dev/null",
             ],
         ),
-        m.ContainerLayer(key="ENV", commands=["ENV A=B C=D"]),
-        m.ContainerLayer(key="RUN", commands=["RUN pwd"]),
+        m.DockerfileLayer(key="ENV", commands=["ENV A=B C=D"]),
+        m.DockerfileLayer(key="RUN", commands=["RUN pwd"]),
     ]
 
     assert layers == expected_layers
@@ -110,7 +111,7 @@ def test_directives_to_layers(mocker):
     # Test with single directive
     single_directive = [m.BashItemList(name="bash", items=["echo hello"])]
     single_layer = u.directives_to_layers(single_directive)
-    expected_single = [m.ContainerLayer(key="RUN", commands=["RUN echo hello"])]
+    expected_single = [m.DockerfileLayer(key="RUN", commands=["RUN echo hello"])]
 
     assert single_layer == expected_single
     grouped = u.group_components_by_key(directives)
@@ -173,14 +174,14 @@ def test_directives_to_layers(mocker):
     assert grouped == res
 
 
-def test_grouped_components_to_container_layers(mocker, subtests):
-    """Test grouped_components_to_container_layers with various scenarios using subtests."""
+def test_grouped_components_to_dockerfile_layers(mocker, subtests):
+    """Test grouped_components_to_dockerfile_layers with various scenarios using subtests."""
     mocker.patch("pathlib.Path.is_file", return_value=True)
     mocker.patch("pathlib.Path.is_dir", return_value=True)
     mocker.patch("pathlib.Path.exists", return_value=True)
 
-    assert u.grouped_components_to_container_layers([]) == []
-    assert u.grouped_components_to_container_layers(
+    assert u.grouped_components_to_dockerfile_layers([]) == []
+    assert u.grouped_components_to_dockerfile_layers(
         [
             {
                 "RUN": [
@@ -240,27 +241,27 @@ def test_grouped_components_to_container_layers(mocker, subtests):
             },
         ]
     ) == [
-        m.ContainerLayer(key="RUN", commands=["RUN ls -la;\\\n    touch /dev/null"]),
-        m.ContainerLayer(key="ARG", commands=["ARG ARG_VAR1=value1\nARG ARG_VAR2"]),
-        m.ContainerLayer(
+        m.DockerfileLayer(key="RUN", commands=["RUN ls -la;\\\n    touch /dev/null"]),
+        m.DockerfileLayer(key="ARG", commands=["ARG ARG_VAR1=value1\nARG ARG_VAR2"]),
+        m.DockerfileLayer(
             key="RUN",
             commands=[
                 "RUN apt-get --yes update && apt-get --yes install curl tree;\\\n    rm -rf /var/lib/apt/lists"
             ],
         ),
-        m.ContainerLayer(
+        m.DockerfileLayer(
             key="COPY",
             commands=[
                 "COPY /some/path /some/path\nCOPY /another/file /yet/another/file"
             ],
         ),
-        m.ContainerLayer(
+        m.DockerfileLayer(
             key="RUN",
             commands=[
                 "RUN curl -sLf https://example.com -o /bin/example1 && chmod 755 /bin/example1;\\\n    curl -sLf https://another.example.com -o /bin/example2 && chmod 755 /bin/example2",
                 "    ls -la;\\\n    touch /dev/null",
             ],
         ),
-        m.ContainerLayer(key="ENV", commands=["ENV A=B C=D"]),
-        m.ContainerLayer(key="RUN", commands=["RUN pwd"]),
+        m.DockerfileLayer(key="ENV", commands=["ENV A=B C=D"]),
+        m.DockerfileLayer(key="RUN", commands=["RUN pwd"]),
     ]
