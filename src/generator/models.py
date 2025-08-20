@@ -86,7 +86,7 @@ class BashItem(BaseItem):
 
     @field_validator("command", mode="after")
     @classmethod
-    def left_indetnt_lines_after_first(cls, value: str) -> str:
+    def left_indent_lines_after_first(cls, value: str) -> str:
         return value.replace("\n", "\n    ").replace("\r", "")
 
 
