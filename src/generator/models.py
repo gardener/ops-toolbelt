@@ -73,6 +73,8 @@ class BaseDockerfileDirective(OpinionatedBaseModel):
 
     def to_ghelp_format(self) -> list:
         """Convert items to ghelp format"""
+        if not hasattr(self, "items"):
+            raise NotImplementedError(f"{self.__class__.__name__} must have 'items' attribute.")
         return [item.dump_ghelp() for item in self.items]
 
 
