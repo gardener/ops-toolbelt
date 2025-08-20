@@ -10,22 +10,25 @@ from generator import models as m
 
 def test_package_name_string_validator():
     assert m.package_name_string_validator("valid-name_123") == "valid-name_123"
-    with pytest.raises(ValueError):
-        m.package_name_string_validator("invalid name")
+    assert m.package_name_string_validator("valid/name_123") == "valid/name_123"
+    assert m.package_name_string_validator("valid name") == "valid name"
+
     with pytest.raises(ValueError):
         m.package_name_string_validator("invalid,name")
     with pytest.raises(ValueError):
         m.package_name_string_validator("invalid\\name")
+    with pytest.raises(ValueError):
+        m.package_name_string_validator("invalid))name")
 
 
 def test_ensure_env_key_pair():
-    assert m.ensure_env_key_pair("KEY=VALUE") == "KEY=VALUE"
+    assert m.ensure_env_pair("KEY=VALUE") == "KEY=VALUE"
     with pytest.raises(ValueError):
-        m.ensure_env_key_pair("KEYVALUE")
+        m.ensure_env_pair("KEYVALUE")
     with pytest.raises(ValueError):
-        m.ensure_env_key_pair("=VALUE")
+        m.ensure_env_pair("=VALUE")
     with pytest.raises(ValueError):
-        m.ensure_env_key_pair("KEY=")
+        m.ensure_env_pair("KEY=")
 
 
 def test_bash_item_list(subtests):
@@ -116,6 +119,12 @@ def test_apt_get_item_list(subtests):
                     "ghi",
                 ],
                 "extra": "key",
+            })
+    with subtests.test("Invalid item format"):
+        with pytest.raises(ValidationError):
+            m.AptGetItemList.model_validate({
+                "name": "apt-get",
+                "items": ["abc", {"name": "def"}, "((asd))"],
             })
 
 
@@ -266,6 +275,12 @@ def test_env_item_list(subtests):
                 "items": ["ENV_VAR1=value1", "ENV_VAR2=value2"],
                 "extra": "key",
             })
+    with subtests.test("Invalid item format"):
+        with pytest.raises(ValidationError):
+            m.EnvItemList.model_validate({
+                "name": "env",
+                "items": ["ENV_VAR1=value1", "invalid_item_format"],
+            })
 
 
 def test_copy_item(subtests, mocker):
@@ -275,6 +290,7 @@ def test_copy_item(subtests, mocker):
     with subtests.test("Has command"):
         copy_item = m.CopyItem.model_validate(
             {
+                "name": "copy",
                 "from": "/my/path",
                 "to": "/my/dest",
                 "command": "--chown=65532:65532",
@@ -287,6 +303,7 @@ def test_copy_item(subtests, mocker):
     with subtests.test("Does not have command"):
         copy_item = m.CopyItem.model_validate(
             {
+                "name": "copy",
                 "from": "/my/path",
                 "to": "/my/dest",
             }
@@ -311,8 +328,9 @@ def test_copy_item_list(mocker, subtests):
         cil = m.CopyItemList(
             name="copy",
             items=[
-                {"from": "/path/to/file1", "to": "/dest/file1"},
+                {"name": "copy1", "from": "/path/to/file1", "to": "/dest/file1"},
                 {
+                    "name": "copy2",
                     "from": "/path/to/file2",
                     "to": "/dest/file2",
                     "command": "--chown=1000:1000",

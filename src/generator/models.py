@@ -23,14 +23,14 @@ from pydantic import (
 
 
 def package_name_string_validator(value: str) -> str:
-    if re.search(r"[\s,.\\]", value):
+    if value.strip() and not re.match(r"^[a-zA-Z0-9_/\s-]+$", value):
         raise ValueError(
             f"Invalid package name: '{value}'. Only alphanumeric characters, underscores and hyphens are allowed."
         )
     return value
 
 
-def ensure_env_key_pair(value: str) -> str:
+def ensure_env_pair(value: str) -> str:
     if "=" not in value:
         raise ValueError(
             f"Invalid environment variable format: '{value}'. Expected 'KEY=VALUE'."
@@ -44,7 +44,7 @@ def ensure_env_key_pair(value: str) -> str:
 
 
 SupportedDockerfileCommands = Literal["ARG", "RUN", "ENV", "COPY"]
-PackageNameString = Annotated[str, Field(AfterValidator(package_name_string_validator))]
+PackageNameString = Annotated[str, AfterValidator(package_name_string_validator)]
 CommandString = str
 
 class OpinionatedBaseModel(BaseModel):
@@ -246,7 +246,7 @@ class CurlItemList(BaseDockerfileDirective):
         return [i.dump_ghelp() for i in self.items]
 
 
-EnvString = Annotated[str, Field(AfterValidator(ensure_env_key_pair))]
+EnvString = Annotated[str, AfterValidator(ensure_env_pair)]
 
 
 class EnvItemList(BaseDockerfileDirective):

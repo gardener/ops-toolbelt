@@ -27,8 +27,8 @@ def test_group_components_by_key(mocker):
         m.CopyItemList(
             name="copy",
             items=[
-                {"from": "/some/path", "to": "/some/path"},
-                {"from": "/another/file", "to": "/yet/another/file"},
+                {"name": "copy", "from": "/some/path", "to": "/some/path"},
+                {"name": "copy", "from": "/another/file", "to": "/yet/another/file"},
             ],
         ),
         m.CurlItemList(
@@ -70,8 +70,8 @@ def test_group_components_by_key(mocker):
                 m.CopyItemList(
                     name="copy",
                     items=[
-                        {"from": "/some/path", "to": "/some/path"},
-                        {"from": "/another/file", "to": "/yet/another/file"},
+                        {"name": "copy", "from": "/some/path", "to": "/some/path"},
+                        {"name": "copy", "from": "/another/file", "to": "/yet/another/file"},
                     ],
                 )
             ]
@@ -119,8 +119,8 @@ def test_directives_to_layers(mocker):
         m.CopyItemList(
             name="copy",
             items=[
-                {"from": "/some/path", "to": "/some/path"},
-                {"from": "/another/file", "to": "/yet/another/file"},
+                {"name": "copy", "from": "/some/path", "to": "/some/path"},
+                {"name": "copy", "from": "/another/file", "to": "/yet/another/file"},
             ],
         ),
         m.CurlItemList(
@@ -198,8 +198,8 @@ def test_directives_to_layers(mocker):
                 m.CopyItemList(
                     name="copy",
                     items=[
-                        {"from": "/some/path", "to": "/some/path"},
-                        {"from": "/another/file", "to": "/yet/another/file"},
+                        {"name": "copy", "from": "/some/path", "to": "/some/path"},
+                        {"name": "copy", "from": "/another/file", "to": "/yet/another/file"},
                     ],
                 )
             ]
@@ -265,8 +265,8 @@ def test_grouped_components_to_dockerfile_layers(mocker, subtests):
                     m.CopyItemList(
                         name="copy",
                         items=[
-                            {"from": "/some/path", "to": "/some/path"},
-                            {"from": "/another/file", "to": "/yet/another/file"},
+                            {"name": "/some/path", "from": "/some/path", "to": "/some/path"},
+                            {"name": "/another/file", "from": "/another/file", "to": "/yet/another/file"},
                         ],
                     )
                 ]
