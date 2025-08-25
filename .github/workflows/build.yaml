@@ -83,11 +83,11 @@ jobs:
       - name: test
         shell: bash
         run: |
-          set -eu
+          set -euo pipefail
           mkdir /tmp/blobs.d
-          make validate \
+          make test \
             |& tee /tmp/blobs.d/verify-log.txt
-          tar czf /tmp/blobs.d/verify-log.tar.gz -C/tmp/blobs.d verify-log.txt
+          tar czf /tmp/blobs.d/verify-log.tar.gz -C /tmp/blobs.d verify-log.txt
       - name: add-test-report-to-component-descriptor
         uses: gardener/cc-utils/.github/actions/export-ocm-fragments@master
         with:
@@ -109,12 +109,14 @@ jobs:
     strategy:
       matrix:
         args:
-          - executable: .ci/verify-shellcheck
+          - executable: make
+            params: verify-shellcheck
             linter: shellcheck
             comment: |
               we use shellcheck for sast-scans. See: https://github.com/koalaman/shellcheck
             evidence-fname: shellcheck.tar.gz
-          - executable: .ci/verify-bandit
+          - executable: make
+            params: verify-bandit
             linter: bandit
             comment: |
               we use bandit for sast-scans. See: https://github.com/PyCQA/bandit
@@ -124,7 +126,7 @@ jobs:
       - name: verify
         run: |
           set -eu
-          DESTINATION="/tmp/${{ matrix.args.evidence-fname }}" "${{ matrix.args.executable }}"
+          DESTINATION="/tmp/${{ matrix.args.evidence-fname }}" "${{ matrix.args.executable }}" "${{ matrix.args.params}}"
           mkdir /tmp/blobs.d
           tar czf /tmp/blobs.d/${{ matrix.args.evidence-fname }} "/tmp/${{ matrix.args.evidence-fname }}"
 

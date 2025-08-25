@@ -21,8 +21,6 @@ FILE_LIST=" \
     ./hacks/ops-pod\
     ./hacks/install_etcdctl\
     ./hacks/install_k9s\
-    .ci/test\
-    .ci/build\
     ./dotfiles/.bashrc\
     ./dotfiles/.bash_aliases\
     ./dotfiles/.bash_profile\
