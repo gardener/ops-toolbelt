@@ -73,7 +73,7 @@ build-image: build
 	@docker build -t $(BUILT_IMAGE) -f generated_dockerfiles/$(BUILT_IMAGE).dockerfile . --no-cache
 
 pkg-test: venv
-	@$(VENV_BIN)/pytest tests $(TEST_CASES) -v --cov=$(APP) --cov-report=html
+	@$(VENV_BIN)/pytest tests $(TEST_CASES) -v --cov=src/$(APP) --cov-report=html
 
 pkg-test-with-report: pkg-test
 	@$(OPEN) htmlcov/index.html || echo "HTML report not generated, please check the test results in the terminal."
