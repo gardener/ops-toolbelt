@@ -4,21 +4,16 @@ set -e
 set -o pipefail
 
 SOURCE_PATH=${SOURCE_PATH:-}
-PYTHON="${VENV_PYTHON:-python3}"
+export VENV_BIN
 
 if [[ -z ${SOURCE_PATH} ]]; then
     SOURCE_PATH="$(readlink -f "$(dirname "${0}")"/..)"
 fi
 cd "${SOURCE_PATH}" || exit 1
 
-python3 -m venv .venv
-# shellcheck disable=SC1091
-source .venv/bin/activate
-pip3 install -r requirements.txt >/dev/null 2>&1
-
 if [ "${DESTINATION}" == "" ]; then
-    bandit --format sarif -r generator
+    "${VENV_BIN}/bandit" --format sarif -r src hacks/ghelp
     exit
 fi
 
-${PYTHON} -m bandit --format sarif -r generator | tee "${DESTINATION}"
+"${VENV_BIN}/bandit" --format sarif -r src hacks/ghelp | tee "${DESTINATION}"

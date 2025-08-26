@@ -2,13 +2,19 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-- bash:
+- name: arg
+  items:
+  - TARGETARCH
+
+- name: bash
+  items:
   - name: debian testing apt-source
     command: |
       echo "deb https://cdn-aws.deb.debian.org/debian testing main" >> /etc/apt/sources.list
     info: ~
 
-- apt-get:
+- name: apt-get
+  items:
   - curl
   - tree
   - vim-tiny
@@ -41,7 +47,8 @@
   - name: python3-tabulate
     provides: tabulate
 
-- curl:
+- name: curl
+  items:
   - name: yaml2json
     # renovate: datasource=github-releases depName=bronze1man/yaml2json
     version: v1.3.5
@@ -56,10 +63,10 @@
     from: https://github.com/containerd/nerdctl/releases/download/v{version}/nerdctl-{version}-linux-${{TARGETARCH}}.tar.gz
     to: /nerdctl.tar.gz
     command: |
-      tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
-      rm -f nerdctl.tar.gz &&\
-      mkdir /etc/nerdctl &&\
-      echo address = \"unix:///host/run/containerd/containerd.sock\" >> /etc/nerdctl/nerdctl.toml &&\
+      tar Cxzvvf /usr/local/bin nerdctl.tar.gz
+      rm -f nerdctl.tar.gz
+      mkdir /etc/nerdctl
+      echo address = \"unix:///host/run/containerd/containerd.sock\" >> /etc/nerdctl/nerdctl.toml
       echo namespace = \"k8s.io\" >> /etc/nerdctl/nerdctl.toml
     info: nerdctl is a Docker-compatible CLI for containerd. The root directory of the host has to be mounted under `/host`
   - name: kubectl
@@ -68,18 +75,21 @@
     from: https://dl.k8s.io/release/{version}/bin/linux/${{TARGETARCH}}/kubectl
     info: command line tool for controlling Kubernetes clusters.
 
-- bash:
+- name: bash
+  items:
   - name: generate_locale
     command: |
-      echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen;\
+      echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
       locale-gen
     info: ~
 
-- env:
+- name: env
+  items:
   - LANG=en_US.UTF-8
   - LANGUAGE=en_US.UTF-8
 
-- copy:
+- name: copy
+  items:
   - name: dotfiles
     from: ./dotfiles
     to: /root/dotfiles
@@ -93,7 +103,8 @@
     to: /etc/bash/install_on_demand
     info: ~
 
-- bash:
+- name: bash
+  items:
   - name: /nonroot/hacks
     command: |
       mkdir -p /nonroot && mkdir -p /nonroot/hacks && chown 65532:65532 -R /nonroot
@@ -103,7 +114,8 @@
       mkdir -p /opt/bin && chmod -R 777 /opt/bin
     info: A directory intended to allow common install point for ad-hoc install scripts
 
-- copy:
+- name: copy
+  items:
   - name: install_k9s
     from: ./hacks/install_k9s
     to: /nonroot/hacks
@@ -125,17 +137,19 @@
     command: --chown=65532:65532
     info: Bash script which installs the `pwru` tool in the container. If you are running this container as non-root, execute the `install_pwru` script in the `/nonroot/hacks` directory.
 
-- copy:
+- name: copy
+  items:
   - name: print-etcd-cheatsheet
     from: ./hacks/print-etcd-cheatsheet
     to: /nonroot/hacks/print-etcd-cheatsheet
     command: --chown=65532:65532
     info: Bash script which prints out etcd certificate paths and handy etcdctl comands. If you are running this container as a non-root container, execute the script in the `/nonroot/hacks` directory. Else use the one in `/hacks`. This script assumes an `etcd-backup-restore` process and an `etcd-wrapper` process are already running.
 
-- bash:
+- name: bash
+  items:
   - name: bash-completion
     command: |
-      echo "" >> /root/.bashrc;\
+      echo "" >> /root/.bashrc
       echo "source /etc/profile.d/bash_completion.sh" >> /root/.bashrc
     info: ~
   - name: install_on_demand
@@ -150,9 +164,9 @@
         k9s: TUI for administration of k8s clusters
   - name: dotfiles
     command: |
-      echo "" >> /root/.bashrc;\
-      echo "# source bashrc from dotfiles" >> /root/.bashrc;\
-      echo "source /root/dotfiles/.bashrc" >> /root/.bashrc;\
+      echo "" >> /root/.bashrc
+      echo "# source bashrc from dotfiles" >> /root/.bashrc
+      echo "source /root/dotfiles/.bashrc" >> /root/.bashrc
       touch /root/dotfiles/.config/git/config_personal
     info: Directory containing the currently active (sourced) dotfiles.
   - name: hacks
@@ -163,7 +177,16 @@
     command: apt-get remove -y --allow-remove-essential perl-base; apt autoremove -y
     info: ~
 
-- env:
+- name: env
+  items:
   - DOTFILES_USER=root
   - DOTFILES_HOME=/root/dotfiles
   - PATH=/nonroot/hacks:$PATH
+
+- name: bash
+  items:
+  - name: "Adding greeting"
+    command: |
+      echo 'printf ${COLOR_GREEN}; figlet gardener shell; printf ${SGR_RESET}' >> /root/.bashrc
+      echo 'echo \n' >> /root/.bashrc
+      echo "echo Run \$(color orange 'ghelp') to get information about installed tools and packages"  >> /root/.bashrc

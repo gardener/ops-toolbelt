@@ -7,7 +7,7 @@
 from tabulate import tabulate
 import json
 import textwrap
-import subprocess
+import subprocess  # nosec B404
 import os
 
 def parse_package_info(package_info, provided_binaries, name_key, version_key, info_key):
@@ -19,12 +19,14 @@ def parse_package_info(package_info, provided_binaries, name_key, version_key, i
         if line.startswith(name_key):
             name = line.split(":", 1)[1].strip()
             binaries = provided_binaries[name]
-            if type(binaries) == list:
+            if isinstance(binaries, list):
                 binaries = ' '.join(binaries)
         if line.startswith(version_key):
             version = line.split(":", 1)[1].strip()
         if line.startswith(info_key):
             info = line.split(":", 1)[1].strip()
+        if not locals()["binaries"]:
+            raise RuntimeError(f"Incorrect line config in the following line: {line}")
     return [binaries, version, info]
 
 def retrieve_packages_info(installed_tools_list, package_manager, show_command, version_delimiter, delimiter, name_key, version_key, info_key):
@@ -40,7 +42,10 @@ def retrieve_packages_info(installed_tools_list, package_manager, show_command, 
         provided_binaries[nameWithoutVersion] = entry[1]
     command = [package_manager, show_command]
     command.extend(tool_names)
-    output = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, universal_newlines=True)
+    output = subprocess.run(
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        check=True, universal_newlines=True, shell=False
+    )  # nosec B603
     tool_infos = output.stdout.rstrip("\n").split(delimiter)
     for tool_info in tool_infos:
         tool = parse_package_info(tool_info, provided_binaries, name_key, version_key, info_key)
@@ -78,6 +83,7 @@ downloaded_tools = retrieve_downloaded_tools_info(ghelp_info["downloaded"])
 hack_tools = retrieve_hacks_info()
 
 table = []
+formated_table = []
 table.extend(apttools)
 table.extend(piptools)
 table.extend(downloaded_tools)
@@ -87,19 +93,23 @@ terminal_width = os.get_terminal_size().columns
 max_name_width = (terminal_width-10)//4
 max_info_width = (terminal_width-10)//2
 
+
 for i in range(len(table)):
-    table[i][0] = textwrap.fill(table[i][0], width=max_name_width)
-    if table[i][1] is not None:
-        table[i][1] = textwrap.fill(table[i][1], width=max_name_width)
-    table[i][2] = textwrap.fill(
+    row = []
+    if table[i][2] is None:
+        continue
+    row.append(textwrap.fill(table[i][0], width=max_name_width))
+    row.append(textwrap.fill(table[i][1], width=max_name_width) if table[i][1] else None)
+    row.append(textwrap.fill(
         table[i][2].replace("\\n", "\n"),
         width=max_info_width,
         replace_whitespace=False
-    )
+    ))
+    formated_table.append(row)
 
 table_headers = ["TOOL/PACKAGE", "VERSION", "NOTES"]
 table_headers[0] = textwrap.fill(table_headers[0], width=max_name_width)
 table_headers[1] = textwrap.fill(table_headers[1], width=max_name_width)
 table_headers[2] = textwrap.fill(table_headers[2], width=max_name_width)
 
-print(tabulate(table, table_headers, tablefmt="grid"))
+print(tabulate(formated_table, table_headers, tablefmt="grid"))
