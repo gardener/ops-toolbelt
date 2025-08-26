@@ -25,7 +25,7 @@ def parse_package_info(package_info, provided_binaries, name_key, version_key, i
             version = line.split(":", 1)[1].strip()
         if line.startswith(info_key):
             info = line.split(":", 1)[1].strip()
-        if locals()["binaries"]:
+        if not locals()["binaries"]:
             raise RuntimeError(f"Incorrect line config in the following line: {line}")
     return [binaries, version, info]
 
@@ -93,9 +93,10 @@ max_name_width = (terminal_width-10)//4
 max_info_width = (terminal_width-10)//2
 
 for i in range(len(table)):
+    if table[i][2] is None:
+        continue
     table[i][0] = textwrap.fill(table[i][0], width=max_name_width)
-    if table[i][1] is not None:
-        table[i][1] = textwrap.fill(table[i][1], width=max_name_width)
+    table[i][1] = textwrap.fill(table[i][1], width=max_name_width) if table[i][1] else None
     table[i][2] = textwrap.fill(
         table[i][2].replace("\\n", "\n"),
         width=max_info_width,

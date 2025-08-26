@@ -63,10 +63,10 @@
     from: https://github.com/containerd/nerdctl/releases/download/v{version}/nerdctl-{version}-linux-${{TARGETARCH}}.tar.gz
     to: /nerdctl.tar.gz
     command: |
-      tar Cxzvvf /usr/local/bin nerdctl.tar.gz &&\
-      rm -f nerdctl.tar.gz &&\
-      mkdir /etc/nerdctl &&\
-      echo address = \"unix:///host/run/containerd/containerd.sock\" >> /etc/nerdctl/nerdctl.toml &&\
+      tar Cxzvvf /usr/local/bin nerdctl.tar.gz
+      rm -f nerdctl.tar.gz
+      mkdir /etc/nerdctl
+      echo address = \"unix:///host/run/containerd/containerd.sock\" >> /etc/nerdctl/nerdctl.toml
       echo namespace = \"k8s.io\" >> /etc/nerdctl/nerdctl.toml
     info: nerdctl is a Docker-compatible CLI for containerd. The root directory of the host has to be mounted under `/host`
   - name: kubectl
@@ -79,7 +79,7 @@
   items:
   - name: generate_locale
     command: |
-      echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen;\
+      echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
       locale-gen
     info: ~
 
@@ -149,7 +149,7 @@
   items:
   - name: bash-completion
     command: |
-      echo "" >> /root/.bashrc;\
+      echo "" >> /root/.bashrc
       echo "source /etc/profile.d/bash_completion.sh" >> /root/.bashrc
     info: ~
   - name: install_on_demand
@@ -164,9 +164,9 @@
         k9s: TUI for administration of k8s clusters
   - name: dotfiles
     command: |
-      echo "" >> /root/.bashrc;\
-      echo "# source bashrc from dotfiles" >> /root/.bashrc;\
-      echo "source /root/dotfiles/.bashrc" >> /root/.bashrc;\
+      echo "" >> /root/.bashrc
+      echo "# source bashrc from dotfiles" >> /root/.bashrc
+      echo "source /root/dotfiles/.bashrc" >> /root/.bashrc
       touch /root/dotfiles/.config/git/config_personal
     info: Directory containing the currently active (sourced) dotfiles.
   - name: hacks
@@ -187,6 +187,6 @@
   items:
   - name: "Adding greeting"
     command: |
-      echo 'printf ${COLOR_GREEN}; figlet gardener shell; printf ${SGR_RESET}' >> /root/.bashrc;\
-      echo 'echo \n' >> /root/.bashrc;\
+      echo 'printf ${COLOR_GREEN}; figlet gardener shell; printf ${SGR_RESET}' >> /root/.bashrc
+      echo 'echo \n' >> /root/.bashrc
       echo "echo Run \$(color orange 'ghelp') to get information about installed tools and packages"  >> /root/.bashrc

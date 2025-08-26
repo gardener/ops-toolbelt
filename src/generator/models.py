@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from typing import Annotated, Any, Literal
 from pydantic_core import core_schema
+from functools import partial
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -20,6 +21,17 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+
+
+def multiline_string_validator(value: str, prefix: str, suffix: str, joiner: str = "\n") -> str:
+    """Adds prefixes and suffixes to multiline strings"""
+    value = value.strip()
+    if '\n' not in value:
+        return value
+    processed_lines = [f"{prefix}{v}{suffix}" for v in value.splitlines() if v.strip() != ""]
+    processed_lines[-1] = processed_lines[-1].removesuffix(suffix)
+    processed_lines[0] = processed_lines[0].removeprefix(prefix)
+    return joiner.join(processed_lines)
 
 
 def package_name_string_validator(value: str) -> str:
@@ -43,9 +55,13 @@ def ensure_env_pair(value: str) -> str:
     return value
 
 
+command_multiline_string_validator = partial(multiline_string_validator, prefix="    ", suffix=";\\")
+info_multiline_string_validator = partial(multiline_string_validator, prefix="", suffix="", joiner="\\n")
+
 SupportedDockerfileCommands = Literal["ARG", "RUN", "ENV", "COPY"]
 PackageNameString = Annotated[str, AfterValidator(package_name_string_validator)]
-CommandString = str
+CommandString = Annotated[str, AfterValidator(command_multiline_string_validator)]
+InfoString = Annotated[str, AfterValidator(info_multiline_string_validator)] | None
 
 class OpinionatedBaseModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -53,10 +69,10 @@ class OpinionatedBaseModel(BaseModel):
 
 class BaseItem(OpinionatedBaseModel):
     name: PackageNameString
-    info: str | None = None
+    info: InfoString = None
 
-    def dump_ghelp(self) -> tuple:
-        return self.name, self.info
+    def dump_ghelp(self) -> tuple[PackageNameString, str | None, InfoString]:
+        return self.name, getattr(self, 'version', None), self.info
 
 
 class BaseDockerfileDirective(OpinionatedBaseModel):
@@ -75,23 +91,11 @@ class BaseDockerfileDirective(OpinionatedBaseModel):
         """Convert items to ghelp format"""
         if not hasattr(self, "items"):
             raise NotImplementedError(f"{self.__class__.__name__} must have 'items' attribute.")
-        return [item.dump_ghelp() for item in self.items]
+        return [item.dump_ghelp() for item in self.items]  # type: ignore
 
 
 class BashItem(BaseItem):
     command: CommandString
-
-    @field_validator("command", mode="after")
-    @classmethod
-    def strip_whitespace(cls, value: str) -> str:
-        """Strip leading and trailing whitespace from the command."""
-        return value.strip()
-
-    @field_validator("command", mode="after")
-    @classmethod
-    def left_indent_lines_after_first(cls, value: str) -> str:
-        return value.replace("\n", "\n    ").replace("\r", "")
-
 
 class BashItemList(BaseDockerfileDirective):
     name: Literal["bash"]
@@ -104,9 +108,8 @@ class BashItemList(BaseDockerfileDirective):
         result = []
         for item in value:
             if isinstance(item, str):
-                result.append(BashItem(name="bash", command=item))
-            else:
-                result.append(item)
+                item = BashItem(name="bash", command=item)
+            result.append(item)
         return result
 
     def to_shortened_dockerfile_directive(self) -> str:
@@ -127,7 +130,7 @@ class AptGetItem(BaseItem):
             return data
         raise ValueError(f"Input not as expected {data}")
 
-    def dump_ghelp(self) -> tuple:
+    def dump_ghelp(self) -> tuple[PackageNameString, PackageNameString | list[PackageNameString]]:
         return self.name, self.provides
 
 
