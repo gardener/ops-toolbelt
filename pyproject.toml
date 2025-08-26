@@ -11,11 +11,11 @@ requires-python = ">=3.12"
 authors = [
     {name = "Dimitar Ivanov", email = "dimitar.ivanov04@sap.com"}
 ]
+license-files = ["LICENSES/*.txt"]
 keywords = ["generator", "builder"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.12",
 ]
 
