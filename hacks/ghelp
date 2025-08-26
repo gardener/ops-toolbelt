@@ -83,6 +83,7 @@ downloaded_tools = retrieve_downloaded_tools_info(ghelp_info["downloaded"])
 hack_tools = retrieve_hacks_info()
 
 table = []
+formated_table = []
 table.extend(apttools)
 table.extend(piptools)
 table.extend(downloaded_tools)
@@ -92,20 +93,23 @@ terminal_width = os.get_terminal_size().columns
 max_name_width = (terminal_width-10)//4
 max_info_width = (terminal_width-10)//2
 
+
 for i in range(len(table)):
+    row = []
     if table[i][2] is None:
         continue
-    table[i][0] = textwrap.fill(table[i][0], width=max_name_width)
-    table[i][1] = textwrap.fill(table[i][1], width=max_name_width) if table[i][1] else None
-    table[i][2] = textwrap.fill(
+    row.append(textwrap.fill(table[i][0], width=max_name_width))
+    row.append(textwrap.fill(table[i][1], width=max_name_width) if table[i][1] else None)
+    row.append(textwrap.fill(
         table[i][2].replace("\\n", "\n"),
         width=max_info_width,
         replace_whitespace=False
-    )
+    ))
+    formated_table.append(row)
 
 table_headers = ["TOOL/PACKAGE", "VERSION", "NOTES"]
 table_headers[0] = textwrap.fill(table_headers[0], width=max_name_width)
 table_headers[1] = textwrap.fill(table_headers[1], width=max_name_width)
 table_headers[2] = textwrap.fill(table_headers[2], width=max_name_width)
 
-print(tabulate(table, table_headers, tablefmt="grid"))
+print(tabulate(formated_table, table_headers, tablefmt="grid"))
