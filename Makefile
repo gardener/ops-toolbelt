@@ -79,3 +79,6 @@ pkg-test-with-report: pkg-test
 	@$(OPEN) htmlcov/index.html || echo "HTML report not generated, please check the test results in the terminal."
 
 test: pkg-test verify validate
+
+reuse:
+	@find . -name "*.py" -exec reuse annotate --license Apache-2.0 --copyright 'SAP SE or an SAP affiliate company and Gardener contributors' {} +
