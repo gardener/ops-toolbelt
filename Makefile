@@ -80,5 +80,7 @@ pkg-test-with-report: pkg-test
 
 test: pkg-test verify validate
 
+# ToDo(mimiteto): 
+# Enforce licese headers in all relevant files
 reuse:
 	@find . -name "*.py" -exec reuse annotate --license Apache-2.0 --copyright 'SAP SE or an SAP affiliate company and Gardener contributors' {} +
