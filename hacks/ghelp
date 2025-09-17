@@ -4,11 +4,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from pathlib import Path
+import logging
 import json
 import textwrap
 import subprocess  # nosec B404
 import os
+from pathlib import Path
 
 from tabulate import tabulate
 
@@ -62,7 +63,12 @@ def retrieve_apt_packages_info(installed_tools_list) -> list[list[str]]:
     apt_cache_dir = Path('/var/lib/apt/mirrors/')
 
     if not apt_cache_dir.exists() or not apt_cache_dir.is_dir():
-        subprocess.run(['apt', 'update'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            subprocess.run(['apt', 'update'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError:
+            logging.error(f"No info for apt packages can be shown")
+            return []
+
     return retrieve_packages_info(installed_tools_list, "apt", "show", "=", "\n\n", "Package", "Version", "Description")
 
 
