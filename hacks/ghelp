@@ -60,9 +60,19 @@ def retrieve_packages_info(
     return tools
 
 def retrieve_apt_packages_info(installed_tools_list) -> list[list[str]]:
-    apt_cache_dir = Path('/var/lib/apt/mirrors/')
+    apt_cache_dir = Path('/var/lib/apt/lists/')
 
-    if not apt_cache_dir.exists() or not apt_cache_dir.is_dir():
+    def cached_dirs_exists(apt_cache: Path) -> bool:
+        if not apt_cache.exists():
+            return False
+        if not apt_cache.is_dir():
+            return False
+        for entry in apt_cache.iterdir():
+            if entry.name not in ('auxfiles', 'partial', 'extended_states'):
+                return True
+        return False
+
+    if not cached_dirs_exists(apt_cache_dir):
         try:
             subprocess.run(['apt', 'update'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except subprocess.CalledProcessError:
