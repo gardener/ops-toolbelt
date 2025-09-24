@@ -49,10 +49,10 @@ def retrieve_packages_info(
         provided_binaries[nameWithoutVersion] = entry[1]
     command = [package_manager, show_command]
     command.extend(tool_names)
-    output = subprocess.run(
+    output = subprocess.run(  # nosec B603
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         check=True, universal_newlines=True, shell=False
-    )  # nosec B603
+    )
     tool_infos = output.stdout.rstrip("\n").split(delimiter)
     for tool_info in tool_infos:
         tool = parse_package_info(tool_info, provided_binaries, name_key, version_key, info_key)
@@ -74,9 +74,11 @@ def retrieve_apt_packages_info(installed_tools_list) -> list[list[str]]:
 
     if not cached_dirs_exists(apt_cache_dir):
         try:
-            subprocess.run(['apt', 'update'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(  # nosec
+                ['apt', 'update'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
         except subprocess.CalledProcessError:
-            logging.error(f"No info for apt packages can be shown")
+            logging.error("No info for apt packages can be shown")
             return []
 
     return retrieve_packages_info(installed_tools_list, "apt", "show", "=", "\n\n", "Package", "Version", "Description")
