@@ -68,7 +68,7 @@ def retrieve_apt_packages_info(installed_tools_list) -> list[list[str]]:
         if not apt_cache.is_dir():
             return False
         for entry in apt_cache.iterdir():
-            if entry.name not in ('auxfiles', 'partial', 'extended_states'):
+            if entry.name not in ('auxfiles', 'partial', 'extended_states', 'lock'):
                 return True
         return False
 
