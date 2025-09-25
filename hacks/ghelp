@@ -4,11 +4,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from tabulate import tabulate
+import logging
 import json
 import textwrap
 import subprocess  # nosec B404
 import os
+from pathlib import Path
+
+from tabulate import tabulate
 
 def parse_package_info(package_info, provided_binaries, name_key, version_key, info_key):
     lines = package_info.split('\n')
@@ -29,7 +32,11 @@ def parse_package_info(package_info, provided_binaries, name_key, version_key, i
             raise RuntimeError(f"Incorrect line config in the following line: {line}")
     return [binaries, version, info]
 
-def retrieve_packages_info(installed_tools_list, package_manager, show_command, version_delimiter, delimiter, name_key, version_key, info_key):
+def retrieve_packages_info(
+        installed_tools_list, package_manager, show_command,
+        version_delimiter, delimiter,
+        name_key, version_key, info_key
+) -> list[list[str]]:
     tools = []
     if not installed_tools_list:
         return tools
@@ -42,24 +49,49 @@ def retrieve_packages_info(installed_tools_list, package_manager, show_command, 
         provided_binaries[nameWithoutVersion] = entry[1]
     command = [package_manager, show_command]
     command.extend(tool_names)
-    output = subprocess.run(
+    output = subprocess.run(  # nosec B603
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         check=True, universal_newlines=True, shell=False
-    )  # nosec B603
+    )
     tool_infos = output.stdout.rstrip("\n").split(delimiter)
     for tool_info in tool_infos:
         tool = parse_package_info(tool_info, provided_binaries, name_key, version_key, info_key)
         tools.append(tool)
     return tools
 
-def retrieve_downloaded_tools_info(downloaded_tools):
+def retrieve_apt_packages_info(installed_tools_list) -> list[list[str]]:
+    apt_cache_dir = Path('/var/lib/apt/lists/')
+
+    def cached_dirs_exists(apt_cache: Path) -> bool:
+        if not apt_cache.exists():
+            return False
+        if not apt_cache.is_dir():
+            return False
+        for entry in apt_cache.iterdir():
+            if entry.name not in ('auxfiles', 'partial', 'extended_states', 'lock'):
+                return True
+        return False
+
+    if not cached_dirs_exists(apt_cache_dir):
+        try:
+            subprocess.run(  # nosec
+                ['apt', 'update'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+        except subprocess.CalledProcessError:
+            logging.error("No info for apt packages can be shown")
+            return []
+
+    return retrieve_packages_info(installed_tools_list, "apt", "show", "=", "\n\n", "Package", "Version", "Description")
+
+
+def retrieve_downloaded_tools_info(downloaded_tools) -> list[list[str]]:
     tools = []
     for tool in downloaded_tools:
         tools.append([tool[0], tool[1], tool[2]])
 
     return tools
 
-def retrieve_hacks_info():
+def retrieve_hacks_info() -> list[list[str]]:
     tools = [
         ["install_k9s", "LATEST", "Install k9s: curses based terminal UI to interact with your Kubernetes clusters."],
         ["ops-pod", "", "Start an ops-toolbelt container in a k8s cluster"],
@@ -67,49 +99,49 @@ def retrieve_hacks_info():
 
     return tools
 
+def print_table(table: list[list], table_headers: tuple[str, str, str]) -> None:
+    formated_table = []
+    terminal_width = os.get_terminal_size().columns
+    max_name_width = (terminal_width-10)//4
+    max_info_width = (terminal_width-10)//2
+    _headers: list[str] = []
 
-ghelp_info_path = "/var/lib/ghelp_info"
-ghelp_info = None
-with open(ghelp_info_path, "r") as f:
-    ghelp_info = json.load(f)
+    for i in range(len(table)):
+        row = []
+        if table[i][2] is None:
+            continue
+        row.append(textwrap.fill(table[i][0], width=max_name_width))
+        row.append(textwrap.fill(table[i][1], width=max_name_width) if table[i][1] else None)
+        row.append(textwrap.fill(
+            table[i][2].replace("\\n", "\n"),
+            width=max_info_width,
+            replace_whitespace=False
+        ))
+        formated_table.append(row)
 
-if ghelp_info is None:
-    print("Failed to load ghelp info")
-    exit(1)
+    _headers.append(textwrap.fill(table_headers[0], width=max_name_width))
+    _headers.append(textwrap.fill(table_headers[1], width=max_name_width))
+    _headers.append(textwrap.fill(table_headers[2], width=max_name_width))
+    print(tabulate(formated_table, _headers, tablefmt="grid"))
 
-apttools = retrieve_packages_info(ghelp_info["apt"], "apt", "show", "=", "\n\n", "Package", "Version", "Description")
-piptools = retrieve_packages_info(ghelp_info["pip"], "pip", "show", "==", "---", "Name", "Version", "Summary")
-downloaded_tools = retrieve_downloaded_tools_info(ghelp_info["downloaded"])
-hack_tools = retrieve_hacks_info()
+def main():
+    ghelp_info_path = "/var/lib/ghelp_info"
+    ghelp_info = None
+    with open(ghelp_info_path, "r") as f:
+        ghelp_info = json.load(f)
 
-table = []
-formated_table = []
-table.extend(apttools)
-table.extend(piptools)
-table.extend(downloaded_tools)
-table.extend(hack_tools)
+    if ghelp_info is None:
+        print("Failed to load ghelp info")
+        exit(1)
 
-terminal_width = os.get_terminal_size().columns
-max_name_width = (terminal_width-10)//4
-max_info_width = (terminal_width-10)//2
+    print_table(
+        retrieve_apt_packages_info(ghelp_info["apt"]) +
+        retrieve_packages_info(ghelp_info["pip"], "pip", "show", "==", "---", "Name", "Version", "Summary") +
+        retrieve_downloaded_tools_info(ghelp_info["downloaded"]) +
+        retrieve_hacks_info(),
+        ("TOOL/PACKAGE", "VERSION", "NOTES")
+    )
 
 
-for i in range(len(table)):
-    row = []
-    if table[i][2] is None:
-        continue
-    row.append(textwrap.fill(table[i][0], width=max_name_width))
-    row.append(textwrap.fill(table[i][1], width=max_name_width) if table[i][1] else None)
-    row.append(textwrap.fill(
-        table[i][2].replace("\\n", "\n"),
-        width=max_info_width,
-        replace_whitespace=False
-    ))
-    formated_table.append(row)
-
-table_headers = ["TOOL/PACKAGE", "VERSION", "NOTES"]
-table_headers[0] = textwrap.fill(table_headers[0], width=max_name_width)
-table_headers[1] = textwrap.fill(table_headers[1], width=max_name_width)
-table_headers[2] = textwrap.fill(table_headers[2], width=max_name_width)
-
-print(tabulate(formated_table, table_headers, tablefmt="grid"))
+if __name__ == "__main__":
+    main()
