@@ -106,6 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: write
     strategy:
       matrix:
         args:
@@ -149,4 +150,3 @@ jobs:
                 - name: gardener.cloud/comment
                   value: |
                     ${{ matrix.args.comment }}
-
