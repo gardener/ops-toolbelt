@@ -1,0 +1,15 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+aliases:
+  ops-toolbelt-reviewers:
+  - grolu
+  - holgerkoser
+  - mimiteto
+  - petersutter
+  - plkokanov
+  ops-toolbelt-approvers:
+  - grolu
+  - holgerkoser
+  - mimiteto
+  - petersutter
+  - plkokanov
