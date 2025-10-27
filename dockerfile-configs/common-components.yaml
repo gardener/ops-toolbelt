@@ -136,6 +136,11 @@
     to: /nonroot/hacks
     command: --chown=65532:65532
     info: Bash script which installs the `pwru` tool in the container. If you are running this container as non-root, execute the `install_pwru` script in the `/nonroot/hacks` directory.
+  - name: install_etcd-benchmark
+    from: ./hacks/install_etcd-benchmark
+    to: /nonroot/hacks
+    command: --chown=65532:65532
+    info: Bash script which installs the `etcd-benchmark` tool in the container. If you are running this container as non-root, execute the `install_etcd-benchmark` script in the `/nonroot/hacks` directory.
 
 - name: copy
   items:
