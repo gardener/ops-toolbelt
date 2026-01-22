@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'reviewed/ok-to-test' }}
+    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ok-to-test' }}
     uses: ./.github/workflows/build.yaml
     with:
       mode: snapshot
