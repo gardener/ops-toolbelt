@@ -12,7 +12,7 @@ ops-pod: Deploy privileged pod in a kubernetes cluster and open terminal into cl
          When specifying <pod-name> the node of the specified pod will be used.
 
 Usage:
-  ops-pod [OPTIONS] <node|pod-name>
+  ops-pod [OPTIONS] <node>
 
 Options:
   -n|--namespace    The namespace into which the pod will be deployed. The namespace of the current kubectl context is used by default.
@@ -95,7 +95,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ ${#positional[@]} -ne 1 ]]; then
-  echo -e "Error: Required one positional argument: <node|pod-name> found ${#positional[@]}\n"
+  echo -e "Error: Required one positional argument: <node> found ${#positional[@]}\n"
   print_usage
   exit 1
 fi
@@ -104,25 +104,19 @@ node=${positional[0]}
 image=${image:-$default_image}
 namespace=${namespace:-$(get_default_namespace)}
 
-node_of_pod=$(kubectl -n "${namespace}" get pod "${node}" -o 'jsonpath={.spec.nodeName}' 2>/dev/null || true)
-if [[ -n ${node_of_pod} ]]; then
-  echo -e "Pod name provided. Deploying ops pod on the node where ${node} is running: ${node_of_pod}\n"
-  node=$node_of_pod
+if kubectl get nodes -o jsonpath='{.items[*].metadata.name}' | grep -q "\b${node}\b"; then
+  echo -e "Deploying ops pod on ${node}\n"
 else
-  echo "Node name provided ..."
-  if kubectl get nodes -o jsonpath='{.items[*].metadata.name}' | grep -q "\b${node}\b"; then
-    echo -e "Deploying ops pod on ${node}\n"
-  else
-    echo -e "Error: node ${node} does not exist in the cluster.\n"
-    print_usage
-    exit 2
-  fi
+  echo -e "Error: node ${node} does not exist in the cluster.\n"
+  print_usage
+  exit 2
 fi
-
-# check if the node name was a pod name and we should actually identify the node from the pod (node that runs the pod)
 
 # Kubify nodes have labels that differ from the names (need an additional suffix)
 node=$(echo "$node" | sed -r "s/^(garden-.*)/\1.openstack.local/")
+
+# Set pod name to be unique for the given node
+name="$(printf '%s-%s' "$name" "$(printf '%s' "${node}" | sha1sum | cut -c1-5)" )"
 
 if [[ $copy_tolerations -eq $TRUE ]]; then
   tolerations_array=$(kubectl get nodes "${node}" -o jsonpath='{range .spec.taints[*]}  - effect: "{@.effect}"{"\n"}    key: "{@.key}"{"\n"}    value: "{@.value}"{"\n"}    operator: "{@.operator}"{"\n"}{end}')
