@@ -174,7 +174,7 @@
       echo "export PATH=/hacks:\$PATH" >> /root/.bashrc
     info: ~
   - name: cleanup
-    command: apt-get remove -y --allow-remove-essential perl-base; apt autoremove -y
+    command: apt autoremove -y
     info: ~
 
 - name: env
