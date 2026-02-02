@@ -9,7 +9,7 @@
 function print_usage() {
   cat <<EOF
 ops-pod: Deploy privileged pod in a kubernetes cluster and open terminal into cluster node using the current kubectl context.
-         When specifying <pod-name> the node of the specified pod will be used.
+
 
 Usage:
   ops-pod [OPTIONS] <node>
@@ -115,8 +115,8 @@ fi
 # Kubify nodes have labels that differ from the names (need an additional suffix)
 node=$(echo "$node" | sed -r "s/^(garden-.*)/\1.openstack.local/")
 
-# Set pod name to be unique for the given node
-name="$(printf '%s-%s' "$name" "$(printf '%s' "${node}" | sha1sum | cut -c1-5)" )"
+# Set pod name to be unique and deterministic for the given node
+name="$(printf '%s-node-%s' "$name" "$(sanitize_hostname "${node}")")"
 
 if [[ $copy_tolerations -eq $TRUE ]]; then
   tolerations_array=$(kubectl get nodes "${node}" -o jsonpath='{range .spec.taints[*]}  - effect: "{@.effect}"{"\n"}    key: "{@.key}"{"\n"}    value: "{@.value}"{"\n"}    operator: "{@.operator}"{"\n"}{end}')
