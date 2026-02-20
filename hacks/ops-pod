@@ -10,7 +10,6 @@ function print_usage() {
   cat <<EOF
 ops-pod: Deploy privileged pod in a kubernetes cluster and open terminal into cluster node using the current kubectl context.
 
-
 Usage:
   ops-pod [OPTIONS] <node>
 
@@ -45,11 +44,22 @@ hostnetwork="false"
 copy_tolerations=${FALSE}
 node_chroot=${FALSE}
 sanitize_hostname() {
+  prefix="${1}"
+  suffix="${2}"
+  join_symbol="-"
+  # max len we want is 31 symbols.
+  # we get `-` between username and the prefix, hence we calculate from 30
+  if [ "${#suffix}" -gt $((30 - ${#prefix})) ]; then
+    join_symbol=""
+    prefix=""
+  fi
   # K8s rejects pod names that violate this RE '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
   # due to RFC1123 (Only allow lower-case and alphanumerical values for hostnames)
-  echo "$@" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g'
+  rfc1123_name="$(echo "${prefix}${join_symbol}${suffix}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g')"
+  rfc1123_name="${rfc1123_name:0:30}"
+  echo "${rfc1123_name}"
 }
-name="$(sanitize_hostname "ops-pod-$(whoami)")"
+
 
 default_image="europe-docker.pkg.dev/gardener-project/releases/gardener/ops-toolbelt:latest"
 function get_default_namespace() {
@@ -116,7 +126,7 @@ fi
 node=$(echo "$node" | sed -r "s/^(garden-.*)/\1.openstack.local/")
 
 # Set pod name to be unique and deterministic for the given node
-name="$(printf '%s-node-%s' "$name" "$(sanitize_hostname "${node}")")"
+name="$(printf '%s-%s' "$(sanitize_hostname "ops-pod" "$(whoami)")" "$(printf '%s' "${node}" | md5sum | awk '{print $1}')" )"
 
 if [[ $copy_tolerations -eq $TRUE ]]; then
   tolerations_array=$(kubectl get nodes "${node}" -o jsonpath='{range .spec.taints[*]}  - effect: "{@.effect}"{"\n"}    key: "{@.key}"{"\n"}    value: "{@.value}"{"\n"}    operator: "{@.operator}"{"\n"}{end}')
@@ -134,12 +144,18 @@ done
 trap "EC=\$?; kubectl -n ${namespace} delete pod ${name} --wait=false  >&2 || true; exit \$EC" EXIT INT TERM
 
 # launch pod
-kubectl -n "${namespace}" create -f <(
+kubectl create -f <(
   cat <<EOF
 apiVersion: v1
 kind: Pod
 metadata:
   name: $name
+  namespace: $namespace
+  annotations:
+    managed-by: "https://github.com/gardener/ops-toolbelt/blob/master/hacks/ops-pod"
+    user: $(whoami)
+    user-machine-hostname: $(hostname)
+    ops-toolbelt-version: $(cat "$(dirname "$0")/../VERSION")
 spec:
   $([[ -n $node ]] && echo -e "nodeSelector:\n    kubernetes.io/hostname: $node")
   tolerations:
