@@ -4,7 +4,8 @@ VENV_DIR = .venv
 VENV_BIN = $(VENV_DIR)/bin
 VENV_PIP = $(VENV_BIN)/pip
 APP = generator
-IMAGE_TAG ?= 1877.8
+# renovate: datasource=github-releases depName=gardenlinux/gardenlinux
+IMAGE_TAG ?= 2150.0.0
 IMAGE_REPO ?= ghcr.io/gardenlinux/gardenlinux
 BUILT_IMAGE ?= ops-toolbelt
 
