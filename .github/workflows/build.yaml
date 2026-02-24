@@ -15,7 +15,7 @@ jobs:
   prepare:
     uses: gardener/cc-utils/.github/workflows/prepare.yaml@master
     permissions:
-      contents: read
+      id-token: write
     with:
       mode: ${{ inputs.mode }}
 
