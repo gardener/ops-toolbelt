@@ -151,11 +151,11 @@ kind: Pod
 metadata:
   name: $name
   namespace: $namespace
-  annotations:
-    managed-by: "https://github.com/gardener/ops-toolbelt/blob/master/hacks/ops-pod"
-    user: $(whoami)
-    user-machine-hostname: $(hostname)
-    ops-toolbelt-version: $(cat "$(dirname "$0")/../VERSION")
+  labels:
+    ops-toolbelt.gardener.cloud/managed-by: "https://github.com/gardener/ops-toolbelt/blob/master/hacks/ops-pod"
+    ops-toolbelt.gardener.cloud/user: $(whoami)
+    ops-toolbelt.gardener.cloud/user-machine-hostname: $(hostname)
+    ops-toolbelt.gardener.cloud/version: $(cat "$(dirname "$(readlink -f "$0")")/../VERSION")
 spec:
   $([[ -n $node ]] && echo -e "nodeSelector:\n    kubernetes.io/hostname: $node")
   tolerations:
