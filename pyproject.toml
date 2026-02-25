@@ -38,7 +38,7 @@ dev = [
     "coverage",
     "isort",
     "pylint",
-    "bandit==1.9.3",
+    "bandit==1.9.4",
     "bandit_sarif_formatter"
 ]
 
