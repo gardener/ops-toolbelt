@@ -152,7 +152,6 @@ metadata:
   name: $name
   namespace: $namespace
   labels:
-    ops-toolbelt.gardener.cloud/managed-by: "https://github.com/gardener/ops-toolbelt/blob/master/hacks/ops-pod"
     ops-toolbelt.gardener.cloud/user: $(whoami)
     ops-toolbelt.gardener.cloud/user-machine-hostname: $(hostname)
     ops-toolbelt.gardener.cloud/version: $(cat "$(dirname "$(readlink -f "$0")")/../VERSION")
