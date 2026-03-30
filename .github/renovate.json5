@@ -54,6 +54,11 @@
       "enabled": false
     },
     {
+      // Separate minor from patch updates for kubectl.
+      "matchPackageNames": ["kubernetes/kubernetes"],
+      "separateMinorPatch": true,
+    },
+    {
       // Add PR footer with release notes link for github-releases.
       matchDatasources: ["github-releases"],
       prFooter: "**Release note**:\n```other dependency\n`{{depName}}` has been updated to `{{newVersion}}`. [Release Notes](https://github.com/{{depName}}/releases/tag/{{newVersion}})\n```"
