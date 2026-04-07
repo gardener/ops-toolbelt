@@ -5,8 +5,8 @@ VENV_BIN = $(VENV_DIR)/bin
 VENV_PIP = $(VENV_BIN)/pip
 APP = generator
 # renovate: datasource=github-releases depName=gardenlinux/gardenlinux
-IMAGE_TAG ?= 2150.0.0
-IMAGE_REPO ?= ghcr.io/gardenlinux/gardenlinux
+GARDENLINUX_IMAGE_TAG ?= 2150.0.0
+GARDENLINUX_IMAGE_REPO ?= ghcr.io/gardenlinux/gardenlinux
 BUILT_IMAGE ?= ops-toolbelt
 
 ifeq ($(shell uname), Darwin)
@@ -66,7 +66,7 @@ validate: venv ## Validate the generator configuration
 build: ensure-venv ## Generate Dockerfile using the configured base image
 	@echo Generating dockerfile
 	@$(VENV_BIN)/generator \
-		--from-image $(IMAGE_REPO):$(IMAGE_TAG) \
+		--from-image $(GARDENLINUX_IMAGE_REPO):$(GARDENLINUX_IMAGE_TAG) \
 		--dockerfile-config dockerfile-configs/common-components.yaml \
 		--dockerfile generated_dockerfiles/$(BUILT_IMAGE).dockerfile
 
