@@ -31,7 +31,7 @@ jobs:
         run: |
           make build
           tar czf dockerfile.tar.gz generated_dockerfiles/ops-toolbelt.dockerfile
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: generated-dockerfile
           path: dockerfile.tar.gz
