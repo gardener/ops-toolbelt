@@ -1,0 +1,75 @@
+name: Update kubectl minor version
+
+on:
+  schedule:
+    - cron: "30 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-kubectl-minor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine desired kubectl minor version
+        id: version
+        run: |
+          # Fetch supported Kubernetes versions from gardener/gardener
+          curl -sL https://raw.githubusercontent.com/gardener/gardener/master/supported-kubernetes-versions.yaml -o versions.yaml
+
+          # Find highest supported minor version, subtract 1
+          HIGHEST_MINOR=$(yq '.versions[].version' versions.yaml | sort -V | tail -1 | cut -d. -f2)
+          DESIRED_MINOR=$((HIGHEST_MINOR - 0))
+
+          # Read current version from common-components.yaml
+          CURRENT_VERSION=$(yq '.. | select(has("name")) | select(.name == "kubectl") | .version' dockerfile-configs/common-components.yaml)
+          CURRENT_MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
+
+          echo "highest_minor=$HIGHEST_MINOR" >> "$GITHUB_OUTPUT"
+          echo "desired_minor=$DESIRED_MINOR" >> "$GITHUB_OUTPUT"
+          echo "current_minor=$CURRENT_MINOR" >> "$GITHUB_OUTPUT"
+          echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+
+          if [ "$CURRENT_MINOR" != "$DESIRED_MINOR" ]; then
+            echo "update_needed=true" >> "$GITHUB_OUTPUT"
+            echo "new_version=v1.${DESIRED_MINOR}.0" >> "$GITHUB_OUTPUT"
+          else
+            echo "update_needed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          rm versions.yaml
+
+      - name: Update kubectl version
+        if: steps.version.outputs.update_needed == 'true'
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+          sed -i "/name: kubectl/{n;n;s/version: v[0-9]*\.[0-9]*\.[0-9]*/version: ${NEW_VERSION}/}" \
+            dockerfile-configs/common-components.yaml
+
+      - name: Create pull request
+        if: steps.version.outputs.update_needed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "Update kubectl minor version to ${{ steps.version.outputs.new_version }}"
+          branch: chore/update-kubectl-minor
+          title: "Update kubectl minor version to ${{ steps.version.outputs.new_version }}"
+          body: |
+            Automated update of kubectl minor version.
+
+            The highest supported Kubernetes version in `gardener/gardener` is **1.${{ steps.version.outputs.highest_minor }}**.
+            Following the convention of `highest - 1`, the kubectl minor version is updated to **1.${{ steps.version.outputs.desired_minor }}**.
+
+            Previous version: `${{ steps.version.outputs.current_version }}`
+            New version: `${{ steps.version.outputs.new_version }}`
+
+            > Renovate will follow up with patch version updates.
+
+            **Release note**:
+            ```other dependency
+            `kubectl` minor version has been updated to `${{ steps.version.outputs.new_version }}` based on Kubernetes versions supported by `gardener/gardener`.
+            ```
+          labels: kind/enhancement
