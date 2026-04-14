@@ -23,7 +23,7 @@ jobs:
 
           # Find highest supported minor version, subtract 1
           HIGHEST_MINOR=$(yq '.versions[].version' versions.yaml | sort -V | tail -1 | cut -d. -f2)
-          DESIRED_MINOR=$((HIGHEST_MINOR - 0))
+          DESIRED_MINOR=$((HIGHEST_MINOR - 1))
 
           # Read current version from common-components.yaml
           CURRENT_VERSION=$(yq '.. | select(has("name")) | select(.name == "kubectl") | .version' dockerfile-configs/common-components.yaml)
