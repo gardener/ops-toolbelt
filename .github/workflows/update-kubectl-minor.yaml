@@ -13,7 +13,7 @@ jobs:
   update-kubectl-minor:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Determine desired kubectl minor version
         id: version
@@ -52,7 +52,7 @@ jobs:
 
       - name: Create pull request
         if: steps.version.outputs.update_needed == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "Update kubectl minor version to ${{ steps.version.outputs.new_version }}"
           branch: chore/update-kubectl-minor
