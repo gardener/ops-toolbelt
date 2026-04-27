@@ -54,9 +54,11 @@
     version: v1.3.5
     from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_$(echo ${{TARGETARCH}} |sed 's/x86_64/amd64/;s/arm64/arm/')
     info: transform yaml string to json string without the type infomation.
+    validation_command: "echo '{}' | yaml2json"
   - name: kubetail
     from: https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
     info: Bash script that enables you to aggregate (tail/follow) logs from multiple pods into one stream
+    validation_command: "kubetail --help"
   - name: nerdctl
     # renovate: datasource=github-releases depName=containerd/nerdctl
     version: 2.2.2
@@ -69,11 +71,13 @@
       echo address = \"unix:///host/run/containerd/containerd.sock\" >> /etc/nerdctl/nerdctl.toml
       echo namespace = \"k8s.io\" >> /etc/nerdctl/nerdctl.toml
     info: nerdctl is a Docker-compatible CLI for containerd. The root directory of the host has to be mounted under `/host`
+    validation_command: "nerdctl --version"
   - name: kubectl
     # renovate: datasource=github-releases depName=kubernetes/kubernetes
     version: v1.34.6
     from: https://dl.k8s.io/release/{version}/bin/linux/${{TARGETARCH}}/kubectl
     info: command line tool for controlling Kubernetes clusters.
+    validation_command: "kubectl version --client"
 
 - name: bash
   items:
