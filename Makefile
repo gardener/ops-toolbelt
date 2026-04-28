@@ -8,6 +8,8 @@ APP = generator
 GARDENLINUX_IMAGE_TAG ?= 2150.1.0
 GARDENLINUX_IMAGE_REPO ?= ghcr.io/gardenlinux/gardenlinux
 BUILT_IMAGE ?= ops-toolbelt
+VALIDATION_IMAGE ?= $(BUILT_IMAGE)-validation
+VALIDATION_DOCKERFILE ?= generated_dockerfiles/ops-toolbelt-validation.dockerfile
 
 ifeq ($(shell uname), Darwin)
     OPEN = open
@@ -22,7 +24,7 @@ color_reset=\033[0m
 
 .DEFAULT_GOAL := help
 
-.PHONY: help ensure-venv ensure-shellcheck venv-build venv-update venv verify-bandit verify-shellcheck verify validate build build-image pkg-test pkg-test-with-report test reuse
+.PHONY: help ensure-venv ensure-shellcheck venv-build venv-update venv verify-bandit verify-shellcheck verify validate build build-image build-validation-dockerfile validate-image pkg-test pkg-test-with-report test reuse
 
 ##@ Help
 
@@ -72,6 +74,17 @@ build: ensure-venv ## Generate Dockerfile using the configured base image
 
 build-image: build ## Build the Docker image from the generated Dockerfile
 	@docker build -t $(BUILT_IMAGE) -f generated_dockerfiles/$(BUILT_IMAGE).dockerfile . --no-cache
+
+build-validation-dockerfile: ensure-venv ## Generate validation Dockerfile
+	@echo Generating validation dockerfile
+	@$(VENV_BIN)/generator-validation-dockerfile \
+		--from-image $(BUILT_IMAGE) \
+		--dockerfile-config dockerfile-configs/common-components.yaml \
+		--dockerfile $(VALIDATION_DOCKERFILE)
+
+validate-image: build-validation-dockerfile ## Validate the built image by running all validation_commands
+	@echo Validating image $(BUILT_IMAGE)
+	@docker build -t $(VALIDATION_IMAGE) -f $(VALIDATION_DOCKERFILE) . --no-cache
 
 ##@ Testing
 

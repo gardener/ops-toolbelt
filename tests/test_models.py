@@ -643,6 +643,59 @@ def test_info_generator_to_ghelp_format_downloaded_only():
         ],
     }
     assert result == expected
+def test_validation_command_on_bash_item():
+    item = m.BashItem(name="test", command="echo hello", validation_command="echo hello")
+    assert item.validation_command == "echo hello"
+
+    item_none = m.BashItem(name="test", command="echo hello")
+    assert item_none.validation_command is None
+
+
+def test_validation_command_on_curl_item():
+    c = m.CurlItem.model_validate({
+        "name": "tool",
+        "from": "http://example.com/tool",
+        "validation_command": "tool --version",
+    })
+    assert c.validation_command == "tool --version"
+
+
+def test_validation_command_on_apt_get_item():
+    a = m.AptGetItem.model_validate({
+        "name": "jq",
+        "validation_command": "jq --version",
+    })
+    assert a.validation_command == "jq --version"
+    assert a.provides == "jq"
+
+
+def test_validation_command_on_copy_item(mocker):
+    mocker.patch("pathlib.Path.is_file", return_value=True)
+    mocker.patch("pathlib.Path.exists", return_value=True)
+    c = m.CopyItem.model_validate({
+        "name": "myfile",
+        "from": "/my/path",
+        "to": "/dest",
+        "validation_command": "test -f /dest",
+    })
+    assert c.validation_command == "test -f /dest"
+    assert c.to_dockerfile_directive() == "COPY /my/path /dest"
+
+
+def test_validation_command_does_not_affect_dump_ghelp():
+    item = m.BashItem(name="test", command="echo", info="info", validation_command="echo ok")
+    assert item.dump_ghelp() == ("test", None, "info")
+
+    curl = m.CurlItem.model_validate({
+        "name": "tool",
+        "version": "1.0",
+        "from": "http://example.com/tool",
+        "info": "Tool info",
+        "validation_command": "tool --version",
+    })
+    assert curl.dump_ghelp() == ("tool", "1.0", "Tool info")
+
+
 def test_info_multiline_string_validator():
     assert m.info_multiline_string_validator("single line") == "single line"
     string = "line1\nline2\nline3"

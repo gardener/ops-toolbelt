@@ -74,6 +74,7 @@ class OpinionatedBaseModel(BaseModel):
 class BaseItem(OpinionatedBaseModel):
     name: PackageNameString
     info: InfoString = None
+    validation_command: str | None = None
 
     def dump_ghelp(self) -> tuple[PackageNameString, str | None, InfoString]:
         return self.name, getattr(self, 'version', None), self.info
