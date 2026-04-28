@@ -15,37 +15,60 @@
 
 - name: apt-get
   items:
-  - curl
-  - tree
-  - vim-tiny
-  - htop
-  - less
-  - locales
-  - tmux
-  - bash-completion
-  - procps
-  - ngrep
-  - iotop
-  - iftop
-  - jq
-  - figlet
-  - tcpdump
-  - sysstat
-  - iputils-ping
-  - locales
-  - net-tools
+  - name: curl
+    validation_command: curl --version
+  - name: tree
+    validation_command: tree --version
+  - name: vim-tiny
+    validation_command: vi --version
+  - name: htop
+    validation_command: htop --version
+  - name: less
+    validation_command: less --version
+  - name: tmux
+    validation_command: tmux -V
+  - name: bash-completion
+    validation_command: dpkg -s bash-completion
+  - name: procps
+    validation_command: ps --version
+  - name: ngrep
+    validation_command: ngrep -V
+  - name: iotop
+    validation_command: iotop --version
+  - name: iftop
+    validation_command: iftop -h
+  - name: jq
+    validation_command: jq --version
+  - name: figlet
+    validation_command: figlet -v
+  - name: tcpdump
+    validation_command: tcpdump --version
+  - name: sysstat
+    validation_command: iostat
+  - name: iputils-ping
+    validation_command: ping -c 1 127.0.0.1
+  - name: locales
+    validation_command: locale --version
+  - name: net-tools
+    validation_command: netstat --version
   - name: silversearcher-ag
     provides: ag
+    validation_command: ag --version
   - name: iproute2
     provides: ip
+    validation_command: ip -V
   - name: dnsutils
     provides: ["delv", "dig", "mdig", "nslookup", "nsupdate"]
+    validation_command: dig -v
   - name: netcat-openbsd
     provides: netcat
+    validation_command: netcat -h
   - name: python3-minimal
     provides: python3
+    validation_command: python3 --version
   - name: python3-tabulate
     provides: tabulate
+    validation_command: python3 -c "import tabulate"
 
 - name: curl
   items:
@@ -125,21 +148,25 @@
     to: /nonroot/hacks
     command: --chown=65532:65532
     info: Bash script which installs the `k9s` tool in the container. If you are running this container as non-root, execute the `install_k9s` script in the `/nonroot/hacks` directory.
+    validation_command: k9s version
   - name: install_etcdctl
     from: ./hacks/install_etcdctl
     to: /nonroot/hacks
     command: --chown=65532:65532
     info: Bash script which installs the `etcdctl` tool in the container. If you are running this container as non-root, execute the `install_etcdctl` script in the `/nonroot/hacks` directory.
+    validation_command: etcdctl version
   - name: install_auger
     from: ./hacks/install_auger
     to: /nonroot/hacks
     command: --chown=65532:65532
     info: Bash script which installs the `auger` tool in the container. If you are running this container as non-root, execute the `install_auger` script in the `/nonroot/hacks` directory.
+    validation_command: auger version
   - name: install_pwru
     from: ./hacks/install_pwru
     to: /nonroot/hacks
     command: --chown=65532:65532
     info: Bash script which installs the `pwru` tool in the container. If you are running this container as non-root, execute the `install_pwru` script in the `/nonroot/hacks` directory.
+    validation_command: pwru --version
 
 - name: copy
   items:
@@ -148,6 +175,7 @@
     to: /nonroot/hacks/print-etcd-cheatsheet
     command: --chown=65532:65532
     info: Bash script which prints out etcd certificate paths and handy etcdctl comands. If you are running this container as a non-root container, execute the script in the `/nonroot/hacks` directory. Else use the one in `/hacks`. This script assumes an `etcd-backup-restore` process and an `etcd-wrapper` process are already running.
+    validation_command: bash -n /nonroot/hacks/print-etcd-cheatsheet
 
 - name: bash
   items:

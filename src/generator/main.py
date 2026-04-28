@@ -89,7 +89,10 @@ def generate_validation_dockerfile():
 
     validation_commands = collect_validation_commands(dockerfile.components)
 
-    lines = [f"FROM {s.from_image}"]
+    lines = [
+        f"FROM {s.from_image}",
+        'SHELL ["/bin/bash", "-lic"]',
+    ]
     for name, cmd in validation_commands:
         lines.append(f"# Validate: {name}")
         lines.append(f"RUN {cmd}")

@@ -187,6 +187,7 @@ def test_generate_validation_dockerfile(tmp_path, mocker):
     content = output_file.read_text()
     assert content == (
         "FROM my-image:latest\n"
+        'SHELL ["/bin/bash", "-lic"]\n'
         "# Validate: kubectl\n"
         "RUN kubectl version --client\n"
         "# Validate: setup\n"
