@@ -71,7 +71,7 @@ case "$1" in
     exit
     ;;
   *)
-    install ${@}
+    install "$@"
     exit
     ;;
 esac
