@@ -5,7 +5,7 @@ VENV_BIN = $(VENV_DIR)/bin
 VENV_PIP = $(VENV_BIN)/pip
 APP = generator
 # renovate: datasource=github-releases depName=gardenlinux/gardenlinux
-GARDENLINUX_IMAGE_TAG ?= 2150.1.0
+GARDENLINUX_IMAGE_TAG ?= 2150.3.0
 GARDENLINUX_IMAGE_REPO ?= ghcr.io/gardenlinux/gardenlinux
 BUILT_IMAGE ?= ops-toolbelt
 
