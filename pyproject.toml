@@ -45,6 +45,7 @@ dev = [
 [project.scripts]
 generator = "generator.main:generate_dockerfile"
 generator-validate = "generator.main:validate"
+generator-validation-dockerfile = "generator.main:generate_validation_dockerfile"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

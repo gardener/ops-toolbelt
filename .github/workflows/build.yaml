@@ -74,6 +74,33 @@ jobs:
       ocm-labels: ${{ toJSON(matrix.args.ocm-labels) }}
       extra-tags: latest
 
+  validate-image:
+    name: Validate OCI-Image
+    needs:
+      - oci-images
+      - prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: gardener/cc-utils/.github/actions/install-gardener-gha-libs@master
+      - uses: gardener/cc-utils/.github/actions/oci-auth@master
+        with:
+          oci-image-reference: ${{ needs.prepare.outputs.oci-registry }}/gardener/ops-toolbelt-validation:${{ needs.prepare.outputs.version }}
+          gh-token: ${{ github.token }}
+      - uses: actions/checkout@v6
+      - name: validate-image
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUILT_IMAGE="${{ needs.prepare.outputs.oci-registry }}/gardener/ops-toolbelt:${{ needs.prepare.outputs.version }}"
+          VALIDATION_IMAGE="${{ needs.prepare.outputs.oci-registry }}/gardener/ops-toolbelt-validation:${{ needs.prepare.outputs.version }}"
+          docker pull "${BUILT_IMAGE}"
+          make validate-image BUILT_IMAGE="${BUILT_IMAGE}" VALIDATION_IMAGE="${VALIDATION_IMAGE}"
+          docker push "${VALIDATION_IMAGE}"
+
   test:
     runs-on: ubuntu-latest
     permissions:
