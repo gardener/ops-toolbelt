@@ -25,7 +25,7 @@ jobs:
       contents: read
     steps:
       - uses: gardener/cc-utils/.github/actions/install-gardener-gha-libs@v1
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: generate-dockerfile
         shell: bash
         run: |
@@ -90,7 +90,7 @@ jobs:
         with:
           oci-image-reference: ${{ needs.prepare.outputs.oci-registry }}/gardener/ops-toolbelt-validation:${{ needs.prepare.outputs.version }}
           gh-token: ${{ github.token }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: validate-image
         shell: bash
         run: |
@@ -106,7 +106,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: test
         shell: bash
         run: |
