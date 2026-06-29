@@ -97,7 +97,7 @@
     validation_command: "nerdctl --version"
   - name: kubectl
     # renovate: datasource=github-releases depName=kubernetes/kubernetes
-    version: v1.34.9
+    version: v1.35.0
     from: https://dl.k8s.io/release/{version}/bin/linux/${{TARGETARCH}}/kubectl
     info: command line tool for controlling Kubernetes clusters.
     validation_command: "kubectl version --client"
