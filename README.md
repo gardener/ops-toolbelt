@@ -41,7 +41,7 @@ node2                                         Ready    <none>   24h     v1.30.4
 node3                                         Ready    <none>   11h     v1.30.4
 node4                                         Ready    <none>   7h44m   v1.30.4
 
-$ ./hacks/ops-pod node1
+$ ./hacks/ops-pod node1 -n kube-system
 node name provided ...
 Deploying ops pod on node1
 
