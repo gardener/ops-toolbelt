@@ -63,6 +63,8 @@
   - name: netcat-openbsd
     provides: netcat
     validation_command: netcat -h
+  - name: iperf3
+    validation_command: iperf3 --version
   - name: python3-minimal
     provides: python3
     validation_command: python3 --version
