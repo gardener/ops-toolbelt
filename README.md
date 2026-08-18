@@ -85,7 +85,7 @@ to build the corresponding image.
 You can run the image with:
 
 ```bash
-docker run -ti --rm ops-toobelt:latest
+docker run -ti --rm ops-toolbelt:latest
 
 ## Known issues
 
