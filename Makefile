@@ -99,5 +99,5 @@ test: pkg-test verify validate ## Run unit tests, verification, and validation
 ##@ Misc
 
 reuse: ## Annotate files with REUSE license headers
-	@find . -name "*.py" -exec reuse annotate --license Apache-2.0 --copyright 'SAP SE or an SAP affiliate company and Gardener contributors' {} +
+	@find . -name "*.py" -exec reuse annotate --license Apache-2.0 --copyright 'Copyright Contributors to the Gardener project' {} +
 
