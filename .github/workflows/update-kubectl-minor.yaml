@@ -14,8 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Determine desired kubectl minor version
         id: version
@@ -52,11 +50,22 @@ jobs:
           sed -i "/name: kubectl/{n;n;s/version: v[0-9]*\.[0-9]*\.[0-9]*/version: ${NEW_VERSION}/}" \
             dockerfile-configs/common-components.yaml
 
+      - name: Get GitHub token
+        if: steps.version.outputs.update_needed == 'true'
+        id: token
+        uses: gardener/cc-utils/.github/actions/github-auth@v1
+        with:
+          token-server: ${{ vars.FEDERATED_GITHUB_ACCESS_TOKEN_SERVER }}
+          repositories: ${{ github.event.repository.name }}
+          permissions: |
+            contents: write
+            pull-requests: write
+
       - name: Create pull request
         if: steps.version.outputs.update_needed == 'true'
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.ACCESS_TOKEN }}
+          token: ${{ steps.token.outputs.token }}
           commit-message: "Update kubectl minor version to ${{ steps.version.outputs.new_version }}"
           branch: chore/update-kubectl-minor
           title: "Update kubectl minor version to ${{ steps.version.outputs.new_version }}"
