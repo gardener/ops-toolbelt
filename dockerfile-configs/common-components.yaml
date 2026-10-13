@@ -8,9 +8,9 @@
 
 - name: bash
   items:
-  - name: debian testing apt-source
+  - name: debian trixie apt-source
     command: |
-      echo "deb https://cdn-aws.deb.debian.org/debian testing main" >> /etc/apt/sources.list
+      echo "deb https://cdn-aws.deb.debian.org/debian trixie main" >> /etc/apt/sources.list
     info: ~
 
 - name: apt-get
