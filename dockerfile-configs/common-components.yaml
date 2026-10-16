@@ -65,6 +65,8 @@
     validation_command: netcat -h
   - name: iperf3
     validation_command: iperf3 --version
+  - name: iptables
+    validation_command: iptables --version
   - name: traceroute
     validation_command: traceroute --version
   - name: python3-minimal
