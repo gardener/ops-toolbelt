@@ -94,6 +94,16 @@ cat <<EOF
   --key=proc/${wrapper_pid}/root/var/etcd/ssl/client/client/tls.key \\
   --endpoints=https://${etcd_host}:2379
 
+  Defragment etcd with etcd-defrag (defrags all members, leader last after moving leadership to a follower, disarms NOSPACE alarms):
+  etcd-defrag --cluster \\
+  --move-leader \\
+  --auto-disalarm \\
+  --etcd-storage-quota-bytes=8589934592 \\
+  --cacert=proc/${wrapper_pid}/root/var/etcd/ssl/client/ca/bundle.crt \\
+  --cert=proc/${wrapper_pid}/root/var/etcd/ssl/client/client/tls.crt \\
+  --key=proc/${wrapper_pid}/root/var/etcd/ssl/client/client/tls.key \\
+  --endpoints=https://${etcd_host}:2379
+
   Change leadership:
   etcdctl move-leader <new-leader-member-id> \\
   --cacert=proc/${wrapper_pid}/root/var/etcd/ssl/client/ca/bundle.crt \\

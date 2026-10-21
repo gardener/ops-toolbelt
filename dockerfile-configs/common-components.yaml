@@ -159,6 +159,12 @@
     command: --chown=65532:65532
     info: Bash script which installs the `etcdctl` tool in the container. If you are running this container as non-root, execute the `install_etcdctl` script in the `/nonroot/hacks` directory.
     validation_command: etcdctl version
+  - name: install_etcd-defrag
+    from: ./hacks/install_etcd-defrag
+    to: /nonroot/hacks
+    command: --chown=65532:65532
+    info: Bash script which installs the `etcd-defrag` tool (a smarter etcd defragmentation tool, drop-in replacement for `etcdctl defrag`) in the container. If you are running this container as non-root, execute the `install_etcd-defrag` script in the `/nonroot/hacks` directory.
+    validation_command: /nonroot/hacks/install_etcd-defrag && command etcd-defrag --version
   - name: install_auger
     from: ./hacks/install_auger
     to: /nonroot/hacks
@@ -197,6 +203,7 @@
         table: Simplifies iptables analysis. Pass string to filter output via grep.
         wg: Command line tool for the wireguard VPN.
         etcdctl: Command line tool for manual operations on etcdctl
+        etcd-defrag: Smarter etcd defragmentation tool (drop-in replacement for "etcdctl defrag")
         k9s: TUI for administration of k8s clusters
   - name: dotfiles
     command: |
