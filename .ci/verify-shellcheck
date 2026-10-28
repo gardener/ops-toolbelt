@@ -13,6 +13,7 @@ cd "${SOURCE_PATH}" || exit 1
 SHELLCHECK_VERSION="0.10.0-r1"
 FILE_LIST=" \
     ./install_on_demand/.etcdctl \
+    ./install_on_demand/.etcd-defrag \
     ./install_on_demand/.table \
     ./install_on_demand/.shrc \
     ./install_on_demand/.k9s\
@@ -20,6 +21,7 @@ FILE_LIST=" \
     ./hacks/print-etcd-cheatsheet\
     ./hacks/ops-pod\
     ./hacks/install_etcdctl\
+    ./hacks/install_etcd-defrag\
     ./hacks/install_k9s\
     ./dotfiles/.bashrc\
     ./dotfiles/.bash_aliases\

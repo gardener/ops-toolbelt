@@ -1,0 +1,17 @@
+#! /usr/bin/env bash
+
+# SPDX-FileCopyrightText: Contributors to the Gardener project
+#
+# SPDX-License-Identifier: Apache-2.0
+
+alias etcd-defrag="etcd-defrag_install"
+function etcd-defrag_install() {
+  app="etcd-defrag"
+  install_func='/nonroot/hacks/install_etcd-defrag'
+
+  if ! hash "${app}" &>/dev/null; then
+    "${install_func}" 1>&2
+  fi
+  # shellcheck disable=SC2046
+  command "${app}" $(_etcdctl_prepend_args "$@")
+}

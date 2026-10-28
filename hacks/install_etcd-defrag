@@ -1,0 +1,82 @@
+#!/bin/bash -e
+
+# SPDX-FileCopyrightText: Contributors to the Gardener project
+#
+# SPDX-License-Identifier: Apache-2.0
+
+function show_help () {
+  echo "Usage: ${0} [arguments]"
+  echo "Possible arguments:"
+  echo "-h, --help       Show this help message and exit"
+  echo "-v, --version    Optional: specify etcd-defrag version to use. Default: version v0.45.0 will be installed."
+}
+
+function install () {
+  # renovate: datasource=github-releases depName=ahrtr/etcd-defrag
+  etcd_defrag_version="v0.45.0"
+  local version="${1:-${etcd_defrag_version}}"
+  local download_url
+  local arch
+  local platform
+  local pkg
+  local dest
+  local yellow="\033[0;33m"
+  local nc="\033[0m"
+  local tmp_dir
+
+  tmp_dir="$(mktemp -d)"
+  mkdir -p "${tmp_dir}/dest"
+
+  dest="/opt/bin/etcd-defrag"
+  if uname="$(whoami 2> /dev/null)"; then
+    if [[ "${uname}" == "root" ]]; then
+      if [ -w "/usr/local/bin" ]; then
+        dest="/usr/local/bin/etcd-defrag"
+      fi
+    fi
+  fi
+
+  arch=$(uname -m | sed 's/^x86_64$/amd64/;s/^aarch64$/arm64/')
+
+  platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  pkg="etcd-defrag-${version}-${platform}-${arch}"
+
+  download_url="https://github.com/ahrtr/etcd-defrag/releases/download/${version}/${pkg}.tar.gz"
+
+  curl -fsSL "${download_url}" -o "${tmp_dir}/${pkg}.tar.gz"
+  tar -zxf "${tmp_dir}/${pkg}.tar.gz" -C "${tmp_dir}/dest"
+  mv "${tmp_dir}/dest/${pkg}/etcd-defrag" "${dest}"
+  chmod 755 "${dest}"
+  rm -rf "${tmp_dir}"
+
+  echo -e "${yellow}"
+  echo "etcd-defrag ${version} installed. Accepts etcdctl defrag flags, checks health, and defragments the leader last."
+  echo
+  echo "  Preview all members: etcd-defrag --cluster --dry-run"
+  echo "  Defragment:          etcd-defrag --cluster"
+  echo "  Add --move-leader to transfer leadership before defragmenting the leader."
+  echo "  Add --auto-disalarm to clear NOSPACE alarms below the quota threshold."
+  echo "  For --auto-disalarm, set --etcd-storage-quota-bytes to etcd's --quota-backend-bytes."
+  echo
+  echo "Compaction runs by default; use --compaction=false to skip it."
+  echo "The shell wrapper tries to detect TLS certificates and the endpoint in an etcd pod."
+  echo "Otherwise, pass --cacert, --cert, --key and --endpoints explicitly."
+  echo "Help: etcd-defrag --help | Pod examples: print-etcd-cheatsheet"
+  echo "Docs: https://github.com/ahrtr/etcd-defrag"
+  echo -e "${nc}"
+}
+
+case "$1" in
+  --version | -v)
+    install "$2"
+    exit
+    ;;
+  --help | -h)
+    show_help
+    exit
+    ;;
+  *)
+    install
+    exit
+    ;;
+esac
