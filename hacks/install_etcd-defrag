@@ -13,7 +13,7 @@ function show_help () {
 
 function install () {
   # renovate: datasource=github-releases depName=ahrtr/etcd-defrag
-  etcd_defrag_version="v0.45.0"
+  etcd_defrag_version="v0.47.0"
   local version="${1:-${etcd_defrag_version}}"
   local download_url
   local arch
