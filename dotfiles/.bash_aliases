@@ -367,46 +367,6 @@ alias vi='vim.tiny'
 # grep
 alias grep='grep --color'
 
-# git
-alias g='git'
-function clone() {
-  if [[ $1 == http* ]] || [[ $1 == git* ]]; then
-    for repo_url in "$@"; do
-      git clone -c http.sslVerify=false --recursive "$repo_url"
-    done
-  else
-    owner="$1"
-    repo="$2"
-    git clone -c http.sslVerify=false --recursive "https://github.com/${owner}/${repo}.git"
-  fi
-}
-function commit() {
-  # shellcheck disable=SC2153
-  GIT_COMMITTER_NAME="$USER_NAME" GIT_COMMITTER_EMAIL="$USER_EMAIL" git commit --author="$USER_NAME <$USER_EMAIL>" "$@"
-}
-function push() {
-  # check for git repo
-  if [[ ! -d ".git" ]]; then
-    echo "This directory holds no git repo. Are you in the wrong directory?"
-    return
-  fi
-
-  # show changes to user, ask for confirmation and commit and push if approved
-  git status
-  git add --patch # ask for confirmation of individual hunks and deletions
-  git add . --all # auto-stage all new/removed files
-  git status
-  read -rp "[Commit Message / Final Confirmation] Describe your change: " msg
-  if [ -z "$msg" ]; then
-    commit -m "Update"
-  else
-    commit -m "$msg"
-  fi
-  git push origin HEAD
-}
-alias pull='git pull'
-alias gitk='git log --oneline --graph --decorate --all'
-
 # ps
 alias p='ps -ef'
 alias pp='pstree' # no forest option in ps
@@ -445,32 +405,6 @@ alias tcpd='tcpdump -l -s 0'
 
 # parallel shell (list hosts with -h and use -i or -o and -e options to see the output)
 alias parallelssh='pssh -i -p 10 -O LogLevel=fatal -O StrictHostKeyChecking=no -O UserKnownHostsFile=/dev/null'
-
-function make_sudoer() {
-  local user_name="$1"
-
-  # check for user name
-  if [[ -z "$user_name" ]]; then
-    error "No user name provided!"
-    return 1
-  fi
-
-  # grant sudo privileges to user
-  echo "$user_name ALL=(root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/10-"$user_name" >/dev/null
-  sudo chmod 0440 /etc/sudoers.d/10-"$user_name"
-}
-
-# ssh
-alias hosts='cat ~/.ssh/config | grep -E "^(# .*Hosts|Host [^*])" | sed "s/# \(.*\)/\1/g" | sed "s/^Host /- /g"'
-
-# name this host in terms of the dotfiles (will be evaluated by the prompt)
-function name() {
-  local name="$1"
-  name=${name##*@} # strip of user (in case this is an ssh host)
-  name=${name%%:*} # strip of port (in case this is an ssh host)
-  echo "$name" >"$DOTFILES_HOME/.host_alias"
-  source "$DOTFILES_HOME"/.bash_prompt
-}
 
 # fuse
 function fuse() {
@@ -529,20 +463,6 @@ function tk() {
   fi
 }
 alias tls='tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" ls 2>&1 | grep -v "failed to connect to server"'
-
-######################
-# CLOUD & CONTAINERS #
-######################
-
-# terraform
-unset TF_LOG # export TF_LOG=INFO # one of: TRACE, DEBUG, INFO, WARN or ERROR
-alias tf='terraform'
-alias tfa='tf apply'
-alias tfg='tf graph -draw-cycles -module-depth=99 | dot -Tpng > /tmp/graph.png | eog /tmp/graph.png' # unfortunately <() isn't working here
-alias tfp='tf plan -module-depth=99'
-alias tfr='tf refresh'
-alias tfs='tf show -module-depth=99'
-alias tft='tf taint'
 
 # docker
 alias d='docker'
