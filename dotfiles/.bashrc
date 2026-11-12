@@ -72,6 +72,3 @@ source <(kubectl completion bash 2>/dev/null)
 
 # source bash prompt
 [[ -s "$DOTFILES_HOME/.bash_prompt" ]] && source "$DOTFILES_HOME/.bash_prompt"
-
-# add local dir to PATH
-export PATH=".:$PATH"
