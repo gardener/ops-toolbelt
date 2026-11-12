@@ -351,9 +351,6 @@ function todate() {
   date -d "@${1}" -u +"%Y-%m-%d %H:%M:%S %z"
 }
 
-# set time manually (in case of ntp issues)
-alias settime='sudo date -s "$(date --date="$(curl -sI www.google.com 2>&1 | sed -n -r "s/Date: (.*)/\1/1p")")"'
-
 # image resizing
 alias shrink='sips -Z 1024'
 
