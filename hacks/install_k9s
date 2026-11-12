@@ -8,8 +8,11 @@ function show_help () {
   echo "Usage: ${0} [arguments]"
   echo "Possible arguments:"
   echo "-h, --help       Show this help message and exit"
-  echo "-v, --version    Optional: specify k9s version to use. Default: latest version will be installed"
+  echo "-v, --version    Optional: specify k9s version to use. Default: pinned ${K9S_VERSION}"
 }
+
+# renovate: datasource=github-releases depName=derailed/k9s
+K9S_VERSION="v0.51.0"
 
 function install () {
   local version=$1
@@ -20,7 +23,6 @@ function install () {
   local platform
   local pkg
   local dest
-  local version_url="https://api.github.com/repos/derailed/k9s/releases/latest"
 
   tmp_dir="$(mktemp -d)"
   mkdir -p "${tmp_dir}/dest"
@@ -39,8 +41,8 @@ function install () {
   platform="$(uname -s)"
   pkg="k9s_${platform}_${arch}"
 
-  if [ -z "$version" ]; then # fetch latest
-    version=$(curl -sL "${version_url}" | jq -r '.tag_name')
+  if [ -z "$version" ]; then # use pinned default (bumped by renovate)
+    version="${K9S_VERSION}"
   fi
 
   if [[ ! $version == v* ]]; then
