@@ -75,24 +75,3 @@ source <(kubectl completion bash 2>/dev/null)
 
 # add local dir to PATH
 export PATH=".:$PATH"
-
-# source nearest .source_me/.activate respectively .deactivate when changing directories
-function cd() {
-  builtin cd "$@" || return
-  wd="$PWD"
-  if [[ -z "$PROMPT_AUTO_SOURCE_PATH" ]] || [[ "$wd" != "$PROMPT_AUTO_SOURCE_PATH"* ]]; then
-    [[ -n "$PROMPT_AUTO_SOURCE_PATH" ]] && [[ -f "$PROMPT_AUTO_SOURCE_PATH/.deactivate" ]] && source "$PROMPT_AUTO_SOURCE_PATH/.deactivate"
-    unset PROMPT_AUTO_SOURCE_PATH
-    while [[ $wd != "/" ]]; do
-      if [[ -f "$wd/.source_me" ]]; then
-        export PROMPT_AUTO_SOURCE_PATH="$wd" && source "$PROMPT_AUTO_SOURCE_PATH/.source_me"
-        break
-      elif [[ -f "$wd/.activate" ]]; then
-        export PROMPT_AUTO_SOURCE_PATH="$wd" && source "$PROMPT_AUTO_SOURCE_PATH/.activate"
-        break
-      else
-        wd="$(dirname "$wd")"
-      fi
-    done
-  fi
-}
