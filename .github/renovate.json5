@@ -1,67 +1,75 @@
 {
-  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   extends: [
-    "config:recommended",
-    ":semanticCommitsDisabled",
-    "regexManagers:githubActionsVersions",
-    "group:monorepos"
+    'config:recommended',
+    ':semanticCommitsDisabled',
+    'customManagers:githubActionsVersions',
+    'group:monorepos',
   ],
-  labels: ["kind/enhancement"],
-  // Add PR footer with empty release note by default.
-  prFooter: "**Release note**:\n```other dependency\nNONE\n```",
+  labels: [
+    'kind/enhancement',
+  ],
+  prFooter: '**Release note**:\n```other dependency\nNONE\n```',
   customManagers: [
     {
-      // Update `_VERSION`, `_version` and `_IMAGE_TAG` variables in Makefiles and scripts.
-      // Inspired by `regexManagers:dockerfileVersions` preset.
-      customType: "regex",
-      fileMatch: [
-        "Makefile$",
-        "\\.yaml$",
-        "\\.sh$",
-        "^hacks/*",
+      customType: 'regex',
+      managerFilePatterns: [
+        '/Makefile$/',
+        '/\\.yaml$/',
+        '/\\.sh$/',
+        '/^hacks/*/',
       ],
       matchStrings: [
-        "# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s.+?_(VERSION|version|IMAGE_TAG) *[?:]?= *\"?(?<currentValue>.+?)\"?\\s"
-      ]
+        '# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s.+?_(VERSION|version|IMAGE_TAG) *[?:]?= *"?(?<currentValue>.+?)"?\\s',
+      ],
     },
     {
-      // Update `version` variables in common-components.yaml.
-      // Inspired by `regexManagers:dockerfileVersions` preset.
-      customType: "regex",
-      fileMatch: ["common-components\\.yaml$"],
+      customType: 'regex',
+      managerFilePatterns: [
+        '/common-components\\.yaml$/',
+      ],
       matchStrings: [
-        "# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s+version\\s*:\\s*[\"']?(?<currentValue>.+?)[\"']?\\s"
-      ]
+        '# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s+version\\s*:\\s*["\']?(?<currentValue>.+?)["\']?\\s',
+      ],
     },
   ],
   packageRules: [
     {
-      // Group github-actions in one PR.
-      groupName: "github-actions",
-      matchManagers: ["github-actions"]
+      groupName: 'github-actions',
+      matchManagers: [
+        'github-actions',
+      ],
     },
     {
-      // Only create PRs for patch updates of kubectl.
-      "matchPackageNames": ["kubernetes/kubernetes"],
-      "matchUpdateTypes": ["patch"],
-      "enabled": true
+      matchPackageNames: [
+        'kubernetes/kubernetes',
+      ],
+      matchUpdateTypes: [
+        'patch',
+      ],
+      enabled: true,
     },
     {
-      // Don't go wild with the minor version.
-      // Keep the currently supported within Gardener - 1 for minor version.
-      "matchPackageNames": ["kubernetes/kubernetes"],
-      "matchUpdateTypes": ["major", "minor"],
-      "enabled": false
+      matchPackageNames: [
+        'kubernetes/kubernetes',
+      ],
+      matchUpdateTypes: [
+        'major',
+        'minor',
+      ],
+      enabled: false,
     },
     {
-      // Separate minor from patch updates for kubectl.
-      "matchPackageNames": ["kubernetes/kubernetes"],
-      "separateMinorPatch": true,
+      matchPackageNames: [
+        'kubernetes/kubernetes',
+      ],
+      separateMinorPatch: true,
     },
     {
-      // Add PR footer with release notes link for github-releases.
-      matchDatasources: ["github-releases"],
-      prFooter: "**Release note**:\n```other dependency\n`{{depName}}` has been updated to `{{newVersion}}`. [Release Notes](https://github.com/{{depName}}/releases/tag/{{newVersion}})\n```"
-    }
-  ]
+      matchDatasources: [
+        'github-releases',
+      ],
+      prFooter: '**Release note**:\n```other dependency\n`{{depName}}` has been updated to `{{newVersion}}`. [Release Notes](https://github.com/{{depName}}/releases/tag/{{newVersion}})\n```',
+    },
+  ],
 }
