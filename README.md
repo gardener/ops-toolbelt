@@ -67,6 +67,31 @@ Use `./hacks/ops-pod --help` to check what other options are available
 
 Dockerfiles for the images are generated from files in the `dockerfile-configs` directory.
 
+### Pinning downloaded binaries with checksums
+
+`curl` components in `dockerfile-configs/common-components.yaml` may declare a
+`sha256` map keyed by `TARGETARCH` (`amd64`, `arm64`). When present, the
+generated build step verifies the downloaded file against the matching digest
+with `sha256sum -c -` before it is installed or extracted, so a release asset
+that was replaced upstream behind an existing version tag fails the build
+instead of being baked into the image.
+
+```yaml
+- name: kubectl
+  # renovate: datasource=github-releases depName=kubernetes/kubernetes
+  version: v1.34.13
+  from: https://dl.k8s.io/release/{version}/bin/linux/${{TARGETARCH}}/kubectl
+  sha256:
+    amd64: b4bb494e9466a7a94bb851414548bc0d3e2f8da90757e6eccc3371e648648591
+    arm64: 66e8283d52d9bc1f9c0e9daade7c971cd20db5a379306862897dfb25395f3e03
+```
+
+Renovate bumps the `version` only. When a version changes, refresh the digests
+for every declared arch (prefer the upstream-published checksum file; otherwise
+compute it, e.g. `curl -sL <url> | sha256sum`). A stale digest makes the build
+fail loudly at the verification step — that is the intended safety net, not a
+bug to work around by dropping the field.
+
 To generate the Dockerfile for the ops-toolbelt, run:
 
 ```bash

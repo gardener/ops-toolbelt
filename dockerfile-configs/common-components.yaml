@@ -80,6 +80,9 @@
     # renovate: datasource=github-releases depName=bronze1man/yaml2json
     version: v1.3.5
     from: https://github.com/bronze1man/yaml2json/releases/download/{version}/yaml2json_linux_$(echo ${{TARGETARCH}} |sed 's/x86_64/amd64/;s/arm64/arm/')
+    sha256:
+      amd64: bf1135918faae98aa931873b45b1baf2c331b4c87651c67bba91ea39829d86cd
+      arm64: fd569a8054bdd914a8442d9384dc043a5403560517a79a550845df2f8d5a1b10
     info: transform yaml string to json string without the type infomation.
     validation_command: "echo '{}' | yaml2json"
   - name: stern
@@ -87,6 +90,9 @@
     version: 1.32.0
     from: https://github.com/stern/stern/releases/download/v{version}/stern_{version}_linux_${{TARGETARCH}}.tar.gz
     to: /stern.tar.gz
+    sha256:
+      amd64: 4733268b0e7fea48426c594d186be8cbcdb863858e08910451ebe3b1c8286f44
+      arm64: 10b7ce269996547b08b524226d9c7678985b525232539e6e943ebe8475521615
     command: |
       tar Cxzvvf /usr/local/bin stern.tar.gz stern
       rm -f stern.tar.gz
@@ -97,6 +103,9 @@
     version: 2.4.2
     from: https://github.com/containerd/nerdctl/releases/download/v{version}/nerdctl-{version}-linux-${{TARGETARCH}}.tar.gz
     to: /nerdctl.tar.gz
+    sha256:
+      amd64: 41a66995888043c0ba05f8061574eaba1b9e06b9b21c2a238215179df2728d3f
+      arm64: 6bb9cfe435be3745c079cde6c1fd14d6515a84de2b285993d1d3e2be2c4fa36a
     command: |
       tar Cxzvvf /usr/local/bin nerdctl.tar.gz
       rm -f nerdctl.tar.gz
@@ -109,6 +118,9 @@
     # renovate: datasource=github-releases depName=kubernetes/kubernetes
     version: v1.34.13
     from: https://dl.k8s.io/release/{version}/bin/linux/${{TARGETARCH}}/kubectl
+    sha256:
+      amd64: b4bb494e9466a7a94bb851414548bc0d3e2f8da90757e6eccc3371e648648591
+      arm64: 66e8283d52d9bc1f9c0e9daade7c971cd20db5a379306862897dfb25395f3e03
     info: command line tool for controlling Kubernetes clusters.
     validation_command: "kubectl version --client"
 

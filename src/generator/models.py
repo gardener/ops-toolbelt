@@ -213,6 +213,22 @@ class CurlItem(BashItem):
     source: ShellAwareHttpUrl = Field(alias="from")
     to: Path
     command: CommandString = ""
+    sha256: dict[str, str] | None = None
+
+    @field_validator("sha256", mode="after")
+    @classmethod
+    def validate_sha256(cls, value: dict[str, str] | None) -> dict[str, str] | None:
+        if value is None:
+            return value
+        if not value:
+            raise ValueError("sha256 must map at least one TARGETARCH to a digest.")
+        for arch, digest in value.items():
+            if not re.fullmatch(r"[0-9a-f]{64}", digest):
+                raise ValueError(
+                    f"Invalid sha256 digest for arch '{arch}': '{digest}'. "
+                    "Expected 64 lowercase hex characters."
+                )
+        return value
 
     @model_validator(mode="before")
     @classmethod
@@ -228,10 +244,20 @@ class CurlItem(BashItem):
             data["to"] = data.get("to", f"/bin/{data['name']}")
         return data
 
+    def _sha256_verify_command(self) -> str:
+        """Shell snippet that picks the per-arch digest and verifies ``to``."""
+        branches = "".join(
+            f'{arch}) echo {digest};; ' for arch, digest in self.sha256.items()  # type: ignore[union-attr]
+        )
+        picker = f'$(case "${{TARGETARCH}}" in {branches}*) echo unknown;; esac)'
+        return f'echo "{picker}  {self.to}" | sha256sum -c -'
+
     @model_validator(mode="after")
     @classmethod
     def fill_command(cls, data: Any) -> Any:
         cmd = f"curl -sLf {data.source} -o {data.to}"
+        if data.sha256:
+            cmd = f"{cmd} && {data._sha256_verify_command()}"
         if not data.command:
             data.command = f"chmod 755 {data.to}"
         data.command = f"{cmd} && {data.command}"
