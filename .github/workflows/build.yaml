@@ -85,8 +85,8 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - uses: gardener/cc-utils/.github/actions/install-gardener-gha-libs@master
-      - uses: gardener/cc-utils/.github/actions/oci-auth@master
+      - uses: gardener/cc-utils/.github/actions/install-gardener-gha-libs@bce63f62928717a11f610ec8022af9feb497d5df # v1
+      - uses: gardener/cc-utils/.github/actions/oci-auth@bce63f62928717a11f610ec8022af9feb497d5df # v1
         with:
           oci-image-reference: ${{ needs.prepare.outputs.oci-registry }}/gardener/ops-toolbelt-validation:${{ needs.prepare.outputs.version }}
           gh-token: ${{ github.token }}
