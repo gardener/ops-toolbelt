@@ -10,6 +10,7 @@ Models for the generator package.
 
 import re
 import json
+import shlex
 from pathlib import Path
 from typing import Annotated, Any, Literal
 from pydantic_core import core_schema
@@ -46,6 +47,15 @@ def package_name_string_validator(value: str) -> str:
     return value
 
 
+def version_string_validator(value: str) -> str:
+    if not re.fullmatch(r"[a-zA-Z0-9._+-]*", value):
+        raise ValueError(
+            f"Invalid version: '{value}'. "
+            "Only alphanumeric characters, '.', '_', '+' and '-' are allowed."
+        )
+    return value
+
+
 def ensure_env_pair(value: str) -> str:
     if "=" not in value:
         raise ValueError(
@@ -60,10 +70,11 @@ def ensure_env_pair(value: str) -> str:
 
 
 command_multiline_string_validator = partial(multiline_string_validator, prefix="    ", suffix=";\\")
-info_multiline_string_validator = partial(multiline_string_validator, prefix="", suffix="", joiner="\\n")
+info_multiline_string_validator = partial(multiline_string_validator, prefix="", suffix="")
 
 SupportedDockerfileCommands = Literal["ARG", "RUN", "ENV", "COPY"]
 PackageNameString = Annotated[str, AfterValidator(package_name_string_validator)]
+VersionString = Annotated[str, AfterValidator(version_string_validator)]
 CommandString = Annotated[str, AfterValidator(command_multiline_string_validator)]
 InfoString = Annotated[str, AfterValidator(info_multiline_string_validator)] | None
 
@@ -184,19 +195,22 @@ class ShellAwareHttpUrl(str):
     @classmethod
     def validate(cls, v: str) -> str:
         """
-        Validate a URL that may contain shell variables or command substitutions.
-        Replace shell constructs with placeholder values for URL validation.
+        Validate a URL that may contain shell variables ($NAME, ${NAME}) or command
+        substitutions ($(...)). The URL is emitted as one double-quoted shell word, so
+        outside of these constructs it must not contain anything that ends the quotes
+        or starts another expansion.
         """
-        var_pattern = r"(?<!\\)\$(?:[a-zA-Z_][a-zA-Z0-9_]*|\{[^}]+\})"
-        subshell_pattern = r"(?<!\\)(?:\$\([^)]+\)|`[^`]+`)"
+        var_pattern = r"\$(?:[a-zA-Z_][a-zA-Z0-9_]*|\{[a-zA-Z_][a-zA-Z0-9_]*\})"
+        subshell_pattern = r"\$\([^)]+\)"
 
-        _val = v
-
-        _val = re.sub(var_pattern, "placeholder", _val)
-        _val = re.sub(subshell_pattern, "placeholder", _val)
+        masked = re.sub(subshell_pattern, "placeholder", re.sub(var_pattern, "placeholder", v))
+        if re.search(r'[\s"\\`$]', masked):
+            raise ValueError(
+                f"Invalid URL: {v}. Only $NAME, ${{NAME}} and $(...) shell syntax is supported."
+            )
 
         try:
-            HttpUrl(_val)
+            HttpUrl(masked)
         except Exception as e:
             raise ValueError(f"Invalid URL: {v}") from e
 
@@ -209,7 +223,7 @@ class OptionalFormatedDict(dict):
         return "{" + key + "}"
 
 class CurlItem(BashItem):
-    version: str = ""
+    version: VersionString = ""
     source: ShellAwareHttpUrl = Field(alias="from")
     to: Path
     command: CommandString = ""
@@ -231,9 +245,10 @@ class CurlItem(BashItem):
     @model_validator(mode="after")
     @classmethod
     def fill_command(cls, data: Any) -> Any:
-        cmd = f"curl -sLf {data.source} -o {data.to}"
+        to = shlex.quote(str(data.to))
+        cmd = f'curl -sLf "{data.source}" -o {to}'
         if not data.command:
-            data.command = f"chmod 755 {data.to}"
+            data.command = f"chmod 755 {to}"
         data.command = f"{cmd} && {data.command}"
         return data
 
@@ -352,7 +367,10 @@ class InfoGenerator(OpinionatedBaseModel):
         return result
 
     def to_shortened_dockerfile_directive(self) -> str:
-        return f"echo '{json.dumps(self.to_ghelp_format())}' > /var/lib/ghelp_info"
+        # The JSON is data, not shell: quote it as a single word and write it verbatim
+        # (printf %s, unlike echo, does not interpret backslash escapes).
+        payload = shlex.quote(json.dumps(self.to_ghelp_format()))
+        return f"printf '%s\\n' {payload} > /var/lib/ghelp_info"
 
 
 class Dockerfile(OpinionatedBaseModel):

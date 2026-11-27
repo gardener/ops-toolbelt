@@ -4,10 +4,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import json
+import os
+import shlex
+import subprocess
 from pathlib import Path
-from pydantic import ValidationError
-import pytest
 
+import pytest
+from pydantic import ValidationError
 
 from generator import models as m
 
@@ -151,6 +155,71 @@ def test_shell_aware_http_url(subtests):
             m.ShellAwareHttpUrl("invalid-url")
 
 
+@pytest.mark.parametrize("url", [
+    'http://example.com/"; touch /tmp/x; "',
+    "http://example.com/\\$(id)",
+    "http://example.com/`id`",
+    "http://example.com/${x:-$(id)}",
+    "http://example.com/a b",
+    "http://example.com/$",
+])
+def test_shell_aware_http_url_rejects_unsupported_shell_syntax(url):
+    with pytest.raises(ValueError):
+        m.ShellAwareHttpUrl(url)
+
+
+def _curl_item_with_version(version: str) -> m.CurlItem:
+    return m.CurlItem.model_validate(
+        {"name": "tool", "version": version, "from": "http://example.com/{version}"}
+    )
+
+
+@pytest.mark.parametrize("version", ["v1.34.13", "2.4.2", "1.0.0-rc.1+build.5", ""])
+def test_curl_item_accepts_version(version):
+    assert _curl_item_with_version(version).version == version
+
+
+@pytest.mark.parametrize("version", ["1.0;id", "$(id)", "${IFS}", "1 0", "1.0'", "v1/../x"])
+def test_curl_item_rejects_version_with_shell_syntax(version):
+    with pytest.raises(ValidationError):
+        _curl_item_with_version(version)
+
+
+def _curl_argv(item: m.CurlItem, tmp_path: Path) -> list[str]:
+    """Run the generated command with curl/chmod stubbed out and return curl's arguments."""
+    argv = tmp_path / "argv"
+    stubs = f"curl() {{ printf '%s\\0' \"$@\" > {shlex.quote(str(argv))}; }}; chmod() {{ :; }}; "
+    env = {"PATH": os.environ["PATH"], "TARGETARCH": "arm64"}
+    subprocess.run(["sh", "-c", stubs + item.command], check=True, env=env)
+    return argv.read_text().split("\0")[:-1]
+
+
+def test_curl_item_url_stays_one_shell_word(tmp_path):
+    marker = tmp_path / "executed"
+    c = m.CurlItem.model_validate({
+        "name": "tool",
+        "from": f"https://example.com/a;touch${{IFS}}{marker};b",
+        "to": str(tmp_path / "tool"),
+    })
+    argv = _curl_argv(c, tmp_path)
+    assert not marker.exists()
+    url = f"https://example.com/a;touch \t\n{marker};b"
+    assert argv == ["-sLf", url, "-o", str(tmp_path / "tool")]
+
+
+def test_curl_item_url_expands_supported_substitutions(tmp_path):
+    c = m.CurlItem.model_validate({
+        "name": "tool",
+        "version": "v1.0",
+        "from": (
+            "https://example.com/{version}/tool_${{TARGETARCH}}_"
+            "$(echo ${{TARGETARCH}} |sed 's/arm64/arm/')"
+        ),
+        "to": str(tmp_path / "tool"),
+    })
+    assert _curl_argv(c, tmp_path)[1] == "https://example.com/v1.0/tool_arm64_arm"
+
+
 def test_curl_item(subtests):
     with subtests.test("Full definition"):
         c = m.CurlItem.model_validate(
@@ -166,7 +235,7 @@ def test_curl_item(subtests):
         assert c.to == Path("/tmp/pkg-123")
         assert (
             c.command
-            == "curl -sLf http://example.com/pkg/123 -o /tmp/pkg-123 && ls -la /tmp/pkg-123"
+            == "curl -sLf \"http://example.com/pkg/123\" -o /tmp/pkg-123 && ls -la /tmp/pkg-123"
         )
 
     with subtests.test("Full multiline command"):
@@ -184,7 +253,7 @@ echo""",
         assert c.to == Path("/tmp/pkg-123")
         assert (
             c.command
-            == """curl -sLf http://example.com/pkg/123 -o /tmp/pkg-123 && ls -la /tmp/pkg-123;\\
+            == """curl -sLf "http://example.com/pkg/123" -o /tmp/pkg-123 && ls -la /tmp/pkg-123;\\
     echo"""
         )
     with subtests.test("Minimal definition"):
@@ -198,7 +267,7 @@ echo""",
         assert c.to == Path("/bin/curl-cmd")
         assert (
             c.command
-            == "curl -sLf http://example.com/pkg -o /bin/curl-cmd && chmod 755 /bin/curl-cmd"
+            == "curl -sLf \"http://example.com/pkg\" -o /bin/curl-cmd && chmod 755 /bin/curl-cmd"
         )
 
     with subtests.test("Minimal definition with shell expansion"):
@@ -216,7 +285,7 @@ echo""",
         assert c.to == Path("/bin/curl-cmd")
         assert (
             c.command
-            == "curl -sLf http://example.com/pkg$(echo ${TARGETARCH} |sed 's/x86_64/amd64/;s/arm64/arm/') -o /bin/curl-cmd && chmod 755 /bin/curl-cmd"
+            == "curl -sLf \"http://example.com/pkg$(echo ${TARGETARCH} |sed 's/x86_64/amd64/;s/arm64/arm/')\" -o /bin/curl-cmd && chmod 755 /bin/curl-cmd"
         )
 
     with subtests.test("Extra keys"):
@@ -245,8 +314,8 @@ def test_curl_item_list(subtests):
             ],
         })
 
-        short = """curl -sLf http://example.com/pkg1 -o /bin/curl1 && chmod 755 /bin/curl1;\\
-    curl -sLf http://example.com/pkg2 -o /bin/curl2 && chmod 755 /bin/curl2"""
+        short = """curl -sLf "http://example.com/pkg1" -o /bin/curl1 && chmod 755 /bin/curl1;\\
+    curl -sLf "http://example.com/pkg2" -o /bin/curl2 && chmod 755 /bin/curl2"""
         assert cil.to_shortened_dockerfile_directive() == short
         assert cil.to_dockerfile_directive() == f"RUN {short}"
     with subtests.test("Extra key"):
@@ -643,6 +712,52 @@ def test_info_generator_to_ghelp_format_downloaded_only():
         ],
     }
     assert result == expected
+
+
+def _ghelp_info_generator(info: str, version: str) -> m.InfoGenerator:
+    return m.InfoGenerator.model_validate({
+        "components": [
+            {
+                "name": "curl",
+                "items": [{
+                    "name": "tool",
+                    "version": version,
+                    "from": "https://example.com/tool",
+                    "info": info,
+                }],
+            },
+        ],
+    })
+
+
+def test_info_generator_directive_writes_json_verbatim(tmp_path):
+    """info is data: shell metacharacters must reach ghelp_info unchanged."""
+    marker = tmp_path / "executed"
+    info = (
+        f"it's a tool'; touch {marker}; echo '\n"
+        f"$(touch {marker}) `touch {marker}` \\t \\c end"
+    )
+    info_gen = _ghelp_info_generator(info, "1.0")
+    target = tmp_path / "ghelp_info"
+    directive = info_gen.to_shortened_dockerfile_directive().replace(
+        "/var/lib/ghelp_info", shlex.quote(str(target))
+    )
+
+    subprocess.run(["sh", "-c", directive], check=True)
+
+    assert not marker.exists()
+    assert target.read_text() == json.dumps(info_gen.to_ghelp_format()) + "\n"
+    assert json.loads(target.read_text())["downloaded"] == [
+        ["tool", "1.0", m.info_multiline_string_validator(info)],
+    ]
+
+
+def test_info_generator_directive_keeps_multiline_info():
+    info_gen = _ghelp_info_generator("line1\nline2", "1.0")
+    payload = shlex.split(info_gen.to_shortened_dockerfile_directive())[2]
+    assert json.loads(payload)["downloaded"][0][2] == "line1\nline2"
+
+
 def test_validation_command_on_bash_item():
     item = m.BashItem(name="test", command="echo hello", validation_command="echo hello")
     assert item.validation_command == "echo hello"
@@ -701,6 +816,6 @@ def test_info_multiline_string_validator():
     string = "line1\nline2\nline3"
     assert (
         m.info_multiline_string_validator(string)
-        == "line1\\nline2\\nline3"
+        == "line1\nline2\nline3"
     )
-    assert m.info_multiline_string_validator("a\n\nb") == "a\\nb"
+    assert m.info_multiline_string_validator("a\n\nb") == "a\nb"
