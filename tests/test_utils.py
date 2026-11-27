@@ -159,7 +159,7 @@ def test_directives_to_layers(mocker):
         m.DockerfileLayer(
             key="RUN",
             commands=[
-                "RUN curl -sLf https://example.com -o /bin/example1 && chmod 755 /bin/example1;\\\n    curl -sLf https://another.example.com -o /bin/example2 && chmod 755 /bin/example2",
+                "RUN curl -sLf \"https://example.com\" -o /bin/example1 && chmod 755 /bin/example1;\\\n    curl -sLf \"https://another.example.com\" -o /bin/example2 && chmod 755 /bin/example2",
                 "    ls -la;\\\n    touch /dev/null",
             ],
         ),
@@ -319,7 +319,7 @@ def test_grouped_components_to_dockerfile_layers(mocker, subtests):
         m.DockerfileLayer(
             key="RUN",
             commands=[
-                "RUN curl -sLf https://example.com -o /bin/example1 && chmod 755 /bin/example1;\\\n    curl -sLf https://another.example.com -o /bin/example2 && chmod 755 /bin/example2",
+                "RUN curl -sLf \"https://example.com\" -o /bin/example1 && chmod 755 /bin/example1;\\\n    curl -sLf \"https://another.example.com\" -o /bin/example2 && chmod 755 /bin/example2",
                 "    ls -la;\\\n    touch /dev/null",
             ],
         ),
