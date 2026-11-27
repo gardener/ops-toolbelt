@@ -6,11 +6,11 @@
 
 alias etcdctl="etcdctl_install"
 function etcdctl_install() {
-  app="etcdctl"
-  install_func='/nonroot/hacks/install_etcdctl'
+  local app="etcdctl"
+  local install_func='/nonroot/hacks/install_etcdctl'
 
   if ! hash "${app}" &>/dev/null; then
-    "${install_func}" 1>&2
+    "${install_func}" 1>&2 || return
   fi
   # shellcheck disable=SC2046
   command "${app}" $(_etcdctl_prepend_args "$@")
@@ -43,6 +43,7 @@ function _etcdctl_prepend_args() {
   etcd_host="$(get_etcd_host)"
   if [ "${pid}" == "" ]; then
     log_colored "${red}" "etcd is not running locally"
+    echo "$*"
     return
   fi
   if [ "${#}" -ne 0 ]; then
@@ -54,7 +55,7 @@ function _etcdctl_prepend_args() {
     return
   fi
 
-  cert_base_dir="/proc/$(get_etcd_pid)/root/var/etcd/ssl"
+  cert_base_dir="/proc/${pid}/root/var/etcd/ssl"
   crt_path="${cert_base_dir}/client/tls.crt"
   key_path="${cert_base_dir}/client/tls.key"
   ca_path="${cert_base_dir}/ca/bundle.crt"

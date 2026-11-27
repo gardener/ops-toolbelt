@@ -4,48 +4,82 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+set -eo pipefail
+
+# renovate: datasource=github-releases depName=cilium/pwru
+PWRU_VERSION="v1.0.12"
+# sha256 of pwru-linux-<arch>.tar.gz for PWRU_VERSION (from the release's *.sha256sum files).
+# Refresh both whenever PWRU_VERSION changes.
+PWRU_SHA256_AMD64="1ccaea22d97c283b09d2e2f0329789727c4f1b19aa99723e32b2e12d3a5e6dba"
+PWRU_SHA256_ARM64="997516721a58b4f8ffe3504994cada472c9bcd78f1e819862bf61f1081684378"
+
 function show_help () {
   echo "Usage: ${0} [arguments]"
   echo "Possible arguments:"
   echo "-h, --help       Show this help message and exit"
-  echo "-v, --version    Optional: specify "Packet, where are you? version to use." Default: latest version will be installed"
+  echo "-v, --version    Optional: specify \"Packet, where are you?\" version to use. Default: pinned ${PWRU_VERSION}"
+}
+
+# Prints the expected sha256 of release asset ${2} for version ${1} on arch ${3}.
+# The pinned version uses the embedded digests; any other version falls back to
+# the checksum file published with that release.
+function expected_sha256 () {
+  local version=$1
+  local asset=$2
+  local arch=$3
+
+  if [[ "${version}" == "${PWRU_VERSION}" ]]; then
+    case "${arch}" in
+      amd64) echo "${PWRU_SHA256_AMD64}" ;;
+      arm64) echo "${PWRU_SHA256_ARM64}" ;;
+    esac
+    return
+  fi
+
+  echo "pwru ${version} is not the pinned version (${PWRU_VERSION}); verifying against the release's ${asset}.sha256sum" >&2
+  curl -fsSL "https://github.com/cilium/pwru/releases/download/${version}/${asset}.sha256sum" \
+    | awk -v f="${asset}" '$2 == f || $2 == "*" f { print $1 }'
 }
 
 function install () {
-  local version=$1
+  local version="${1:-${PWRU_VERSION}}"
   local download_url
   local yellow="\033[0;33m"
   local nc="\033[0m"
   local arch
   local pkg
   local dest
-  local version_url="https://api.github.com/repos/cilium/pwru/releases/latest"
+  local sha256
 
+  # Global, not local: the EXIT trap runs after install() has returned.
   tmp_dir="$(mktemp -d)"
+  trap 'rm -rf "${tmp_dir}"' EXIT
   mkdir -p "${tmp_dir}/dest"
 
   dest="/opt/bin/pwru"
-  if uname="$(whoami 2> /dev/null)"; then
-    if [[ "${uname}" == "root" ]]; then
-      if [ -w "/usr/local/bin" ]; then
-        dest="/usr/local/bin/pwru"
-      fi
-    fi
+  if [[ "$(id -u)" == 0 && -w /usr/local/bin ]]; then
+    dest="/usr/local/bin/pwru"
   fi
 
-  if [ -z "$version" ]; then # fetch latest
-    version=$(curl -sL "${version_url}" | jq -r '.tag_name')
+  if [[ ! $version == v* ]]; then
+    version="v${version}"
   fi
   arch=$(uname -m | sed 's/^x86_64$/amd64/;s/^aarch64$/arm64/')
   pkg="pwru-linux-${arch}"
+
+  sha256="$(expected_sha256 "${version}" "${pkg}.tar.gz" "${arch}")"
+  if [ -z "${sha256}" ]; then
+    echo "No sha256 known for ${pkg}.tar.gz of pwru ${version}; refusing to install." >&2
+    exit 1
+  fi
+
   download_url="https://github.com/cilium/pwru/releases/download/${version}/${pkg}.tar.gz"
 
-  curl -sL "${download_url}" \
-    -o "${tmp_dir}/${pkg}.tar.gz" && \
-    tar -zxf "${tmp_dir}/${pkg}.tar.gz" -C "${tmp_dir}/dest" && \
-    mv "${tmp_dir}/dest/pwru" "${dest}" && \
-    chmod 755 "${dest}" && \
-    rm -rf "${tmp_dir}"
+  curl -fsSL "${download_url}" -o "${tmp_dir}/${pkg}.tar.gz"
+  echo "${sha256}  ${tmp_dir}/${pkg}.tar.gz" | sha256sum -c - >&2
+  tar -zxf "${tmp_dir}/${pkg}.tar.gz" -C "${tmp_dir}/dest"
+  mv "${tmp_dir}/dest/pwru" "${dest}"
+  chmod 755 "${dest}"
 
   echo -e "${yellow}"
   echo "You can now start using pwru."

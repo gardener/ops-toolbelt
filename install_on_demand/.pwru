@@ -6,11 +6,11 @@
 
 alias pwru="pwru_install"
 function pwru_install() {
-  app="pwru"
-  install_func='/nonroot/hacks/install_pwru'
+  local app="pwru"
+  local install_func='/nonroot/hacks/install_pwru'
 
   if ! hash "${app}" &>/dev/null; then
-    "${install_func}" 1>&2
+    "${install_func}" 1>&2 || return
   fi
 
   command "${app}" "$@"
