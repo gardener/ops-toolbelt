@@ -4,52 +4,86 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+set -eo pipefail
+
+# renovate: datasource=github-releases depName=etcd-io/auger
+AUGER_VERSION="v1.0.3"
+# sha256 of auger_<version>_linux_<arch>.tar.gz for AUGER_VERSION (from the release's checksums.txt).
+# Refresh both whenever AUGER_VERSION changes.
+AUGER_SHA256_AMD64="afe198df3161f3d2c9b4043f3d007176f860c2767a07cc224d44bb524e125c03"
+AUGER_SHA256_ARM64="7ddc6d252a8b00ddc6e2903ee1f878873b0e1a4022cd11ef9db1b3a1a47ba23a"
+
 function show_help () {
   echo "Usage: ${0} [arguments]"
   echo "Possible arguments:"
   echo "-h, --help       Show this help message and exit"
-  echo "-v, --version    Optional: specify auger version to use. Default: latest version will be installed"
+  echo "-v, --version    Optional: specify auger version to use. Default: pinned ${AUGER_VERSION}"
+}
+
+# Prints the expected sha256 of release asset ${2} for version ${1} on arch ${3}.
+# The pinned version uses the embedded digests; any other version falls back to
+# the checksum file published with that release.
+function expected_sha256 () {
+  local version=$1
+  local asset=$2
+  local arch=$3
+
+  if [[ "${version}" == "${AUGER_VERSION}" ]]; then
+    case "${arch}" in
+      amd64) echo "${AUGER_SHA256_AMD64}" ;;
+      arm64) echo "${AUGER_SHA256_ARM64}" ;;
+    esac
+    return
+  fi
+
+  echo "auger ${version} is not the pinned version (${AUGER_VERSION}); verifying against the release's checksums.txt" >&2
+  curl -fsSL "https://github.com/etcd-io/auger/releases/download/${version}/checksums.txt" \
+    | awk -v f="${asset}" '$2 == f || $2 == "*" f { print $1 }'
 }
 
 function install () {
-  local version=$1
+  local version="${1:-${AUGER_VERSION}}"
   local download_url
   local yellow="\033[0;33m"
   local nc="\033[0m"
   local arch
   local platform
   local pkg
+  local pkg_version
   local dest
-  local version_url="https://api.github.com/repos/etcd-io/auger/releases/latest"
+  local sha256
 
+  # Global, not local: the EXIT trap runs after install() has returned.
   tmp_dir="$(mktemp -d)"
+  trap 'rm -rf "${tmp_dir}"' EXIT
   mkdir -p "${tmp_dir}/dest"
 
   dest="/opt/bin/auger"
-  if uname="$(whoami 2> /dev/null)"; then
-    if [[ "${uname}" == "root" ]]; then
-      if [ -w "/usr/local/bin" ]; then
-        dest="/usr/local/bin/auger"
-      fi
-    fi
+  if [[ "$(id -u)" == 0 && -w /usr/local/bin ]]; then
+    dest="/usr/local/bin/auger"
   fi
 
-  if [ -z "$version" ]; then # fetch latest
-    version=$(curl -sL "${version_url}" | jq -r '.tag_name')
+  if [[ ! $version == v* ]]; then
+    version="v${version}"
   fi
   pkg_version=${version/#v/}
   arch=$(uname -m | sed 's/^x86_64$/amd64/;s/^aarch64$/arm64/')
   platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
   pkg="auger_${pkg_version}_${platform}_${arch}"
 
+  sha256="$(expected_sha256 "${version}" "${pkg}.tar.gz" "${arch}")"
+  if [ -z "${sha256}" ]; then
+    echo "No sha256 known for ${pkg}.tar.gz of auger ${version}; refusing to install." >&2
+    exit 1
+  fi
+
   download_url="https://github.com/etcd-io/auger/releases/download/${version}/${pkg}.tar.gz"
 
-  curl -sL "${download_url}" \
-    -o "${tmp_dir}/${pkg}.tar.gz" && \
-    tar -zxf "${tmp_dir}/${pkg}.tar.gz" -C "${tmp_dir}/dest" && \
-    mv "${tmp_dir}/dest/auger" "${dest}" && \
-    chmod 755 "${dest}" && \
-    rm -rf "${tmp_dir}"
+  curl -fsSL "${download_url}" -o "${tmp_dir}/${pkg}.tar.gz"
+  echo "${sha256}  ${tmp_dir}/${pkg}.tar.gz" | sha256sum -c - >&2
+  tar -zxf "${tmp_dir}/${pkg}.tar.gz" -C "${tmp_dir}/dest"
+  mv "${tmp_dir}/dest/auger" "${dest}"
+  chmod 755 "${dest}"
 
   echo -e "${yellow}"
   echo "You can now start using auger. Just execute \"auger\" to use it. See https://github.com/etcd-io/auger/blob/main/README.md#modify-data-via-etcdctl for examples"

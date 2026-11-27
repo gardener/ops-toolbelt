@@ -6,11 +6,11 @@
 
 alias k9s="k9s_install"
 function k9s_install() {
-  app="k9s"
-  install_func='/nonroot/hacks/install_k9s'
+  local app="k9s"
+  local install_func='/nonroot/hacks/install_k9s'
 
   if ! hash "${app}" &> /dev/null; then
-    "${install_func}" 1>&2
+    "${install_func}" 1>&2 || return
   fi
   # k9s does not start if HOME is not writeable
   if [ ! -w "${HOME}" ]; then

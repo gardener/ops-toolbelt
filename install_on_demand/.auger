@@ -6,11 +6,11 @@
 
 alias auger="auger_install"
 function auger_install() {
-  app="auger"
-  install_func='/nonroot/hacks/install_auger'
+  local app="auger"
+  local install_func='/nonroot/hacks/install_auger'
 
   if ! hash "${app}" &>/dev/null; then
-    "${install_func}" 1>&2
+    "${install_func}" 1>&2 || return
   fi
 
   command "${app}" "$@"

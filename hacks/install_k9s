@@ -4,6 +4,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+set -eo pipefail
+
+# renovate: datasource=github-releases depName=derailed/k9s
+K9S_VERSION="v0.51.0"
+# sha256 of k9s_Linux_<arch>.tar.gz for K9S_VERSION (from the release's checksums.sha256).
+# Refresh both whenever K9S_VERSION changes.
+K9S_SHA256_AMD64="c3752ad51a5a4015a113819c4eeb6e55a4d0e4b8e652494797532f6fc8161dd7"
+K9S_SHA256_ARM64="3ee05c82e5f9198928a4e86133608ba6a2c10a2244d6a7789e820f78319d640c"
+
 function show_help () {
   echo "Usage: ${0} [arguments]"
   echo "Possible arguments:"
@@ -11,11 +20,29 @@ function show_help () {
   echo "-v, --version    Optional: specify k9s version to use. Default: pinned ${K9S_VERSION}"
 }
 
-# renovate: datasource=github-releases depName=derailed/k9s
-K9S_VERSION="v0.51.0"
+# Prints the expected sha256 of release asset ${2} for version ${1} on arch ${3}.
+# The pinned version uses the embedded digests; any other version falls back to
+# the checksum file published with that release.
+function expected_sha256 () {
+  local version=$1
+  local asset=$2
+  local arch=$3
+
+  if [[ "${version}" == "${K9S_VERSION}" ]]; then
+    case "${arch}" in
+      amd64) echo "${K9S_SHA256_AMD64}" ;;
+      arm64) echo "${K9S_SHA256_ARM64}" ;;
+    esac
+    return
+  fi
+
+  echo "k9s ${version} is not the pinned version (${K9S_VERSION}); verifying against the release's checksums.sha256" >&2
+  curl -fsSL "https://github.com/derailed/k9s/releases/download/${version}/checksums.sha256" \
+    | awk -v f="${asset}" '$2 == f || $2 == "*" f { print $1 }'
+}
 
 function install () {
-  local version=$1
+  local version="${1:-${K9S_VERSION}}"
   local download_url
   local yellow="\033[0;33m"
   local nc="\033[0m"
@@ -23,17 +50,16 @@ function install () {
   local platform
   local pkg
   local dest
+  local sha256
 
+  # Global, not local: the EXIT trap runs after install() has returned.
   tmp_dir="$(mktemp -d)"
+  trap 'rm -rf "${tmp_dir}"' EXIT
   mkdir -p "${tmp_dir}/dest"
 
   dest="/opt/bin/k9s"
-  if uname="$(whoami 2> /dev/null)"; then
-    if [[ "${uname}" == "root" ]]; then
-      if [ -w "/usr/local/bin" ]; then
-        dest="/usr/local/bin/k9s"
-      fi
-    fi
+  if [[ "$(id -u)" == 0 && -w /usr/local/bin ]]; then
+    dest="/usr/local/bin/k9s"
   fi
 
   arch=$(uname -m | sed 's/^x86_64$/amd64/;s/^aarch64$/arm64/')
@@ -41,22 +67,23 @@ function install () {
   platform="$(uname -s)"
   pkg="k9s_${platform}_${arch}"
 
-  if [ -z "$version" ]; then # use pinned default (bumped by renovate)
-    version="${K9S_VERSION}"
-  fi
-
   if [[ ! $version == v* ]]; then
     version="v${version}"
   fi
 
+  sha256="$(expected_sha256 "${version}" "${pkg}.tar.gz" "${arch}")"
+  if [ -z "${sha256}" ]; then
+    echo "No sha256 known for ${pkg}.tar.gz of k9s ${version}; refusing to install." >&2
+    exit 1
+  fi
+
   download_url="https://github.com/derailed/k9s/releases/download/${version}/${pkg}.tar.gz"
 
-  curl -sL "${download_url}" \
-    -o "${tmp_dir}/${pkg}.tar.gz" && \
-    tar -zxf "${tmp_dir}/${pkg}.tar.gz" -C "${tmp_dir}/dest" && \
-    mv "${tmp_dir}/dest/k9s" "${dest}" && \
-    chmod 755 "${dest}" && \
-    rm -rf "${tmp_dir}"
+  curl -fsSL "${download_url}" -o "${tmp_dir}/${pkg}.tar.gz"
+  echo "${sha256}  ${tmp_dir}/${pkg}.tar.gz" | sha256sum -c - >&2
+  tar -zxf "${tmp_dir}/${pkg}.tar.gz" -C "${tmp_dir}/dest"
+  mv "${tmp_dir}/dest/k9s" "${dest}"
+  chmod 755 "${dest}"
 
   echo -e "${yellow}"
   echo "You can now start using k9s. Just execute \"k9s\" to use it or \"k9s -n mynamespace\" to target a namespace. See https://github.com/derailed/k9s for more details."
@@ -73,7 +100,7 @@ case "$1" in
     exit
     ;;
   *)
-    install "$@"
+    install
     exit
     ;;
 esac
