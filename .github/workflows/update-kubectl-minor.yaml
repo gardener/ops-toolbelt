@@ -13,7 +13,7 @@ jobs:
   update-kubectl-minor:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Determine desired kubectl minor version
         id: version
@@ -53,7 +53,7 @@ jobs:
       - name: Get GitHub token
         if: steps.version.outputs.update_needed == 'true'
         id: token
-        uses: gardener/cc-utils/.github/actions/github-auth@d478850afa1a7e0f9deb710e4d44eb0a2d8dce07 # 1.2881.0
+        uses: gardener/cc-utils/.github/actions/github-auth@4f642e2dbcd2f01c7045e43682baac7f19417c9c # 1.2882.0
         with:
           token-server: ${{ vars.FEDERATED_GITHUB_ACCESS_TOKEN_SERVER }}
           repositories: ${{ github.event.repository.name }}
@@ -63,7 +63,7 @@ jobs:
 
       - name: Create pull request
         if: steps.version.outputs.update_needed == 'true'
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8
         with:
           token: ${{ steps.token.outputs.token }}
           commit-message: "Update kubectl minor version to ${{ steps.version.outputs.new_version }}"
