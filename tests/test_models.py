@@ -4,10 +4,13 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import json
+import shlex
+import subprocess
 from pathlib import Path
-from pydantic import ValidationError
-import pytest
 
+import pytest
+from pydantic import ValidationError
 
 from generator import models as m
 
@@ -643,6 +646,53 @@ def test_info_generator_to_ghelp_format_downloaded_only():
         ],
     }
     assert result == expected
+
+
+def _ghelp_info_generator(info: str, version: str) -> m.InfoGenerator:
+    return m.InfoGenerator.model_validate({
+        "components": [
+            {
+                "name": "curl",
+                "items": [{
+                    "name": "tool",
+                    "version": version,
+                    "from": "https://example.com/tool",
+                    "info": info,
+                }],
+            },
+        ],
+    })
+
+
+def test_info_generator_directive_writes_json_verbatim(tmp_path):
+    """info/version are data: shell metacharacters must reach ghelp_info unchanged."""
+    marker = tmp_path / "executed"
+    info = (
+        f"it's a tool'; touch {marker}; echo '\n"
+        f"$(touch {marker}) `touch {marker}` \\t \\c end"
+    )
+    version = f"1.0'; touch {marker}; echo '"
+    info_gen = _ghelp_info_generator(info, version)
+    target = tmp_path / "ghelp_info"
+    directive = info_gen.to_shortened_dockerfile_directive().replace(
+        "/var/lib/ghelp_info", shlex.quote(str(target))
+    )
+
+    subprocess.run(["sh", "-c", directive], check=True)
+
+    assert not marker.exists()
+    assert target.read_text() == json.dumps(info_gen.to_ghelp_format()) + "\n"
+    assert json.loads(target.read_text())["downloaded"] == [
+        ["tool", version, m.info_multiline_string_validator(info)],
+    ]
+
+
+def test_info_generator_directive_keeps_multiline_info():
+    info_gen = _ghelp_info_generator("line1\nline2", "1.0")
+    payload = shlex.split(info_gen.to_shortened_dockerfile_directive())[2]
+    assert json.loads(payload)["downloaded"][0][2] == "line1\nline2"
+
+
 def test_validation_command_on_bash_item():
     item = m.BashItem(name="test", command="echo hello", validation_command="echo hello")
     assert item.validation_command == "echo hello"
@@ -701,6 +751,6 @@ def test_info_multiline_string_validator():
     string = "line1\nline2\nline3"
     assert (
         m.info_multiline_string_validator(string)
-        == "line1\\nline2\\nline3"
+        == "line1\nline2\nline3"
     )
-    assert m.info_multiline_string_validator("a\n\nb") == "a\\nb"
+    assert m.info_multiline_string_validator("a\n\nb") == "a\nb"

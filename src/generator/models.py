@@ -10,6 +10,7 @@ Models for the generator package.
 
 import re
 import json
+import shlex
 from pathlib import Path
 from typing import Annotated, Any, Literal
 from pydantic_core import core_schema
@@ -60,7 +61,7 @@ def ensure_env_pair(value: str) -> str:
 
 
 command_multiline_string_validator = partial(multiline_string_validator, prefix="    ", suffix=";\\")
-info_multiline_string_validator = partial(multiline_string_validator, prefix="", suffix="", joiner="\\n")
+info_multiline_string_validator = partial(multiline_string_validator, prefix="", suffix="")
 
 SupportedDockerfileCommands = Literal["ARG", "RUN", "ENV", "COPY"]
 PackageNameString = Annotated[str, AfterValidator(package_name_string_validator)]
@@ -352,7 +353,10 @@ class InfoGenerator(OpinionatedBaseModel):
         return result
 
     def to_shortened_dockerfile_directive(self) -> str:
-        return f"echo '{json.dumps(self.to_ghelp_format())}' > /var/lib/ghelp_info"
+        # The JSON is data, not shell: quote it as a single word and write it verbatim
+        # (printf %s, unlike echo, does not interpret backslash escapes).
+        payload = shlex.quote(json.dumps(self.to_ghelp_format()))
+        return f"printf '%s\\n' {payload} > /var/lib/ghelp_info"
 
 
 class Dockerfile(OpinionatedBaseModel):
