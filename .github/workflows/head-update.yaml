@@ -19,7 +19,7 @@ jobs:
       pull-requests: write
 
   component-descriptor:
-    uses: gardener/cc-utils/.github/workflows/post-build.yaml@4f642e2dbcd2f01c7045e43682baac7f19417c9c # 1.2882.0
+    uses: gardener/cc-utils/.github/workflows/post-build.yaml@00522ef3e8504bc7be46394a239a390f112336f6 # 1.2883.0
     needs:
       - build
     permissions:
