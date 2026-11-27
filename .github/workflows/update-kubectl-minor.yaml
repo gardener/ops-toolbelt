@@ -53,7 +53,7 @@ jobs:
       - name: Get GitHub token
         if: steps.version.outputs.update_needed == 'true'
         id: token
-        uses: gardener/cc-utils/.github/actions/github-auth@4f642e2dbcd2f01c7045e43682baac7f19417c9c # 1.2882.0
+        uses: gardener/cc-utils/.github/actions/github-auth@00522ef3e8504bc7be46394a239a390f112336f6 # 1.2883.0
         with:
           token-server: ${{ vars.FEDERATED_GITHUB_ACCESS_TOKEN_SERVER }}
           repositories: ${{ github.event.repository.name }}
