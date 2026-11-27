@@ -26,7 +26,9 @@ Options:
                        operator: Exists
   -i|--image        Image to use for the privileged pod. The default value is: $default_image
   -c|--chroot       When this flag is set the host's root directory will also be used as root directory of the pod. By default the host's
-                    root directory is mounted under /host on the pod.
+                    root directory is mounted under /host on the pod. Session files (dotfiles, hacks, tools installed with the
+                    hacks/install_* scripts, temp files, XDG config/cache/state and shell history) are kept in a per-pod
+                    directory that is removed together with the pod; the node's own shell profile is left untouched.
   -o|--hostnetwork  Whether to change the hostNetwork attribute to true.
 EOF
 }
@@ -173,6 +175,11 @@ $tolerations_array
         cpu: 100m
         memory: 50Mi
     stdin: true
+    env:
+    - name: OPS_POD_UID
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.uid
     securityContext:
       privileged: true
     volumeMounts:
@@ -180,10 +187,14 @@ $tolerations_array
       mountPath: /host
       readOnly: false
       mountPropagation: HostToContainer
+    - name: session
+      mountPath: /session
   volumes:
   - name: host-root-volume
     hostPath:
       path: /
+  - name: session
+    emptyDir: {}
   hostNetwork: ${hostnetwork}
   hostPID: true
   restartPolicy: Never
@@ -198,13 +209,33 @@ done
 
 # exec into pod (and chroot into node if a node was selected)
 if [[ ${node_chroot} -eq ${TRUE} ]]; then
+  # Session files live in the pod's own emptyDir, which kubelet deletes together with the pod;
+  # the node's shell profile is not touched. Inside the chroot the emptyDir is reached through
+  # its path in the kubelet pod directory.
   # shellcheck disable=SC2016
-  kubectl -n "${namespace}" exec -ti "${name}" -- bash -c 'rm -rf /host/root/dotfiles 1> /dev/null; \
-                                                   cp -r /root/dotfiles /host/root 1> /dev/null; \
-                                                   cp -r /hacks /host 1> /dev/null; rm -f /host/root/.bashrc; \
-                                                   ln -s /root/dotfiles/.bashrc /host/root/.bashrc 1> /dev/null; export PATH="/hacks:$PATH"; \
-                                                   echo -e "\nBE CAREFUL!!! Node root directory mounted under / \n"; \
-                                                   chroot /host /bin/bash'
+  kubectl -n "${namespace}" exec -ti "${name}" -- bash -c '
+    set -e
+    session="/var/lib/kubelet/pods/${OPS_POD_UID}/volumes/kubernetes.io~empty-dir/session"
+    if [[ ! "/host${session}" -ef /session ]]; then
+      echo "Cannot find the session directory of this pod on the node (expected ${session})." >&2
+      exit 1
+    fi
+    chmod 700 /session
+    cp -r /root/dotfiles /hacks /session/
+    mkdir -p /session/bin /session/tmp
+    export DOTFILES_HOME="${session}/dotfiles"
+    export OPS_TOOLBELT_BIN_DIR="${session}/bin"
+    export HISTFILE="${session}/.bash_history"
+    # The node /tmp is usually a tmpfs, which counts against the pod memory limit.
+    export TMPDIR="${session}/tmp"
+    export TMUX_TMPDIR="${session}/tmp"
+    export XDG_CONFIG_HOME="${session}/.config"
+    export XDG_CACHE_HOME="${session}/.cache"
+    export XDG_DATA_HOME="${session}/.local/share"
+    export XDG_STATE_HOME="${session}/.local/state"
+    export PATH="${session}/bin:${session}/hacks:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin"
+    echo -e "\nBE CAREFUL!!! Node root directory mounted under / \n"
+    exec chroot /host /bin/bash --rcfile "${DOTFILES_HOME}/.bashrc"'
 else
   kubectl -n "${namespace}" exec -ti "${name}" -- bash -c "echo -e '\nNode root dir is mounted under /host' >> /etc/motd; /bin/bash"
 fi

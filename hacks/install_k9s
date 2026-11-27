@@ -18,6 +18,8 @@ function show_help () {
   echo "Possible arguments:"
   echo "-h, --help       Show this help message and exit"
   echo "-v, --version    Optional: specify k9s version to use. Default: pinned ${K9S_VERSION}"
+  echo "Environment:"
+  echo "OPS_TOOLBELT_BIN_DIR  Optional: install into this directory (ops-pod --chroot sets it to a per-pod directory)"
 }
 
 # Prints the expected sha256 of release asset ${2} for version ${1} on arch ${3}.
@@ -58,7 +60,9 @@ function install () {
   mkdir -p "${tmp_dir}/dest"
 
   dest="/opt/bin/k9s"
-  if [[ "$(id -u)" == 0 && -w /usr/local/bin ]]; then
+  if [[ -n "${OPS_TOOLBELT_BIN_DIR}" ]]; then
+    dest="${OPS_TOOLBELT_BIN_DIR}/k9s"
+  elif [[ "$(id -u)" == 0 && -w /usr/local/bin ]]; then
     dest="/usr/local/bin/k9s"
   fi
 
