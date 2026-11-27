@@ -704,3 +704,94 @@ def test_info_multiline_string_validator():
         == "line1\\nline2\\nline3"
     )
     assert m.info_multiline_string_validator("a\n\nb") == "a\\nb"
+
+
+DIGEST_A = "a" * 64
+DIGEST_B = "b" * 64
+
+
+def test_curl_item_sha256_single_arch_to(subtests):
+    with subtests.test("Direct binary with per-arch digests"):
+        c = m.CurlItem.model_validate({
+            "name": "tool",
+            "version": "1.0",
+            "from": "http://example.com/tool-${{TARGETARCH}}",
+            "to": "/bin/tool",
+            "sha256": {"amd64": DIGEST_A, "arm64": DIGEST_B},
+        })
+        assert c.command == (
+            "curl -sLf http://example.com/tool-${TARGETARCH} -o /bin/tool"
+            f' && echo "$(case "${{TARGETARCH}}" in amd64) echo {DIGEST_A};; '
+            f'arm64) echo {DIGEST_B};; *) echo unknown;; esac)  /bin/tool"'
+            " | sha256sum -c -"
+            " && chmod 755 /bin/tool"
+        )
+
+    with subtests.test("Tarball with custom command, digest verified before extract"):
+        c = m.CurlItem.model_validate({
+            "name": "tool",
+            "version": "1.0",
+            "from": "http://example.com/tool.tar.gz",
+            "to": "/tool.tar.gz",
+            "sha256": {"amd64": DIGEST_A},
+            "command": "tar xzf /tool.tar.gz",
+        })
+        assert c.command == (
+            "curl -sLf http://example.com/tool.tar.gz -o /tool.tar.gz"
+            f' && echo "$(case "${{TARGETARCH}}" in amd64) echo {DIGEST_A};; '
+            '*) echo unknown;; esac)  /tool.tar.gz"'
+            " | sha256sum -c -"
+            " && tar xzf /tool.tar.gz"
+        )
+
+
+def test_curl_item_without_sha256_unchanged():
+    """No sha256 field keeps the original command shape."""
+    c = m.CurlItem.model_validate({
+        "name": "tool",
+        "from": "http://example.com/tool",
+    })
+    assert c.sha256 is None
+    assert c.command == "curl -sLf http://example.com/tool -o /bin/tool && chmod 755 /bin/tool"
+
+
+def test_curl_item_sha256_invalid_digest(subtests):
+    with subtests.test("Non-hex digest"):
+        with pytest.raises(ValidationError):
+            m.CurlItem.model_validate({
+                "name": "tool",
+                "from": "http://example.com/tool",
+                "sha256": {"amd64": "not-a-digest"},
+            })
+    with subtests.test("Wrong length"):
+        with pytest.raises(ValidationError):
+            m.CurlItem.model_validate({
+                "name": "tool",
+                "from": "http://example.com/tool",
+                "sha256": {"amd64": "abc123"},
+            })
+    with subtests.test("Uppercase rejected"):
+        with pytest.raises(ValidationError):
+            m.CurlItem.model_validate({
+                "name": "tool",
+                "from": "http://example.com/tool",
+                "sha256": {"amd64": "A" * 64},
+            })
+    with subtests.test("Empty map rejected"):
+        with pytest.raises(ValidationError):
+            m.CurlItem.model_validate({
+                "name": "tool",
+                "from": "http://example.com/tool",
+                "sha256": {},
+            })
+
+
+def test_curl_item_sha256_does_not_affect_dump_ghelp():
+    c = m.CurlItem.model_validate({
+        "name": "tool",
+        "version": "1.0",
+        "from": "http://example.com/tool",
+        "info": "Tool info",
+        "sha256": {"amd64": DIGEST_A},
+    })
+    assert c.dump_ghelp() == ("tool", "1.0", "Tool info")
