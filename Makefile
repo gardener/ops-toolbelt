@@ -4,9 +4,9 @@ VENV_DIR = .venv
 VENV_BIN = $(VENV_DIR)/bin
 VENV_PIP = $(VENV_BIN)/pip
 APP = generator
-# renovate: datasource=github-releases depName=gardenlinux/gardenlinux
-GARDENLINUX_IMAGE_TAG ?= 2150.15.0
-GARDENLINUX_IMAGE_REPO ?= ghcr.io/gardenlinux/gardenlinux
+# Pinned by tag and multi-arch index digest; override the whole reference, never just the tag.
+# renovate: datasource=docker
+GARDENLINUX_IMAGE ?= ghcr.io/gardenlinux/gardenlinux:2150.15.0@sha256:417d2a5521fdd1f368e6d37d26cbbf08fba63cd528f7f50505f55d4c813ef5ef
 BUILT_IMAGE ?= ops-toolbelt
 VALIDATION_IMAGE ?= $(BUILT_IMAGE)-validation
 VALIDATION_DOCKERFILE ?= generated_dockerfiles/ops-toolbelt-validation.dockerfile
@@ -68,7 +68,7 @@ validate: venv ## Validate the generator configuration
 build: ensure-venv ## Generate Dockerfile using the configured base image
 	@echo Generating dockerfile
 	@$(VENV_BIN)/generator \
-		--from-image $(GARDENLINUX_IMAGE_REPO):$(GARDENLINUX_IMAGE_TAG) \
+		--from-image $(GARDENLINUX_IMAGE) \
 		--dockerfile-config dockerfile-configs/common-components.yaml \
 		--dockerfile generated_dockerfiles/$(BUILT_IMAGE).dockerfile
 

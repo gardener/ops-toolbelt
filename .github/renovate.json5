@@ -4,7 +4,7 @@
     "config:recommended",
     "helpers:pinGitHubActionDigests",
     ":semanticCommitsDisabled",
-    "regexManagers:githubActionsVersions",
+    "customManagers:githubActionsVersions",
     "group:monorepos"
   ],
   labels: ["kind/enhancement"],
@@ -12,30 +12,45 @@
   prFooter: "**Release note**:\n```other dependency\nNONE\n```",
   customManagers: [
     {
-      // Update `_VERSION`, `_version` and `_IMAGE_TAG` variables in Makefiles and scripts.
-      // Inspired by `regexManagers:dockerfileVersions` preset.
+      // Update `_VERSION` and `_version` variables in Makefiles and scripts.
+      // Inspired by `customManagers:dockerfileVersions` preset.
       customType: "regex",
-      fileMatch: [
-        "Makefile$",
-        "\\.yaml$",
-        "\\.sh$",
-        "^hacks/*",
+      managerFilePatterns: [
+        "/Makefile$/",
+        "/\\.yaml$/",
+        "/\\.sh$/",
+        "/^hacks\\//",
       ],
       matchStrings: [
-        "# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s.+?_(VERSION|version|IMAGE_TAG) *[?:]?= *\"?(?<currentValue>.+?)\"?\\s"
+        "# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s.+?_(VERSION|version) *[?:]?= *\"?(?<currentValue>.+?)\"?\\s"
       ]
     },
     {
       // Update `version` variables in common-components.yaml.
-      // Inspired by `regexManagers:dockerfileVersions` preset.
+      // Inspired by `customManagers:dockerfileVersions` preset.
       customType: "regex",
-      fileMatch: ["common-components\\.yaml$"],
+      managerFilePatterns: ["/common-components\\.yaml$/"],
       matchStrings: [
         "# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s+version\\s*:\\s*[\"']?(?<currentValue>.+?)[\"']?\\s"
       ]
     },
+    {
+      // Update container image references pinned as `repo:tag@sha256:digest` below a
+      // `# renovate: datasource=docker` comment; the tag and the (multi-arch index) digest
+      // are bumped together and the package name is taken from the reference itself.
+      customType: "regex",
+      managerFilePatterns: ["/Makefile$/", "/^hacks/ops-pod$/"],
+      matchStrings: [
+        "# renovate: datasource=(?<datasource>docker)\\s+[A-Za-z_]+ *\\??= *\"?(?<depName>[^\\s\"@]+):(?<currentValue>[^\\s\"@:/]+)@(?<currentDigest>sha256:[a-f0-9]{64})\"?\\s"
+      ]
+    },
   ],
   packageRules: [
+    {
+      // The image inherits the base image's source label; point PRs at this repo's releases instead.
+      matchPackageNames: ["europe-docker.pkg.dev/gardener-project/releases/gardener/ops-toolbelt"],
+      sourceUrl: "https://github.com/gardener/ops-toolbelt",
+    },
     {
       // Group github-actions in one PR.
       groupName: "github-actions",
