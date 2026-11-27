@@ -61,7 +61,9 @@ sanitize_hostname() {
 }
 
 
-default_image="europe-docker.pkg.dev/gardener-project/releases/gardener/ops-toolbelt:latest"
+# Latest release, pinned by tag and multi-arch index digest (bumped by renovate).
+# renovate: datasource=docker
+default_image="europe-docker.pkg.dev/gardener-project/releases/gardener/ops-toolbelt:0.57.0@sha256:96d789aa578d6764ea7d06fc62f83a8f1547ea7b8a618b4f14f2d938b6a691a1"
 function get_default_namespace() {
   _namespace=$(kubectl config view -o jsonpath="{.contexts[?(@.name == \"$(kubectl config current-context)\")].context.namespace}")
   echo "${_namespace:-default}"
