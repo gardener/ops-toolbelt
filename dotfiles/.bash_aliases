@@ -492,43 +492,49 @@ function fuse() {
 }
 
 # tmux
+# A dedicated tmux server per dotfiles user. -L keeps the socket in tmux's own
+# per-uid directory (/tmp/tmux-<uid>, created 0700 and ownership-checked by tmux),
+# so no other local user can pre-create or hijack it.
+function tmux_dotfiles() {
+  tmux -L "dotfiles-$DOTFILES_USER" "$@"
+}
 # shellcheck disable=SC2120
 function ts() {
-  cp -f "$DOTFILES_HOME/.tmux.conf" "/tmp/.tmux.$DOTFILES_USER.conf"
   local session="$1"
   local detach=""
   [[ "$1" == "-d" ]] && detach="-d" && session="${*:2}"
   session=${session:-default}
   echo -n "Creating new $session session: "
-  tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" -f "/tmp/.tmux.$DOTFILES_USER.conf" new-session $detach -s "$session"
+  tmux_dotfiles -f "$DOTFILES_HOME/.tmux.conf" new-session $detach -s "$session"
 }
 function ta() {
+  local session
   if [[ -z "$1" ]]; then
     if [[ -n "$TMUX" ]]; then
       # show what would be called effectively (to let others without this environment work with it)
-      session="$(tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" display-message -p "#S" 2>/dev/null | sed -r "s/^0$//p")"
-      echo "Full command: tmux -S /tmp/.tmux.$DOTFILES_USER.socket attach-session -t ${session:-<session>}"
+      session="$(tmux_dotfiles display-message -p "#S" 2>/dev/null | sed -r "s/^0$//p")"
+      echo "Full command: tmux -L dotfiles-$DOTFILES_USER attach-session -t ${session:-<session>}"
     else
-      if tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" ls 2>/dev/null | grep -qE "^default:.*$"; then
+      if tmux_dotfiles ls 2>/dev/null | grep -qE "^default:.*$"; then
         echo -n "Attaching to default session: "
-        tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" attach-session -t "default"
+        tmux_dotfiles attach-session -t "default"
       else
         ts
       fi
     fi
   else
     echo -n "Attaching to $1 session: "
-    tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" attach-session -t "$1"
+    tmux_dotfiles attach-session -t "$1"
   fi
 }
 function tk() {
   if [[ -z "$1" ]]; then
-    tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" ls | grep -F : | awk -F':' '{print $1}' | xargs -I{} tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" kill-session -t {}
+    tmux_dotfiles kill-server
   else
-    tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" kill-session -t "$1"
+    tmux_dotfiles kill-session -t "$1"
   fi
 }
-alias tls='tmux -S "/tmp/.tmux.$DOTFILES_USER.socket" ls 2>&1 | grep -v "failed to connect to server"'
+alias tls='tmux_dotfiles ls 2>/dev/null'
 
 ######################
 # CLOUD & CONTAINERS #
